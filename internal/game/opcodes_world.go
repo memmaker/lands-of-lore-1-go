@@ -378,3 +378,141 @@ func (g *Game) opAnyMonsterAwake(s *emc.State) int {
 	}
 	return 1
 }
+
+// opCopyRect copies a rectangle between pages: x, y, to x, to y, w, h, from, to
+// (C: fn_0fbe_1126).
+func (g *Game) opCopyRect(s *emc.State) int {
+	g.Screen.HideMouse()
+	g.Screen.CopyRect(s.Arg(0), s.Arg(1), s.Arg(2), s.Arg(3), s.Arg(4), s.Arg(5), s.Arg(6), s.Arg(7))
+	g.Screen.ShowMouse()
+	return 1
+}
+
+// opFadeOutView (C: fn_0fbe_11cb).
+func (g *Game) opFadeOutView(s *emc.State) int {
+	g.fadeOutView(fadeTicks)
+	return 1
+}
+
+// opFadeInLevel fades the level's colours back in over the scene palette
+// (C: fn_0fbe_11db).
+func (g *Game) opFadeInLevel(s *emc.State) int {
+	at := levelColours * 3
+	copy(g.scenePalette[at:], g.Palette[at:])
+	g.keepInterfaceColours(g.scenePalette[:])
+	g.Screen.FadePalette(g.scenePalette[:], fadeTicks, nil)
+	g.paletteState = paletteNormal
+	return 1
+}
+
+// opRedrawAfterScene (C: fn_0fbe_122c).
+func (g *Game) opRedrawAfterScene(s *emc.State) int {
+	g.redrawAfterScene()
+	return 1
+}
+
+// opMonsterInFront is the monster ahead nearest to a party member (C: fn_0fbe_14fb).
+func (g *Game) opMonsterInFront(s *emc.State) int { return g.monsterInFront(s.Arg(0)) }
+
+// opNothingZero (C: fn_0fbe_1515).
+func (g *Game) opNothingZero(s *emc.State) int { return 0 }
+
+// opAttackHits rolls an attack: attacker, defender, skill (C: fn_0fbe_151c).
+func (g *Game) opAttackHits(s *emc.State) int { return g.attackHits(s.Arg(0), s.Arg(1), s.Arg(2)) }
+
+// opDamage deals damage to a fighter or, for -1, each character: who, damage,
+// source, skill, kind (C: fn_0fbe_155a).
+func (g *Game) opDamage(s *emc.State) int {
+	if s.Arg(0) == -1 {
+		for ch := range partySize {
+			g.damageFighter(ch, s.Arg(1), s.Arg(2), s.Arg(3), s.Arg(4))
+		}
+	} else {
+		g.damageFighter(s.Arg(0), s.Arg(1), s.Arg(2), s.Arg(3), s.Arg(4))
+	}
+	return 1
+}
+
+// opDialogueChoices shows up to three answers by string id (C: fn_0fbe_170f).
+func (g *Game) opDialogueChoices(s *emc.State) int {
+	g.showDialogueChoices(s.Arg(0), []string{g.text(s.Arg(1)), g.text(s.Arg(2)), g.text(s.Arg(3))})
+	return 1
+}
+
+// opCredits gives the party money, or takes it for a negative amount
+// (C: fn_0fbe_1784).
+func (g *Game) opCredits(s *emc.State) int {
+	if d := s.Arg(0); d < 0 {
+		g.takeCredits(-d, true)
+	} else {
+		g.giveCredits(d, true)
+	}
+	return 1
+}
+
+// opGiveHeldItem puts a new item on an empty cursor: type, flags, more flags
+// (C: fn_0fbe_181b).
+func (g *Game) opGiveHeldItem(s *emc.State) int {
+	if g.heldItem != 0 {
+		return 0
+	}
+	g.setHeldItem(g.newItem(s.Arg(0), s.Arg(1), s.Arg(2)))
+	return 1
+}
+
+// itemSounds are the sounds of items by their skill's low bits (C: g_2798).
+var itemSounds = [4]int{12, 62, 63, -1}
+
+const itemSoundDefault = 12
+
+// opItemSound plays the sound of an item type: the default for four runs of types,
+// else by its skill (C: fn_0fbe_308b).
+func (g *Game) opItemSound(s *emc.State) int {
+	t := s.Arg(0)
+	if (t >= 70 && t <= 74) || (t >= 81 && t <= 89) || (t >= 93 && t <= 97) || (t >= 102 && t <= 106) {
+		g.playSound(itemSoundDefault, 1)
+	} else {
+		g.playSound(itemSounds[g.itemTypes[t].Skill&3], 1)
+	}
+	return 1
+}
+
+// opGiveInventoryItem makes an item and puts it in the inventory; with no room it is
+// freed again and the result is 0 (C: fn_0fbe_1870).
+func (g *Game) opGiveInventoryItem(s *emc.State) int {
+	it := g.newItem(s.Arg(0), s.Arg(1), s.Arg(2))
+	if !g.addToInventory(it) {
+		g.freeItem(it)
+		return 0
+	}
+	return 1
+}
+
+// addToInventory puts item in the first free inventory slot from the shown ones on,
+// scrolling the bar until it shows; false when full (C: fn_0c59_03a8).
+func (g *Game) addToInventory(item int) bool {
+	s := 0
+	i := 0
+	for ; i < inventorySlots; i++ {
+		s = (g.inventoryStart + i) % inventorySlots
+		if g.inventory[s] == 0 {
+			break
+		}
+	}
+	if i == inventorySlots {
+		return false
+	}
+	for g.inventoryStart-s > 0 || g.inventoryStart+inventoryShown <= s {
+		g.inventoryStart = (g.inventoryStart + 1) % inventorySlots
+		g.drawInventory()
+	}
+	g.inventory[s] = item
+	g.drawInventory()
+	return true
+}
+
+// opAddExperience: character, skill, points (C: fn_0fbe_18cb).
+func (g *Game) opAddExperience(s *emc.State) int {
+	g.addExperience(s.Arg(0), s.Arg(1), s.Arg(2))
+	return 1
+}
