@@ -31,6 +31,10 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
         program with no decomp in lands-of-lore-1-re (only MAIN.EXE and LOLCD.EXE)
 - [ ] Intro (TIM/WSA sequences), character selection
 - [ ] Scripts: EMC interpreter and opcodes (s018, s019), TIM (s001, s002)
+  - [x] EMC loader and interpreter (s018, o2de9), tested on ONETIME.INF
+  - [ ] Item type opcodes 13, 14 (ovr_2d50_003e, 0043) for ONETIME.INF
+  - [ ] The other 190 opcodes of g_2494, ported with the systems they drive
+  - [ ] TIM interpreter (s001, s002)
 - [ ] Levels, 3D view renderer (o2d2c, o2cda), movement, automap
 - [ ] Items, inventory, characters, portraits, stats screen
 - [ ] Monsters, combat, magic
