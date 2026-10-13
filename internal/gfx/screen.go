@@ -80,6 +80,7 @@ type Screen struct {
 	predator predatorState
 	scratch  []byte // unpacked shape data (C: the buffer at g_35ac)
 	mouse    mouseState
+	lineClip clipRect
 }
 
 // NewScreen allocates the pages and the window table.
@@ -94,6 +95,7 @@ func NewScreen() *Screen {
 	}
 	s.predator.offset = predatorOffsets[0]
 	s.mouse.init()
+	s.lineClip = defaultLineClip
 	return s
 }
 
