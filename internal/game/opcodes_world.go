@@ -121,9 +121,6 @@ func (g *Game) setHeldItem(item int) {
 	g.Screen.SetMouseShape(hot, hot, g.itemIcon(it))
 }
 
-// Item flags of placeItem.
-const itemOnOtherLevel = 1 << 14 // (C: 0x4000 on an item left on a level not loaded)
-
 // placeItem puts item it on block of level at (x, y) inside it, height sub
 // (C: fn_130a_0052).
 func (g *Game) placeItem(it, level, block, x, y, sub int) {
@@ -138,7 +135,7 @@ func (g *Game) placeItem(it, level, block, x, y, sub int) {
 		item.Level = level
 		item.Block = block
 		item.Sub = sub
-		item.Flags |= itemOnOtherLevel
+		item.Flags |= itemOnFloor
 	}
 }
 
@@ -673,3 +670,176 @@ func (g *Game) opHeal(s *emc.State) int {
 }
 
 func (g *Game) healAnimation(who, kind int) { notPorted("ovr_2d18_002a (healing animation)") }
+
+// opCountLiveMonsters (C: fn_0fbe_1f05).
+func (g *Game) opCountLiveMonsters(s *emc.State) int {
+	n := 0
+	for i := range g.monsters {
+		if m := &g.monsters[i]; m.HitPoints > 0 && m.Mode != monsterDead {
+			n++
+		}
+	}
+	return n
+}
+
+// Finale modes by the first character's id (C: fn_0fbe_3282).
+var finaleModes = map[int]int{-9: 1, -1: 2, -5: 3}
+
+// opFinale ends the game and runs the finale for the hero who led the party
+// (C: fn_0fbe_3282, which ran FINALE.EXE with the mode, the difficulty and the
+// player's name).
+func (g *Game) opFinale(s *emc.State) int {
+	for g.updateSpeech() != 0 {
+		g.waitTicks(1)
+	}
+	g.runFinale(finaleModes[g.party[0].ID], g.difficulty())
+	return 0
+}
+
+func (g *Game) runFinale(mode, difficulty int) { notPorted("FINALE.EXE (the ending)") }
+
+// opStopTalk (C: fn_0fbe_1f39).
+func (g *Game) opStopTalk(s *emc.State) int {
+	g.speechKey(1)
+	g.endTalk()
+	return 1
+}
+
+// opAttackDamage (C: fn_0fbe_2087).
+func (g *Game) opAttackDamage(s *emc.State) int {
+	return g.attackDamage(s.Arg(0), s.Arg(1), s.Arg(2))
+}
+
+// opScaledDamage (C: fn_0fbe_20c5).
+func (g *Game) opScaledDamage(s *emc.State) int { return g.scaledDamage(s.Arg(0)) }
+
+// opInParty says whether the character with an id is in the party, living or dead
+// (C: fn_0fbe_1f4e).
+func (g *Game) opInParty(s *emc.State) int {
+	for i := range partySize {
+		if c := &g.party[i]; c.Flags&(charPresent|charDead) != 0 && c.ID == s.Arg(0) {
+			return 1
+		}
+	}
+	return 0
+}
+
+// opMessage prints a message: kind, string id, sound, up to seven arguments
+// (C: fn_0fbe_1fa0).
+func (g *Game) opMessage(s *emc.State) int {
+	args := make([]any, 7)
+	for i := range args {
+		args[i] = s.Arg(3 + i)
+	}
+	g.printMessage(s.Arg(0), g.text(s.Arg(1)), args...)
+	if n := s.Arg(2); n > 0 {
+		g.playSound(n, 0)
+	}
+	return 1
+}
+
+// opDestroyItem takes an item off its block and frees it (C: fn_0fbe_20df).
+func (g *Game) opDestroyItem(s *emc.State) int {
+	it := s.Arg(0)
+	if b := g.items[it].Block; b != 0 {
+		g.takeItemFromBlock(it, b)
+	}
+	g.freeItem(it)
+	return 1
+}
+
+// opDamageOfKind (C: fn_0fbe_2126).
+func (g *Game) opDamageOfKind(s *emc.State) int {
+	return g.damageOfKind(s.Arg(0), s.Arg(1), s.Arg(2), s.Arg(3), s.Arg(4))
+}
+
+// opLaunchObject sends an item flying: kind, item, block, x, y, power, direction,
+// a, owner; with an owner not a monster from the block's centre. An item that cannot
+// fly is freed (C: fn_0fbe_2188).
+func (g *Game) opLaunchObject(s *emc.State) int {
+	const launchFlags = 1<<6 - 1
+	var x, y int
+	if isMonster(s.Arg(8)) {
+		x, y = blockPosition(s.Arg(2), s.Arg(3), s.Arg(4))
+	} else {
+		x, y = blockPosition(s.Arg(2), blockCentreSide, blockCentreSide)
+	}
+	if !g.launchObject(s.Arg(0), s.Arg(1), x, y, s.Arg(5), s.Arg(6)<<1, s.Arg(7), s.Arg(8), launchFlags) {
+		g.freeItem(s.Arg(1))
+		return 0
+	}
+	return 1
+}
+
+// opClearStatus ends a character's status effects from one to another
+// (C: fn_0fbe_2290).
+func (g *Game) opClearStatus(s *emc.State) int {
+	g.clearStatusEffects(&g.party[s.Arg(0)], s.Arg(1), s.Arg(2))
+	return 1
+}
+
+// opInventoryFull (C: fn_0fbe_22dc).
+func (g *Game) opInventoryFull(s *emc.State) int {
+	for _, it := range g.inventory {
+		if it == 0 {
+			return 0
+		}
+	}
+	return 1
+}
+
+// opMoveBlockContents moves a block's floor items to another block, maybe on another
+// level, and removes its monsters: block, to block, level, monsters, run the drop
+// event, items (C: fn_0fbe_22fb).
+func (g *Game) opMoveBlockContents(s *emc.State) int {
+	found := false
+	b, to, level := s.Arg(0), s.Arg(1), s.Arg(2)
+	doMonsters, doItems := s.Arg(3) != 0, s.Arg(5) != 0
+	for next := g.lvl.blocks[b].Objects; next != 0; {
+		id := next
+		next = *g.objectNext(id)
+		if !isMonster(id) {
+			it := &g.items[id]
+			if it.Flags&itemOnFloor == 0 || !doItems {
+				continue
+			}
+			g.placeItem(id, level, to, it.X&lowByteMask, it.Y&lowByteMask, it.Sub)
+			if s.Arg(4) != 0 && g.level == level {
+				g.runBlockScriptWith(to, eventItemDrop, -1, id, 0, 0)
+			}
+			found = true
+		} else {
+			if !doMonsters {
+				continue
+			}
+			m := &g.monsters[id&monsterIndex]
+			g.setMonsterMode(m, monsterModeRemove)
+			g.noteBlockChanged(m.Block)
+			g.moveMonster(m, 0, 0)
+			found = true
+		}
+	}
+	return boolInt(found)
+}
+
+// opLamp lights or puts out the lamp (C: fn_0fbe_248a).
+func (g *Game) opLamp(s *emc.State) int {
+	if s.Arg(1) != 0 {
+		g.showLamp()
+	} else {
+		g.hideLamp(false)
+	}
+	return 1
+}
+
+// opDrawGameScreen (C: ovr_2d2c_00c0).
+func (g *Game) opDrawGameScreen(s *emc.State) int {
+	g.drawGameScreen()
+	return 1
+}
+
+// opPrintString prints a string on the message line (C: fn_0fbe_24b4).
+func (g *Game) opPrintString(s *emc.State) int {
+	g.printText(textWindowMessage, g.text(s.Arg(0)), scriptArgs(s), 1)
+	return 1
+}
