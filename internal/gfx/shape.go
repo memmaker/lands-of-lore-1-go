@@ -483,3 +483,46 @@ func (s *Screen) pixelOp(buf []byte, flags int, opt ShapeOptions, colours []byte
 	}
 	return func(int, byte) {}
 }
+
+// shapePackedOffset is where a shape's header keeps its whole size in the file.
+const shapePackedOffset = 6
+
+// ShapeBytes is the shape's whole size, header included (C: fn_1f36_0029).
+func ShapeBytes(shape []byte) int {
+	if len(shape) < shapeHeaderSize {
+		return 0
+	}
+	return int(binary.LittleEndian.Uint16(shape[shapePackedOffset:]))
+}
+
+// CopyShape copies shape i of a shape file, trimmed to its size; nil if there is none
+// (C: ovr_2d46_0025, ovr_2d2c_00ed).
+func CopyShape(file []byte, i int) []byte {
+	frame := ShapeFrame(file, i)
+	if frame == nil {
+		return nil
+	}
+	return append([]byte(nil), frame[:min(ShapeBytes(frame), len(frame))]...)
+}
+
+// ShapeWordBefore reads the n-th word in front of shape i of a file (C: ovr_2d2c_00e3).
+func ShapeWordBefore(file []byte, i, n int) int {
+	if i < 0 || i >= ShapeCount(file) || 2+4*i+4 > len(file) {
+		return 0
+	}
+	at := int(binary.LittleEndian.Uint32(file[2+4*i:])) + 2 - 2*n
+	if at < 0 || at+2 > len(file) {
+		return 0
+	}
+	return int(int16(binary.LittleEndian.Uint16(file[at:])))
+}
+
+// ShapeColours is the colour table a shape carries, nil if none: what follows the count
+// byte after the header.
+func ShapeColours(shape []byte) []byte {
+	if len(shape) <= shapeHeaderSize {
+		return nil
+	}
+	n := int(shape[shapeHeaderSize])
+	return shape[shapeHeaderSize+1 : min(shapeHeaderSize+1+n, len(shape))]
+}

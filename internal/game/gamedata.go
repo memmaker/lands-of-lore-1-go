@@ -137,3 +137,20 @@ func (g *Game) loadShapesUpTo(name string, n int) ([][]byte, error) {
 	}
 	return shapes, nil
 }
+
+// tintedTable maps the first n colours of pal to the nearest of them after scaling by
+// mul/64 and adding (r, g, b) (C: ovr_2ce1_0043).
+func tintedTable(pal []byte, mul, r, gr, b, n int, skipUI bool) []byte {
+	const maxLevel = 63
+	tinted := make([]byte, n*3)
+	add := [3]int{r, gr, b}
+	for i := range n * 3 {
+		v := int(pal[i])*mul/64 + add[i%3]
+		tinted[i] = byte(min(v, maxLevel))
+	}
+	table := make([]byte, fadeTableSize)
+	for i := range n {
+		table[i] = byte(gfx.NearestColour(tinted[i*3:], pal, n, skipUI))
+	}
+	return table
+}

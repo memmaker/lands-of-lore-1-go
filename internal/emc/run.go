@@ -236,3 +236,31 @@ func boolInt(v bool) int {
 	}
 	return 0
 }
+
+// CalledOpcodes lists the opcodes a script's bytecode calls, in a linear sweep over it
+// (no C counterpart: a tool for porting and testing the opcode table).
+func (s *Script) CalledOpcodes() []int {
+	seen := map[int]bool{}
+	var list []int
+	for ip := 0; ip < len(s.data); ip++ {
+		word := int(uint16(s.data[ip]))
+		if word&jumpFlag != 0 {
+			continue
+		}
+		arg := 0
+		switch {
+		case word&byteArgFlag != 0:
+			arg = int(int8(word))
+		case word&wordArgFlag != 0:
+			ip++
+			if ip < len(s.data) {
+				arg = int(s.data[ip])
+			}
+		}
+		if word>>operationShift&operationMask == opCallOpcode && !seen[arg&opcodeMask] {
+			seen[arg&opcodeMask] = true
+			list = append(list, arg&opcodeMask)
+		}
+	}
+	return list
+}

@@ -86,6 +86,33 @@ type Game struct {
 	credits   int            // the party's money (C: g_81e0)
 	coinPiles [coinPiles]int // coins on each pile (C: g_09bc)
 
+	lvl      level
+	timers   [timerCount]timer           // (C: g_2298)
+	monsters [maxMonsters]Monster        // (C: f_2803_15fa)
+	flying   [flyingObjects]flyingObject // (C: g_4dcc)
+
+	brightness   int         // (C: g_81dc)
+	lampLevel    int         // (C: g_81de)
+	darkPalette  gfx.Palette // the palette at the current brightness (C: g_540e)
+	paletteState int         // (C: g_20d5)
+	musicTrack   int         // (C: g_1e94)
+
+	currentBlock        int                // the party's block (C: g_7fd0)
+	direction           int                // the way the party faces (C: g_7fe1's source g_7fdf)
+	lastMoveDirection   int                // (C: g_7fd8)
+	visitedLevels       int                // bit n-1: level n entered before (C: g_81f9)
+	loadingLevelInit    bool               // a level's .INI runs (C: g_206d)
+	levelSoundsOff      bool               // (C: g_20d7)
+	walkTransition      int                // (C: g_7fdc)
+	redTint             []byte             // (C: g_aa03)
+	sceneUpdateRequired bool               // (C: g_7fb6)
+	visibleBlocks       [visibleBlocks]int // the blocks in the view (C: g_4eac)
+	sceneRegion         [4]int             // (C: g_4b74, g_4b72, g_4b70, g_4b6e)
+	sceneRegionActive   bool               // (C: g_20ec)
+	lampPending         bool               // (C: g_1216)
+	talkingCharacter    int                // the character whose speech shows, or noTalk (C: g_4bf8)
+	scriptErr           error              // the first error a block script raised
+
 	heldItem int // the item on the cursor, 0 for none (C: g_8048)
 	busyIcon int // which icon it shows (C: g_ab1a)
 }
@@ -118,6 +145,8 @@ func New(dir string) (*Game, error) {
 	g.Text = text.New(g.Screen)
 	g.GUI = gui.New(g.Screen)
 	g.buttonDefs = buttonDefs
+	g.timers = newTimers()
+	g.talkingCharacter = noTalk
 	return g, nil
 }
 

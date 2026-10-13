@@ -2,20 +2,25 @@ package game
 
 import "github.com/memmaker/lands-of-lore-1-go/internal/emc"
 
-// Game flags are a bit array scripts set and test (C: g_804c, 16 words up to g_806a).
-// The engine keeps its own state in the last word, flags 240 to 255 (C: g_806a).
+// Game flags are a bit array of 100 words scripts set and test (C: g_804c up to g_8114).
+// The engine keeps some state in it too: word 15 (C: g_806a), word 26 (C: g_8080) and
+// word 36 (C: g_8094) have names of their own in the original.
 const (
-	gameFlagWords = 16
+	gameFlagWords = 100
 	wordBits      = 16
 	gameFlagCount = gameFlagWords * wordBits
 
-	engineFlags    = (gameFlagWords - 1) * wordBits
+	engineFlags    = 15 * wordBits    // (C: g_806a)
 	flagBusy       = engineFlags + 9  // the busy cursor is up
 	flagLampLit    = engineFlags + 10 // (C: 0x400)
 	flagHasLamp    = engineFlags + 11 // (C: 0x800)
 	flagHasAutomap = engineFlags + 12 // (C: 0x1000)
 	flagHasMagic   = engineFlags + 13 // the spell list is shown (C: 0x2000)
 	flagHasCompass = engineFlags + 14 // (C: 0x4000)
+
+	flagSwampIce      = 26*wordBits + 2  // level 11's swamp is frozen (C: g_8080 & 4)
+	flagMovedThisTurn = 36*wordBits + 9  // (C: g_8094 & 0x200; the name is a guess)
+	flagLevelChanged  = 36*wordBits + 11 // (C: g_8094 & 0x800)
 )
 
 // flag says whether game flag n is set.

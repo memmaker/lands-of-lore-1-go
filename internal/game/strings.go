@@ -38,3 +38,14 @@ func (g *Game) text(id int) string {
 	}
 	return string(data.Unescape(data.Unpack(data.TableString(table, id&stringIndexMask))))
 }
+
+// languageFile names a file of the language's: the name cut to eight characters and the
+// language's extension (C: ovr_2d46_002f).
+func languageFile(name string, language int) string {
+	if len(name) > dosNameLength {
+		name = name[:dosNameLength]
+	}
+	return name + "." + languageExtensions[language]
+}
+
+const dosNameLength = 8
