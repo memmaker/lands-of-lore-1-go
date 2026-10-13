@@ -29,6 +29,14 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
         character generation exists, the menu choice starts with the default character
   - [ ] BLOCKED: CHARGEN, INTRO and HISTORY are the language folder's LANDS.EXE, a separate
         program with no decomp in lands-of-lore-1-re (only MAIN.EXE and LOLCD.EXE)
+- [ ] New game to the first dungeon view
+  - [ ] New game state (ovr_2d2c_0070)
+  - [ ] Party joining and leaving (o2d74)
+  - [ ] Game screen button lists (o2ceb)
+  - [ ] Level load: LEVELn files, walls, decorations, monster shapes, palettes (o2d2c)
+  - [ ] Main loop (fn_0ca0_0c33)
+  - [ ] 3D view renderer (o2cda)
+  - [ ] Portraits and bars (s010)
 - [ ] Intro (TIM/WSA sequences), character selection
 - [ ] Scripts: EMC interpreter and opcodes (s018, s019), TIM (s001, s002)
   - [x] EMC loader and interpreter (s018, o2de9), tested on ONETIME.INF
