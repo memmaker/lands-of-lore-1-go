@@ -28,5 +28,4 @@ func (g *Game) launchObject(kind, item, x, y, power, dir, a, owner, flags int) b
 }
 func (g *Game) freezeParty()                     { notPorted("ovr_2da0_002a (freeze the party)") }
 func (g *Game) playSoundEffect(n int)            { notPorted("fn_17d6_0006 (sound effect)") }
-func (g *Game) shakeScreen(a, b, c, d int)       { notPorted("ovr_2d28_0034 (shake the screen)") }
 func (g *Game) moveFlyingObject(f *flyingObject) { notPorted("fn_0b6b_0472 (move a flying object)") }

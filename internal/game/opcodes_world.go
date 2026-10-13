@@ -1244,3 +1244,90 @@ func (g *Game) takeFromInventory(t int, redraw bool) int {
 	}
 	return held
 }
+
+// opShakeScreen: ticks, dx, dy (C: fn_0fbe_30f8).
+func (g *Game) opShakeScreen(s *emc.State) int {
+	g.shakeScreen(s.Arg(0), s.Arg(1), s.Arg(2), shakeRedraw)
+	return 1
+}
+
+// opDissolveScene draws the scene on the back page and dissolves it into the view
+// (C: fn_0fbe_336f).
+func (g *Game) opDissolveScene(*emc.State) int {
+	g.drawScene(pageBuild)
+	g.hideMouseInWindow(viewWindow)
+	g.dissolve(viewLeftX, 0, viewLeftX, 0, viewCopyW, viewCopyH, pageBuild, pageScreen)
+	g.copyViewFrame()
+	g.Screen.ShowMouseIn()
+	return 1
+}
+
+// opCopyViewFrame (C: fn_0fbe_33a8).
+func (g *Game) opCopyViewFrame(*emc.State) int {
+	g.copyViewFrame()
+	return 1
+}
+
+// Special speech ids of opcode 187.
+const (
+	speechStop  = -1
+	speechState = -2
+)
+
+// opSpeak: id, character, show; -1 stops the speech, -2 asks for its state
+// (C: fn_0fbe_33b5).
+func (g *Game) opSpeak(s *emc.State) int {
+	switch s.Arg(0) {
+	case speechStop:
+		g.speechKey(1)
+		return 1
+	case speechState:
+		return g.updateSpeech()
+	}
+	return boolInt(g.characterSays(s.Arg(0), s.Arg(1), s.Arg(2) != 0))
+}
+
+// opQueueSpeech: id, character; the speech to play once the current one ends
+// (C: fn_0fbe_342b, fn_154c_010f).
+func (g *Game) opQueueSpeech(s *emc.State) int {
+	const queuedSpeechBase = 1000
+	if id, ch := s.Arg(0), s.Arg(1); id != 0 && ch != 0 {
+		g.queuedSpeech = id + queuedSpeechBase
+		g.queuedSpeaker = ch
+		g.queuedSpeechStarted = false
+	}
+	return 1
+}
+
+// priceSteps are the amounts a price is rounded up to (C: f_2c0c_0000).
+var priceSteps = []int{
+	1, 5, 8, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70,
+	75, 80, 90, 100, 105, 120, 125, 130, 140, 150, 160, 175, 200, 225, 250, 275,
+	300, 325, 350, 375, 400, 425, 450, 475, 500, 560, 1000, 1500, 3000,
+}
+
+// opRoundPrice: value; rounded up to a price step, or a negative one to hundreds,
+// at least 50 (C: fn_0fbe_3457). 0 above the last step.
+func (g *Game) opRoundPrice(s *emc.State) int {
+	const (
+		minimumHundreds = 50
+		hundred         = 100
+	)
+	v := s.Arg(0)
+	if v < 0 {
+		v = -v
+		if v < minimumHundreds {
+			return minimumHundreds
+		}
+		return (v + hundred - 1) / hundred * hundred
+	}
+	for _, p := range priceSteps {
+		if p >= v {
+			return p
+		}
+	}
+	return 0
+}
+
+// opLanguage (C: fn_0fbe_34b8, g_20db, which follows g_81fd).
+func (g *Game) opLanguage(*emc.State) int { return g.language }
