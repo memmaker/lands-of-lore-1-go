@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/memmaker/lands-of-lore-1-go/internal/data"
 	"github.com/memmaker/lands-of-lore-1-go/internal/gameimport"
 	"github.com/memmaker/lands-of-lore-1-go/internal/host"
 )
@@ -87,7 +88,17 @@ func importGame(source, dir string) error {
 		return err
 	}
 	for name, contents := range files {
-		if err := os.WriteFile(filepath.Join(dir, strings.ToUpper(filepath.Base(name))), contents, fileMode); err != nil {
+		// The CD keeps the files shared by all languages in DATA and each language's own
+		// versions, some under the same names (STARTUP.PAK is the intro's there), in
+		// DATA/ENG, FRE and GER; the language folders stay apart.
+		target := dir
+		if lang := strings.ToUpper(filepath.Base(filepath.Dir(name))); data.IsLanguageFolder(lang) {
+			target = filepath.Join(dir, lang)
+		}
+		if err := os.MkdirAll(target, dirMode); err != nil {
+			return err
+		}
+		if err := os.WriteFile(filepath.Join(target, strings.ToUpper(filepath.Base(name))), contents, fileMode); err != nil {
 			return err
 		}
 	}

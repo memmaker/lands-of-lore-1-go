@@ -36,14 +36,29 @@ type entry struct {
 // file in the game folder wins, else the index says which archive holds it.
 type Files struct {
 	dir     string
+	lang    string // the language folder searched after dir
 	entries []entry
 	byName  map[string]int
 	cache   map[string][]byte // whole archives, read once
 }
 
-// Open reads the index from the game folder dir.
+// Language folders: the CD's DATA/ENG, FRE and GER, kept as subfolders of the game folder.
+var languageFolders = []string{"ENG", "FRE", "GER"}
+
+// IsLanguageFolder says whether a folder name is one of the language folders.
+func IsLanguageFolder(name string) bool {
+	for _, l := range languageFolders {
+		if strings.EqualFold(l, name) {
+			return true
+		}
+	}
+	return false
+}
+
+// Open reads the index from the game folder dir; loose files missing there are looked up
+// in its English folder (see SetLanguage).
 func Open(dir string) (*Files, error) {
-	f := &Files{dir: dir, byName: map[string]int{}, cache: map[string][]byte{}}
+	f := &Files{dir: dir, lang: languageFolders[0], byName: map[string]int{}, cache: map[string][]byte{}}
 	raw, err := os.ReadFile(f.path(indexFile))
 	if err != nil {
 		return nil, err
@@ -67,20 +82,38 @@ func Open(dir string) (*Files, error) {
 	return f, nil
 }
 
-// path is the name of a loose file in the game folder, matching its case-insensitively.
+// SetLanguage picks the language folder by number: 0 English, 1 French, 2 German.
+func (f *Files) SetLanguage(language int) {
+	if language >= 0 && language < len(languageFolders) {
+		f.lang = languageFolders[language]
+	}
+}
+
+// path is the name of a loose file in the game folder, else in the language folder,
+// matching its case-insensitively.
 func (f *Files) path(name string) string {
-	p := filepath.Join(f.dir, name)
-	if _, err := os.Stat(p); err == nil {
+	if p, ok := findIn(f.dir, name); ok {
 		return p
 	}
-	if list, err := os.ReadDir(f.dir); err == nil {
+	if p, ok := findIn(filepath.Join(f.dir, f.lang), name); ok {
+		return p
+	}
+	return filepath.Join(f.dir, name)
+}
+
+func findIn(dir, name string) (string, bool) {
+	p := filepath.Join(dir, name)
+	if fi, err := os.Stat(p); err == nil && !fi.IsDir() {
+		return p, true
+	}
+	if list, err := os.ReadDir(dir); err == nil {
 		for _, d := range list {
-			if strings.EqualFold(d.Name(), name) {
-				return filepath.Join(f.dir, d.Name())
+			if !d.IsDir() && strings.EqualFold(d.Name(), name) {
+				return filepath.Join(dir, d.Name()), true
 			}
 		}
 	}
-	return p
+	return "", false
 }
 
 // Exists says whether the file can be read (C: fn_1981_000a).

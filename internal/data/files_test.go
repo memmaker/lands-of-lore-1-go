@@ -35,3 +35,17 @@ func TestReadFromArchive(t *testing.T) {
 	}
 	t.Logf("PLAYFLD.CPS %d bytes, header % x", len(cps), cps[:10])
 }
+
+// The shared STARTUP.PAK holds the game's start-up files; the English folder's one of the
+// same name is the intro's, and its own files are found there.
+func TestSharedAndLanguageFiles(t *testing.T) {
+	f, err := Open(gameDir(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"GAMESHP.SHP", "TITLE.CPS", "ITEM.INF", "HISTORY.PAK"} {
+		if b, err := f.Read(name); err != nil || len(b) == 0 {
+			t.Errorf("%s: %d bytes, %v", name, len(b), err)
+		}
+	}
+}
