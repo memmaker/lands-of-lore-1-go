@@ -2,6 +2,7 @@ package game
 
 import (
 	"github.com/memmaker/lands-of-lore-1-go/internal/clock"
+	"github.com/memmaker/lands-of-lore-1-go/internal/gfx"
 	"github.com/memmaker/lands-of-lore-1-go/internal/emc"
 )
 
@@ -119,3 +120,262 @@ func (g *Game) setHeldItem(item int) {
 	g.heldItem = it
 	g.Screen.SetMouseShape(hot, hot, g.itemIcon(it))
 }
+
+// Item flags of placeItem.
+const itemOnOtherLevel = 1 << 14 // (C: 0x4000 on an item left on a level not loaded)
+
+// placeItem puts item it on block of level at (x, y) inside it, height sub
+// (C: fn_130a_0052).
+func (g *Game) placeItem(it, level, block, x, y, sub int) {
+	item := &g.items[it]
+	item.X, item.Y = blockPosition(block, x, y)
+	if item.Block != 0 {
+		g.takeItemFromBlock(it, item.Block)
+	}
+	if g.level == level {
+		g.dropItem(it, item.X, item.Y, sub, true)
+	} else {
+		item.Level = level
+		item.Block = block
+		item.Sub = sub
+		item.Flags |= itemOnOtherLevel
+	}
+}
+
+// eventItemTaken is the block script event of an item leaving the block.
+const eventItemTaken = 1 << 8
+
+// takeItemFromBlock takes item it off block b (C: fn_07bc_0367).
+func (g *Game) takeItemFromBlock(it, b int) {
+	blk := &g.lvl.blocks[b]
+	g.removeObject(&blk.Objects, it)
+	g.removeFromDrawList(blk, it)
+	g.runBlockScriptWith(b, eventItemTaken, -1, it, 0, 0)
+	g.items[it].Block = 0
+	g.items[it].Level = 0
+}
+
+// removeFromDrawList takes id out of a block's draw list (C: fn_080e_02f5). The
+// original printed an error when it was not there.
+func (g *Game) removeFromDrawList(b *Block, id int) {
+	if b.Direction == noDirection {
+		return
+	}
+	for list := &b.DrawObjects; *list != 0; {
+		next := g.drawNextOf(*list)
+		if *list == id {
+			*list = *next
+			*next = 0
+			return
+		}
+		list = next
+	}
+}
+
+// opPlaceItem moves an item: item, level, block, x, y, height (C: fn_0fbe_037f).
+func (g *Game) opPlaceItem(s *emc.State) int {
+	g.placeItem(s.Arg(0), s.Arg(1), s.Arg(2), s.Arg(3)&lowByteMask, s.Arg(4)&lowByteMask, s.Arg(5))
+	return 1
+}
+
+// opCreateItem makes an item and places it: type, flags, more flags, level, block, x,
+// y, height; it returns the item or -1 (C: fn_0fbe_03fc).
+func (g *Game) opCreateItem(s *emc.State) int {
+	it := g.newItem(s.Arg(0), s.Arg(1), s.Arg(2))
+	if it == 0 {
+		return -1
+	}
+	g.placeItem(it, s.Arg(3), s.Arg(4), s.Arg(5), s.Arg(6), s.Arg(7))
+	return it
+}
+
+// opPlayAnimationFrames shows frames from to to of a scene animation, a delay apart
+// (C: fn_0fbe_08cb).
+func (g *Game) opPlayAnimationFrames(s *emc.State) int {
+	a := &g.animations[s.Arg(0)]
+	from, to, delay := s.Arg(1), s.Arg(2), s.Arg(3)
+	step := 1
+	if to < from {
+		step = -1
+	}
+	for fr := from; fr != to+step; fr += step {
+		t := clock.Ticks() + delay
+		g.Screen.HideMouseIn(a.x, a.y, a.x+a.wsa.width(), a.y+a.wsa.height())
+		if a.flags&animOnBuildPage != 0 {
+			mode := gfx.BufferTransparent
+			if a.flags&animRemapped != 0 {
+				mode |= gfx.BufferRemapped
+			}
+			mode <<= wsaModeShift
+			g.Screen.CopyRect(viewLeft, viewTop, viewLeft, viewTop, viewWidth, viewHeight, pageOtherView, pageBuild)
+			g.drawWSA(a.wsa, fr-1, a.x, a.y, pageBuild, mode, g.lvl.tlcTable, g.lvl.tlcLevels)
+			g.Screen.CopyRect(viewLeft, viewTop, viewLeft, viewTop, viewWidth, viewHeight, pageBuild, pageScreen)
+		} else {
+			g.drawWSA(a.wsa, fr-1, a.x, a.y, pageScreen, 0, nil, nil)
+		}
+		g.Screen.ShowMouseIn()
+		clock.WaitUntil(t, g.idleWork)
+	}
+	return 1
+}
+
+// opPartySound plays the first hero's sound (C: fn_0fbe_319d). Only the first
+// character can match: the sounds for the others were for slots 5, 8 and 9 (sic).
+func (g *Game) opPartySound(s *emc.State) int {
+	snd := -1
+	for i := range partySize {
+		c := &g.party[i]
+		if c.Flags&charPresent != 0 && c.ID < 0 {
+			if i == 0 {
+				snd = 136
+			}
+			break
+		}
+	}
+	g.playSound(snd, 1)
+	return 1
+}
+
+// opMouseIn says whether the cursor is in a rectangle (C: fn_0fbe_0a52, fn_0845_03b4).
+func (g *Game) opMouseIn(s *emc.State) int {
+	x, y := g.Screen.Mouse()
+	return boolInt(rect{s.Arg(0), s.Arg(1), s.Arg(2), s.Arg(3)}.has(x, y))
+}
+
+// opSetAnimationSequence sets a scene animation's sequence: slot, sequence, first,
+// last, loops, next, delay, a word, sound, sound frame (C: fn_0fbe_0b0f).
+func (g *Game) opSetAnimationSequence(s *emc.State) int {
+	p := &g.animations[s.Arg(0)].sequences[s.Arg(1)]
+	for i := range p {
+		p[i] = s.Arg(2 + i)
+	}
+	return 0
+}
+
+// opStartAnimationSequence (C: fn_0fbe_0c11).
+func (g *Game) opStartAnimationSequence(s *emc.State) int {
+	g.startAnimationSequence(s.Arg(0), s.Arg(1))
+	return 1
+}
+
+// startAnimationSequence starts sequence seq of slot n and shows its first frame
+// (C: fn_130a_0c28).
+func (g *Game) startAnimationSequence(n, seq int) {
+	a := &g.animations[n]
+	a.sequence = int(int8(seq))
+	a.playing = true
+	a.next = clock.Ticks() + a.delay
+	a.frame = a.sequences[a.sequence][0]
+	a.loops = 0
+	g.Screen.HideMouseIn(a.x, a.y, a.x+a.wsa.width(), a.y+a.wsa.height())
+	g.drawWSA(a.wsa, a.frame-1, a.x, a.y, pageScreen, 0, nil, nil)
+	g.Screen.ShowMouseIn()
+}
+
+// opFadeToScenePalette fades to the scene animations' palette (C: fn_0fbe_0c6a).
+func (g *Game) opFadeToScenePalette(s *emc.State) int {
+	g.Screen.FadePalette(g.scenePalette[:], fadeTicks, nil)
+	g.paletteState = paletteNormal
+	return 1
+}
+
+// opLoadPicture loads a CPS picture onto page 3 with its palette into the scene
+// palette, and copies it to a page unless that is 2 (C: fn_0fbe_0c8a).
+func (g *Game) opLoadPicture(s *emc.State) int {
+	g.loadPicture(s.StringArg(0), pageScratch, g.scenePalette[:])
+	if s.Arg(1) != pageBuild {
+		g.Screen.HideMouse()
+		g.Screen.CopyPage(pageScratch, s.Arg(1))
+		g.Screen.ShowMouse()
+	}
+	return 1
+}
+
+// opStopAnimation stops a scene animation at once; slot 5 is also closed
+// (C: fn_0fbe_0d17, fn_130a_0cf6).
+func (g *Game) opStopAnimation(s *emc.State) int {
+	n := s.Arg(0)
+	a := &g.animations[n]
+	a.playing = false
+	a.stopAsked = false
+	if n == speechAnimation {
+		a.wsa = nil
+	}
+	return 1
+}
+
+// speechAnimation is the slot speaking characters' animations use.
+const speechAnimation = 5
+
+// opAskAnimationStop lets a scene animation stop at the end of its sequence
+// (C: fn_0fbe_0d34).
+func (g *Game) opAskAnimationStop(s *emc.State) int {
+	g.animations[s.Arg(0)].stopAsked = true
+	return 1
+}
+
+// opPlayAnimationOnce plays a scene animation's sequence to its end (C: fn_0fbe_0d54).
+func (g *Game) opPlayAnimationOnce(s *emc.State) int {
+	a := &g.animations[s.Arg(0)]
+	a.playing = true
+	a.stopAsked = true
+	return 1
+}
+
+// opToggleDoor opens a closed door block or closes an open one: block, way
+// (C: fn_0fbe_0f94).
+func (g *Game) opToggleDoor(s *emc.State) int {
+	b := s.Arg(0)
+	open := 1
+	if g.lvl.wallFlags[g.lvl.blocks[b].Walls[0]]&wallIsDoor != 0 {
+		open = 0
+	}
+	g.toggleDoor(b, open, s.Arg(1))
+	return 1
+}
+
+// opPartyHasWeapon says whether a character holds an item of script 0 or 2 in a hand
+// slot (C: fn_0fbe_0fe7).
+func (g *Game) opPartyHasWeapon(s *emc.State) int {
+	const handSlots = 4
+	for ch := range partySize {
+		c := &g.party[ch]
+		if c.Flags&charPresent == 0 {
+			continue
+		}
+		for _, it := range c.Items[:handSlots] {
+			if it != 0 {
+				if sc := g.itemTypes[g.items[it].Type].Script; sc == 0 || sc == 2 {
+					return 1
+				}
+			}
+		}
+	}
+	return 0
+}
+
+// opMarkAutomap shows a block on the automap as one or not (C: fn_0fbe_313b).
+func (g *Game) opMarkAutomap(s *emc.State) int {
+	b := &g.lvl.blocks[s.Arg(0)]
+	if s.Arg(1) != 0 {
+		b.Flags &^= blockSeen
+		b.Flags |= blockAutomapMarker
+	} else {
+		b.Flags &^= blockAutomapMarker
+	}
+	return 1
+}
+
+// opAnyMonsterAwake says whether a monster of a type, or any for -1, is not waiting
+// with the others; the first one found decides, and with none it is 1
+// (C: fn_0fbe_254c).
+func (g *Game) opAnyMonsterAwake(s *emc.State) int {
+	for i := range g.monsters {
+		m := &g.monsters[i]
+		if m.TypeIndex == s.Arg(0) || s.Arg(0) == -1 {
+			return boolInt(m.Mode != monsterModeAll)
+		}
+	}
+	return 1
+}
+

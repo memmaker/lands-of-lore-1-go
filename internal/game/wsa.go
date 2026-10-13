@@ -64,7 +64,13 @@ func (w *wsaPlayer) frames() int {
 }
 
 // drawWSA brings the animation to frame and draws it at (x, y) on page: a buffered one
-// through DrawBuffer with mode and its tables (C: ovr_2dfd_002a).
+// through DrawBuffer with the mode in bits 12-15 of flags and its tables
+// (C: ovr_2dfd_002a).
+const (
+	wsaModeShift = 12
+	wsaModeMask  = 1<<4 - 1
+)
+
 func (g *Game) drawWSA(w *wsaPlayer, frame, x, y, page, mode int, levels, tables []byte) bool {
 	if w == nil || frame >= w.anim.Frames {
 		return false
@@ -82,11 +88,12 @@ func (g *Game) drawWSA(w *wsaPlayer, frame, x, y, page, mode int, levels, tables
 	if !w.anim.Seek(frame, w.frame, w.anim.Width, false) {
 		return false
 	}
+	mode = mode >> wsaModeShift & wsaModeMask
 	if levels == nil {
 		mode &^= gfx.BufferRemapped // fix: the original read its tables from beyond its arguments
 	}
 	old := g.Screen.SetPage(page)
-	g.Screen.DrawBuffer(x, y, w.anim.Width, w.anim.Height, 0, mode&lowByteMask, w.frame, levels, tables)
+	g.Screen.DrawBuffer(x, y, w.anim.Width, w.anim.Height, 0, mode, w.frame, levels, tables)
 	g.Screen.SetPage(old)
 	return true
 }
@@ -104,6 +111,7 @@ const (
 	animShowFirst     = 1<<3 - 1
 	animSmallBuffer   = 1 << 3 // (C: open flag 1)
 	animDirect        = 1 << 4 // drawn straight onto the page
+	animRemapped      = 1 << 12 // drawn through the level's TLC tables
 	animOnBuildPage   = 1 << 14
 	animDrawFlagsMask = (1<<16 - 1) &^ (15 << 8) // the flags without bits 8-11 (C: 0xf0ff)
 	fadeTicks         = 10
@@ -183,6 +191,24 @@ func (g *Game) showAnimationFrame(n, frame int) {
 	g.Screen.HideMouseIn(a.x, a.y, a.x+a.wsa.width(), a.y+a.wsa.height())
 	g.drawWSA(a.wsa, frame, a.x, a.y, page, a.flags&animDrawFlagsMask, nil, nil)
 	g.Screen.ShowMouseIn()
+}
+
+// loadPicture reads CPS picture name onto page, its palette into pal if it has one
+// (C: ovr_2ded_002f).
+func (g *Game) loadPicture(name string, page int, pal []byte) error {
+	file, err := g.Files.Read(name)
+	if err != nil {
+		return err
+	}
+	img, err := data.DecodeCPS(file)
+	if err != nil {
+		return fmt.Errorf("%s: %w", name, err)
+	}
+	copy(g.Screen.Page(page), img.Pixels)
+	if pal != nil && img.Palette != nil {
+		copy(pal, img.Palette)
+	}
+	return nil
 }
 
 // Palette helpers.
