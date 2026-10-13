@@ -109,8 +109,8 @@ const (
 	animFadeOut       = 1 << 0 // fade the view out and take the animation's palette
 	animFadeBlack     = 1 << 1 // fade to black first
 	animShowFirst     = 1<<3 - 1
-	animSmallBuffer   = 1 << 3 // (C: open flag 1)
-	animDirect        = 1 << 4 // drawn straight onto the page
+	animSmallBuffer   = 1 << 3  // (C: open flag 1)
+	animDirect        = 1 << 4  // drawn straight onto the page
 	animRemapped      = 1 << 12 // drawn through the level's TLC tables
 	animOnBuildPage   = 1 << 14
 	animDrawFlagsMask = (1<<16 - 1) &^ (15 << 8) // the flags without bits 8-11 (C: 0xf0ff)

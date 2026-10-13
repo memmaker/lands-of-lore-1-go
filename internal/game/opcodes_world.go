@@ -2,8 +2,8 @@ package game
 
 import (
 	"github.com/memmaker/lands-of-lore-1-go/internal/clock"
-	"github.com/memmaker/lands-of-lore-1-go/internal/gfx"
 	"github.com/memmaker/lands-of-lore-1-go/internal/emc"
+	"github.com/memmaker/lands-of-lore-1-go/internal/gfx"
 )
 
 // setWalls sets block b's wall dir to type v, or with allSides all four; a whole door
@@ -378,4 +378,3 @@ func (g *Game) opAnyMonsterAwake(s *emc.State) int {
 	}
 	return 1
 }
-

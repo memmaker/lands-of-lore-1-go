@@ -237,7 +237,6 @@ func (g *Game) attackCount(who, base int) int {
 
 const (
 	attackFactor = 4 // (C: atk->w8)
-	skillRogue   = 1
 )
 
 const finalLevel = 29

@@ -57,7 +57,7 @@ func (g *Game) updateCharacters(int) {
 				g.drawPortrait(ch)
 			case effectPoison:
 				longest = dice(1, poisonDice) // sic: the original kept its maximum in the same variable
-				if g.damageCharacter(ch, longest, poisonSource, 0, poisonDamageKind) {
+				if g.damageFighter(ch, longest, poisonSource, 0, poisonDamageKind) != 0 {
 					g.printMessage(messageEffect, g.text(stringPoisoned), c.Name)
 					c.StatusTimers[k] = poisonRepeat
 					longest = max(longest, c.StatusTimers[k])

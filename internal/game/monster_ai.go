@@ -422,7 +422,7 @@ func (g *Game) monsterAttack(m *Monster) {
 	if t := g.attackHits(who, ch, 0); t != 0 {
 		damage := g.attackDamage(who, ch, t)
 		damage = g.scaledDamage(damage)
-		g.damageCharacter(ch, damage, m.ID|monsterFlag, 0, 0)
+		g.damageFighter(ch, damage, m.ID|monsterFlag, 0, 0)
 		g.monsterHitEffect(m, ch, damage)
 	}
 	g.setMonsterMode(m, monsterModeAttack)
@@ -709,7 +709,7 @@ func (g *Game) castMonsterSpell(m *Monster) bool {
 					if it := g.takeCharacterItem(i, quakeKnockSlots, 0); it != 0 {
 						g.dropItem(it, g.partyX, g.partyY, 0, true)
 					}
-					g.damageCharacter(i, quakeDamage, damageFromNowhere, 0, 2)
+					g.damageFighter(i, quakeDamage, damageFromNowhere, 0, 2)
 				}
 			}
 		default:

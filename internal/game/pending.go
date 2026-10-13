@@ -28,31 +28,7 @@ func (g *Game) characterSays(id, character int, wait bool) bool {
 }
 func (g *Game) poisonCharacter(ch, a, b, c, d int) { notPorted("ovr_2d00_0025 (poison a character)") }
 func (g *Game) paralyseCharacter(ch int)           { notPorted("ovr_2d00_0020 (paralyse a character)") }
-func (g *Game) characterFacing(x, y int) int {
-	notPorted("fn_070c_03b1 (the character a monster attacks)")
-	return 0
-}
-func (g *Game) attackHits(who, target, a int) int {
-	notPorted("fn_070c_044a (does an attack hit)")
-	return 0
-}
-func (g *Game) attackDamage(who, target, hit int) int {
-	notPorted("fn_070c_0793 (attack damage)")
-	return 0
-}
-func (g *Game) scaledDamage(d int) int {
-	notPorted("fn_070c_07e3 (damage by difficulty)")
-	return d
-}
-func (g *Game) damageCharacter(ch, damage, source, a, how int) bool {
-	notPorted("fn_070c_07f5 (damage a character)")
-	return false
-}
-func (g *Game) attackRecovery(who, base int) int {
-	notPorted("fn_070c_012a (attack recovery time)")
-	return 0
-}
-func (g *Game) swapLevelPaletteBack() { notPorted("ovr_2d1b_0043 (swap the level palette back)") }
+func (g *Game) swapLevelPaletteBack()              { notPorted("ovr_2d1b_0043 (swap the level palette back)") }
 func (g *Game) launchObject(kind, item, x, y, power, dir, a, owner, flags int) bool {
 	notPorted("fn_0b6b_032f (launch a flying object)")
 	return false
