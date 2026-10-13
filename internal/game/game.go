@@ -86,10 +86,13 @@ type Game struct {
 	credits   int            // the party's money (C: g_81e0)
 	coinPiles [coinPiles]int // coins on each pile (C: g_09bc)
 
-	lvl      level
-	timers   [timerCount]timer           // (C: g_2298)
-	monsters [maxMonsters]Monster        // (C: f_2803_15fa)
-	flying   [flyingObjects]flyingObject // (C: g_4dcc)
+	lvl          level
+	doors        [movingDoors]movingDoor     // (C: g_4ed0)
+	stepSearches int                         // (C: g_247f)
+	stepTurnsAlt bool                        // (C: g_247d)
+	timers       [timerCount]timer           // (C: g_2298)
+	monsters     [maxMonsters]Monster        // (C: f_2803_15fa)
+	flying       [flyingObjects]flyingObject // (C: g_4dcc)
 
 	brightness    int         // (C: g_81dc)
 	lampLevel     int         // (C: g_81de)

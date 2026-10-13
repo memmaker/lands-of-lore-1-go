@@ -72,8 +72,6 @@ func (g *Game) setTimer(n, arg int, on bool) {
 
 // Timer functions not ported yet.
 
-func (g *Game) moveDoors(int)         { notPorted("fn_0bbc_004a (doors timer)") }
-func (g *Game) moveMonsters(int)      { notPorted("fn_0bbc_000a (monsters timer)") }
 func (g *Game) updateCharacters(int)  { notPorted("fn_0bbc_0143 (characters timer)") }
 func (g *Game) moveFlyingObjects(int) { notPorted("fn_0bbc_040b (flying objects timer)") }
 func (g *Game) levelTimer(int)        { notPorted("fn_0bbc_0472 (level script timer)") }

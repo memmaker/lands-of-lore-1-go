@@ -498,7 +498,13 @@ func fixedMul(v, factor int) int {
 func (g *Game) toView(x, y int) (int, int) { return g.toViewFacing(x, y, g.direction) }
 
 func (g *Game) toViewFacing(x, y, dir int) (int, int) {
-	dx, dy := x-g.partyX, g.partyY-y
+	return relativePosition(g.partyX, g.partyY, x, y, dir)
+}
+
+// relativePosition is (x, y) as seen from (ox, oy) looking towards dir: across to the
+// right and ahead (C: fn_1aff_0341).
+func relativePosition(ox, oy, x, y, dir int) (int, int) {
+	dx, dy := x-ox, oy-y
 	switch dir {
 	case 1:
 		return -dy, dx
@@ -670,16 +676,13 @@ func (g *Game) drawObject(shape, colours []byte, x, y, dx, dy, flags, dist int, 
 
 // Monster frames (C: ovr_2cda_003e).
 const (
-	mirroredFrames   = 1 << 4 // in monsterFacingFrames: the frame is drawn flipped
-	noFrame          = -1
-	hitFrame         = 12
-	monsterAttacking = 8
-	monsterHit       = 11
-	monsterFleeing   = 5
-	monsterResting   = 4 // type flag: shows frame 13 while fleeing
-	attackFrames     = 13
-	maxDeathFrame    = 13
-	monsterSlowHit   = 14
+	mirroredFrames = 1 << 4 // in monsterFacingFrames: the frame is drawn flipped
+	noFrame        = -1
+	hitFrame       = 12
+	monsterResting = 4 // type flag: shows frame 13 while fleeing
+	attackFrames   = 13
+	maxDeathFrame  = 13
+	monsterSlowHit = 14
 )
 
 // monsterFrame is the shape a monster shows, by the kind of animation its type has
@@ -691,7 +694,7 @@ func (g *Game) monsterFrame(m *Monster, base int) int {
 	case 1:
 		return g.monsterFrame1(m)
 	case 2:
-		return min(m.Fighting, maxDeathFrame)
+		return min(m.Counter, maxDeathFrame)
 	case 3:
 		return monsterFrame3(m)
 	}
@@ -712,11 +715,11 @@ func monsterFrame0(m *Monster, base int) int {
 	switch m.Mode {
 	case monsterDead:
 		return noFrame
-	case monsterAttacking:
-		return m.Fighting + attackFrames
-	case monsterHit:
+	case monsterModeAttack:
+		return m.Counter + attackFrames
+	case monsterModeHit:
 		return monsterSlowHit
-	case monsterFleeing:
+	case monsterModeRetreat:
 		if m.Type.flags&monsterResting != 0 {
 			return attackFrames
 		}
@@ -739,12 +742,12 @@ func (g *Game) monsterFrame1(m *Monster) int {
 		b = 2 * woundFrames
 	}
 	switch m.Mode {
-	case monsterHit:
+	case monsterModeHit:
 		return hitFrame
 	case monsterDead:
-		return m.Fighting + hitFrame
-	case monsterAttacking:
-		return b + m.Fighting
+		return m.Counter + hitFrame
+	case monsterModeAttack:
+		return b + m.Counter
 	}
 	return b
 }
@@ -756,11 +759,11 @@ func monsterFrame3(m *Monster) int {
 		attack = 6
 	)
 	switch m.Mode {
-	case monsterAttacking:
-		return m.Fighting + attack
-	case monsterHit:
+	case monsterModeAttack:
+		return m.Counter + attack
+	case monsterModeHit:
 		return hit
-	case monsterFleeing:
+	case monsterModeRetreat:
 		if m.Damage != 0 {
 			return hit
 		}
@@ -861,7 +864,7 @@ func (g *Game) drawMonster(n int) {
 			size = int(int16(mt.hitPoints)) / hit
 		}
 	} else {
-		size = m.Fighting << 1
+		size = m.Counter << 1
 	}
 	colour := 0
 	switch mt.flags & monsterBloodMask {

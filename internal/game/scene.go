@@ -206,7 +206,8 @@ const (
 	sceneViewY     = 0
 	sceneViewW     = 176
 	sceneViewH     = 120
-	updateSceneBox = 1<<0 | updateNoPortraits
+	updateInScene  = 1 << 0 // a scene plays: doors move silently (C: g_7fd6 & 1)
+	updateSceneBox = updateInScene | updateNoPortraits
 )
 
 // startScene opens a scene in the view (C: ovr_2d5f_00fc).

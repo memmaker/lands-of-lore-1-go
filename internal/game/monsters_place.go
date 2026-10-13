@@ -183,8 +183,8 @@ func (g *Game) opPlaceMonster(s *emc.State) int {
 		if int16(m.HitPoints) <= 0 {
 			m.HitPoints = 1
 		}
-		m.Speed = int(int8(m.Type.field42))
-		m.Attack = int(int8(dice(1, g.attackCount(i|monsterFlag, monsterAttackBase)) - 1))
+		m.Casts = int(int8(m.Type.field42))
+		m.CastDelay = int(int8(dice(1, g.attackCount(i|monsterFlag, monsterAttackBase)) - 1))
 		m.Sub = monsterStartDest
 		m.Flags = int(uint16(s.Arg(5)))
 		g.setMonsterMode(m, s.Arg(6))
@@ -240,35 +240,7 @@ const (
 	skillRogue   = 1
 )
 
-// Monster modes (C: Monster.mode).
-const (
-	monsterModeChase  = 7
-	monsterModeRemove = 14
-	monsterModeAll    = 1
-	monsterDropItems  = 1 << 5 // (C: flags & 0x20)
-	finalLevel        = 29
-)
-
-// setMonsterMode (C: fn_0d6c_0995).
-func (g *Game) setMonsterMode(m *Monster, mode int) {
-	if m.Mode == monsterDead && mode != monsterModeRemove {
-		return
-	}
-	if mode == monsterModeChase {
-		m.DestX, m.DestY = g.partyX, g.partyY
-	}
-	if m.Mode == monsterModeAll && mode == monsterModeChase {
-		notPorted("fn_0d6c_0995 (wake all monsters)")
-	}
-	m.Mode = mode
-	m.Fighting = 0
-	if mode == monsterModeRemove {
-		m.HitPoints = 0
-	}
-	if mode == monsterDead && m.Flags&monsterDropItems != 0 {
-		notPorted("fn_0d6c_0995 (a monster dies)")
-	}
-}
+const finalLevel = 29
 
 // moveMonster moves m to (x, y), relinking it from block to block (C: fn_0d6c_0742).
 func (g *Game) moveMonster(m *Monster, x, y int) {

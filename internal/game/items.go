@@ -186,3 +186,33 @@ func abs(n int) int {
 	}
 	return n
 }
+
+// Item flags.
+const (
+	itemSubSnap   = 1<<16 - 1 - (1<<6 - 1) // a floor item's position snaps to quarter blocks (C: 0xffc0)
+	itemSubCentre = 1 << 6
+	eventItemDrop = 1 << 7
+)
+
+// dropItem puts item it at (x, y) on the level, at height sub; on the floor it runs the
+// block's script (C: fn_07bc_0272).
+func (g *Game) dropItem(it, x, y, sub int, floor bool) {
+	if sub == 0 {
+		x = x&itemSubSnap | itemSubCentre
+		y = y&itemSubSnap | itemSubCentre
+	}
+	b := positionBlock(x, y)
+	item := &g.items[it]
+	item.X, item.Y, item.Block, item.Sub = x, y, b, sub
+	if floor {
+		item.Flags |= itemOnFloor
+	} else {
+		item.Flags &^= itemOnFloor
+	}
+	g.appendObject(&g.lvl.blocks[b].Objects, it)
+	g.insertDrawObject(g.direction, it, &g.lvl.blocks[b], false)
+	if floor {
+		g.runBlockScriptWith(b, eventItemDrop, -1, it, 0, 0)
+	}
+	g.noteBlockChanged(b)
+}

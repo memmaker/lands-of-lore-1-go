@@ -1,5 +1,7 @@
 package game
 
+import "github.com/memmaker/lands-of-lore-1-go/internal/emc"
+
 // Monster is a monster on the level (C: struct Monster, 46 bytes of f_2803_15fa;
 // ScummVM: MonsterInPlay).
 type Monster struct {
@@ -14,7 +16,7 @@ type Monster struct {
 	DX, DY       int // (C: dx, dy)
 	AnimFrame    int // (C: anim)
 	Mode         int // 13 and up: dying or dead
-	Fighting     int // (C: c15)
+	Counter      int // the mode's counter: animation step, wait or turn (C: c15)
 	ID           int
 	Direction    int // 0-7
 	Facing       int // 0-3
@@ -24,9 +26,9 @@ type Monster struct {
 	Thinking     int // countdown to the next decision (C: c1f)
 	TypeIndex    int // (C: c20)
 	Type         *monsterType
-	Speed        int    // (C: c25)
+	Casts        int    // spells left to cast, -1 for no limit (C: c25)
 	NextSpell    int    // (C: c26)
-	Attack       int    // (C: c27)
+	CastDelay    int    // ticks before the next spell (C: c27)
 	Items        int    // first carried item
 	Equipment    [4]int // (C: c2a)
 }
@@ -36,7 +38,6 @@ const (
 	monsterFlag     = 1 << 15 // object numbers with this bit are monsters
 	monsterIndex    = monsterFlag - 1
 	monsterModeIdle = 16 // (C: ovr_2d2c_002f's reset mode 0x10)
-	monsterDead     = 13
 )
 
 // resetMonsters empties the monster slots (C: ovr_2d2c_002f).
@@ -95,3 +96,38 @@ type flyingObject struct {
 }
 
 const flyingObjects = 8
+
+// setMonsterDirection turns m to dir (0-7); it faces the new way unless the turn is a
+// diagonal just clockwise of where it faces (C: fn_0d6c_0073).
+func (g *Game) setMonsterDirection(m *Monster, dir int) {
+	m.Direction = dir
+	if dir&1 == 0 || m.Direction-m.Facing*2 >= 2 {
+		m.Facing = m.Direction >> 1
+	}
+	g.noteBlockChanged(m.Block)
+}
+
+// opMoveMonster sends a walking monster to a place in a block and turns it there
+// (C: fn_0fbe_162c): monster, block, x and y in the block, direction 0-3.
+func (g *Game) opMoveMonster(s *emc.State) int {
+	m := &g.monsters[s.Arg(0)]
+	if m.Mode == monsterModeAll || m.Mode == monsterModeWalk {
+		m.DestX, m.DestY = blockPosition(s.Arg(1), s.Arg(2), s.Arg(3))
+		m.TargetDir = s.Arg(4) << 1
+		if m.X != m.DestX || m.Y != m.DestY {
+			g.setMonsterDirection(m, directionTo(m.X, m.Y, m.DestX, m.DestY))
+		}
+	}
+	return 1
+}
+
+// appendObject puts item id first after a list's monsters, marking it as in a list
+// (C: fn_080e_005f).
+func (g *Game) appendObject(list *int, id int) {
+	for *list&monsterFlag != 0 {
+		list = g.objectNext(*list)
+	}
+	g.items[id].Next = *list
+	g.items[id].Level = noLevel
+	*list = id
+}

@@ -61,3 +61,36 @@ func blockDistance(a, b int) int {
 	}
 	return dx>>1 + dy
 }
+
+// directions8 is the direction from the bits of directionTo: target below, target to
+// the left, mostly vertical, clearly more along one axis (C: s039's table).
+var directions8 = [16]int{1, 2, 1, 0, 7, 6, 7, 0, 3, 2, 3, 4, 5, 6, 5, 4}
+
+// directionTo is the 8-way direction (0 north, clockwise) from (x1, y1) to (x2, y2)
+// (C: fn_1afa_0010).
+func directionTo(x1, y1, x2, y2 int) int {
+	i := 0
+	dy := int(int16(y1 - y2))
+	if dy < 0 {
+		i, dy = 1, -dy
+	}
+	i <<= 1
+	dx := int(int16(x2 - x1))
+	if dx < 0 {
+		i, dx = i+1, -dx
+	}
+	minor, major := dy, dx
+	vertical := uint16(dx) < uint16(dy)
+	if vertical {
+		minor, major = dx, dy
+	}
+	i <<= 1
+	if vertical {
+		i++
+	}
+	i <<= 1
+	if uint16(minor) < uint16((major+1)>>1) {
+		i++
+	}
+	return directions8[i]
+}
