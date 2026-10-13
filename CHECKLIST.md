@@ -33,7 +33,8 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] New game state (ovr_2d2c_0070), credits (o2d0e), item creation
   - [x] Party joining and leaving (o2d74), opcode 75
   - [x] Game screen button lists (o2ceb); callbacks pending
-  - [ ] Level load: LEVELn files, walls, decorations, monster shapes, palettes (o2d2c)
+  - [x] Level load: LEVELn files, walls, decorations, monster shapes, palettes (o2d2c); level 1 INI and INF entry run (sound is a silent stand-in)
+  - [ ] Game screen (ovr_2d2c_0043)
   - [ ] Main loop (fn_0ca0_0c33)
   - [ ] 3D view renderer (o2cda)
   - [ ] Portraits and bars (s010)
@@ -42,7 +43,9 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] EMC loader and interpreter (s018, o2de9), tested on ONETIME.INF
   - [x] Item type opcodes 13, 14 (ovr_2d50_003e, 0043) for ONETIME.INF
   - [x] Game flags 7, 8; items 15, 18, 171; character fields 19, 20 (HP/MP bar animation)
-  - [ ] The other 190 opcodes of g_2494, ported with the systems they drive
+  - [ ] The other opcodes of g_2494, ported with the systems they drive (unported ones fail loudly with their C name)
+    - [x] Level set-up opcodes 3/9/10/11/21/22/24/30/46/47/48/53/54/56/63/85/86/99/107/124/148/154
+    - [x] Simple ones 1/28/37/38/39/45/71/72/90
   - [ ] TIM interpreter (s001, s002)
 - [ ] Levels, 3D view renderer (o2d2c, o2cda), movement, automap
 - [ ] Items, inventory, characters, portraits, stats screen

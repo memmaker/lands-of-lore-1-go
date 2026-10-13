@@ -373,3 +373,9 @@ func (g *Game) hideIcon() {
 		notPorted("fn_09aa_0007 (hide a game screen icon)")
 	}
 }
+
+// opSetLevelMusic (C: ovr_2d2c_00de).
+func (g *Game) opSetLevelMusic(s *emc.State) int {
+	g.lvl.music = s.Arg(0)
+	return 1
+}

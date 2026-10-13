@@ -110,3 +110,11 @@ func (g *Game) animateFaces(noBlink int) {
 		}
 	}
 }
+
+// startTimer switches timer n on with a new interval (C: fn_0bbc_07b1).
+func (g *Game) startTimer(n, interval int) {
+	t := &g.timers[n]
+	t.enabled = true
+	t.interval = interval
+	t.next = clock.Get(t.clock) + t.interval
+}

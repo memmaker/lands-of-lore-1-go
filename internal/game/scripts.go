@@ -45,6 +45,16 @@ const (
 	opcodeLevelSoundsOff    = 124
 	opcodeLoadSoundFile     = 148
 	opcodeStartPlay         = 154
+	opcodeGetWall           = 1
+	opcodeGetDirection      = 28
+	opcodeHideMouse         = 37
+	opcodeShowMouse         = 38
+	opcodeFadeToBlack       = 39
+	opcodeGetLevelVar       = 45
+	opcodeHasCredits        = 71
+	opcodeSetLevelTimer     = 72
+	opcodeGetWallFlags      = 90
+	opcodeSetLevelMusic     = 30
 )
 
 // opcodes is the table level, item and start-up scripts call into (C: g_2494). Entries
@@ -85,6 +95,31 @@ func (g *Game) opcodes() []emc.Opcode {
 	ops[opcodeLevelSoundsOff] = g.opSetLevelSoundsOff
 	ops[opcodeLoadSoundFile] = g.opLoadSoundFile
 	ops[opcodeStartPlay] = g.opStartPlay
+	ops[opcodeGetWall] = g.opGetWall
+	ops[opcodeGetDirection] = g.opGetDirection
+	ops[opcodeHideMouse] = g.opHideMouse
+	ops[opcodeShowMouse] = g.opShowMouse
+	ops[opcodeFadeToBlack] = g.opFadeToBlack
+	ops[opcodeGetLevelVar] = g.opGetLevelVar
+	ops[opcodeHasCredits] = g.opHasCredits
+	ops[opcodeSetLevelTimer] = g.opSetLevelTimer
+	ops[opcodeGetWallFlags] = g.opGetWallFlags
+	ops[opcodeSetLevelMusic] = g.opSetLevelMusic
+	return ops
+}
+
+// withStubs fills the opcodes not ported yet with ones that fail loudly with their
+// original's name.
+func withStubs(ops []emc.Opcode) []emc.Opcode {
+	for i, op := range ops {
+		if op == nil && opcodeNames[i] != "" {
+			name := opcodeNames[i]
+			ops[i] = func(*emc.State) int {
+				notPorted(name + " (opcode)")
+				return 0
+			}
+		}
+	}
 	return ops
 }
 
@@ -97,7 +132,7 @@ func (g *Game) loadScript(name string) (*emc.Script, error) {
 	if err != nil {
 		return nil, err
 	}
-	s, err := emc.Load(file, g.opcodes())
+	s, err := emc.Load(file, withStubs(g.opcodes()))
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", name, err)
 	}
