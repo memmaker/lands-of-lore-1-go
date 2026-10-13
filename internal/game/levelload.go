@@ -207,11 +207,6 @@ func (g *Game) flushInput() { input.Flush() }
 
 // Not ported yet.
 
-func (g *Game) endTalk() {
-	if g.talkingCharacter != noTalk {
-		notPorted("fn_130a_0784 (end a character's speech)")
-	}
-}
 func (g *Game) loadSpeechIndex(level int)   {} // sound: the speech index (C: ovr_2da3_0020)
 func (g *Game) restoreLevelState(level int) { notPorted("ovr_2d3c_0025 (restore a visited level)") }
 

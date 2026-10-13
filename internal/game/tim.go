@@ -405,7 +405,7 @@ func (g *Game) timSubOp(t *timScript, op, p int) int {
 		g.Screen.CopyRect(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7))
 		g.Screen.ShowMouse()
 	case 7: // print a text (C: fn_057f_09d6)
-		notPorted("fn_130a_03cd (TIM: print a text)")
+		g.characterText(arg(0), arg(1), true, g.text(arg(2)), arg(2), arg, 3)
 	case 8: // draw the scene (C: fn_057f_0a0a)
 		n := arg(0)
 		g.drawScene(n)

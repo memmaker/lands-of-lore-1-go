@@ -127,6 +127,9 @@ type Game struct {
 	messageFadeStart    int                // (C: g_4bc8)
 	iconReleaseAt       int                // the pressed icon may come up from this tick (C: g_ab26)
 	talkingCharacter    int                // the character whose speech shows, or noTalk (C: g_4bf8)
+	talkStyle           int                // where it talks (C: g_4bfa)
+	talkSteps           int                // mouth moves left (C: g_4bfc)
+	talkRestore         bool               // set the face back at the end (C: g_4c00)
 	scriptErr           error              // the first error a block script raised
 
 	partyX, partyY int                // the party's position (C: g_7fd2, g_7fd4)

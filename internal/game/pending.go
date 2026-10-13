@@ -22,10 +22,6 @@ func (g *Game) takeCharacterItem(ch, slots, flags int) int {
 	notPorted("ovr_2d46_0048 (take a character's item)")
 	return 0
 }
-func (g *Game) characterSays(id, character int, wait bool) bool {
-	notPorted("fn_154c_0057 (a character speaks)")
-	return false
-}
 func (g *Game) poisonCharacter(ch, a, b, c, d int) { notPorted("ovr_2d00_0025 (poison a character)") }
 func (g *Game) paralyseCharacter(ch int)           { notPorted("ovr_2d00_0020 (paralyse a character)") }
 func (g *Game) swapLevelPaletteBack()              { notPorted("ovr_2d1b_0043 (swap the level palette back)") }

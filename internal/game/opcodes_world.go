@@ -516,3 +516,160 @@ func (g *Game) opAddExperience(s *emc.State) int {
 	g.addExperience(s.Arg(0), s.Arg(1), s.Arg(2))
 	return 1
 }
+
+// opHeldItem (C: fn_0fbe_1a1d).
+func (g *Game) opHeldItem(s *emc.State) int { return g.heldItem }
+
+// opPlaySound (C: fn_0fbe_1a72).
+func (g *Game) opPlaySound(s *emc.State) int {
+	g.playSound(s.Arg(0), 0)
+	return 1
+}
+
+// opDialogueAnswer waits for the answer to the shown choices (C: fn_0fbe_177a).
+func (g *Game) opDialogueAnswer(s *emc.State) int { return g.dialogueAnswer() }
+
+// Monster fields scripts read and set (C: fn_0fbe_1b20, fn_0fbe_1c17).
+const (
+	monsterFieldMode      = 0
+	monsterFieldHitPoints = 1
+	monsterFieldBlock     = 2
+	monsterFieldFacing    = 3
+	monsterFieldType      = 4
+	monsterFieldMaxHP     = 5
+	monsterFieldFlags     = 6
+	monsterFieldTypeFlags = 7
+	monsterFieldAnimType  = 8
+	monsterMoveBlockers   = 7 // walls, monsters and the party
+)
+
+// opSetMonsterField: monster, field, value (C: fn_0fbe_1b20).
+func (g *Game) opSetMonsterField(s *emc.State) int {
+	if s.Arg(0) == -1 {
+		return 1
+	}
+	m := &g.monsters[s.Arg(0)&monsterIndex]
+	v := s.Arg(2)
+	switch s.Arg(1) {
+	case monsterFieldFlags:
+		m.Flags |= v
+	case monsterFieldBlock:
+		x, y := blockPosition(v, m.X&lowByteMask, m.Y&lowByteMask)
+		if g.stepBlocked(x, y, m, monsterMoveBlockers) == 0 {
+			g.moveMonster(m, x, y)
+		}
+	case monsterFieldMode:
+		g.setMonsterMode(m, v)
+	case monsterFieldHitPoints:
+		m.HitPoints = v
+	case monsterFieldFacing:
+		g.setMonsterDirection(m, v<<1)
+	}
+	return 1
+}
+
+// opGetMonsterField: monster, field (C: fn_0fbe_1c17).
+func (g *Game) opGetMonsterField(s *emc.State) int {
+	if s.Arg(0) == -1 {
+		return 0
+	}
+	m := &g.monsters[s.Arg(0)&monsterIndex]
+	switch s.Arg(1) {
+	case monsterFieldAnimType:
+		return g.lvl.monsterAnimType[m.Type.shapeIndex]
+	case monsterFieldTypeFlags:
+		return m.Type.flags
+	case monsterFieldFlags:
+		return m.Flags
+	case monsterFieldHitPoints:
+		return m.HitPoints
+	case monsterFieldMaxHP:
+		return m.Type.hitPoints
+	case monsterFieldMode:
+		return m.Mode
+	case monsterFieldBlock:
+		return m.Block
+	case monsterFieldFacing:
+		return m.Facing
+	case monsterFieldType:
+		return m.TypeIndex
+	}
+	return -1
+}
+
+// opCharacterSays has a character say a string: character, style, string id
+// (C: fn_0fbe_1cf7).
+func (g *Game) opCharacterSays(s *emc.State) int {
+	g.speechKey(1)
+	g.endTalk()
+	return boolInt(g.characterText(s.Arg(0), s.Arg(1), true, g.text(s.Arg(2)), s.Arg(2), scriptArgs(s), 3))
+}
+
+// opIdle runs the game's idle work once (C: fn_0fbe_1cea).
+func (g *Game) opIdle(s *emc.State) int {
+	g.idleWork()
+	return 1
+}
+
+// opPlaySoundAt plays a sound from a block, -1 the party's (C: fn_0fbe_1a93).
+func (g *Game) opPlaySoundAt(s *emc.State) int {
+	b := s.Arg(1)
+	if b == -1 {
+		b = g.currentBlock
+	}
+	g.playSoundAt(s.Arg(0), b)
+	return 1
+}
+
+// opPlayMusic (C: fn_0fbe_1e0e).
+func (g *Game) opPlayMusic(s *emc.State) int { return g.playMusic(s.Arg(0)) }
+
+// opKillMonstersOn (C: fn_0fbe_334b).
+func (g *Game) opKillMonstersOn(s *emc.State) int {
+	g.killMonstersOn(s.Arg(0))
+	return 1
+}
+
+// opCountItemsOn counts the items in a block (C: fn_0fbe_1e28).
+func (g *Game) opCountItemsOn(s *emc.State) int {
+	n := 0
+	for id := g.lvl.blocks[s.Arg(0)].Objects; id != 0; id = *g.objectNext(id) {
+		if id&monsterFlag == 0 {
+			n++
+		}
+	}
+	return n
+}
+
+// opSkillTest picks the character best at a skill and rolls whether they succeed:
+// skill, bonus; it returns the character or -1 (C: fn_0fbe_1e6c).
+func (g *Game) opSkillTest(s *emc.State) int {
+	bestIdx, best := -1, 0
+	k := s.Arg(0)
+	for i := range g.activeCharacters() {
+		c := &g.party[i]
+		if v := (c.SkillModifiers[k]+c.SkillLevels[k])*10 + s.Arg(1) + 25; v > best {
+			best, bestIdx = v, i
+		}
+	}
+	if dice(1, 100) <= best {
+		return bestIdx
+	}
+	return -1
+}
+
+// opHeal heals a character: character, points, redraw, with the healing animation
+// (C: fn_0fbe_1d58).
+func (g *Game) opHeal(s *emc.State) int {
+	if s.Arg(3) != 0 {
+		g.healAnimation(s.Arg(0), s.Arg(1))
+	} else {
+		g.heal(s.Arg(0), s.Arg(1), true)
+		if s.Arg(2) != 0 {
+			g.drawPortrait(s.Arg(0))
+		}
+	}
+	return 1
+}
+
+func (g *Game) healAnimation(who, kind int) { notPorted("ovr_2d18_002a (healing animation)") }

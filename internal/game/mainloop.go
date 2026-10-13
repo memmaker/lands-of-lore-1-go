@@ -202,7 +202,7 @@ func (g *Game) speechKey(int) {}
 func (g *Game) idleWork() {
 	g.updateAnimations()
 	if g.talkingCharacter != noTalk && clock.Ticks() > g.talkEnds {
-		notPorted("fn_130a_0605 (end of a talk)")
+		g.animateTalk()
 	}
 	if g.flag(flagHasLamp) || g.updateFlags&updateGameMenu == 0 {
 		g.updateLamp()
