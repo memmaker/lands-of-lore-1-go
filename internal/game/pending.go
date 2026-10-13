@@ -48,13 +48,20 @@ func (g *Game) scaledDamage(d int) int {
 	notPorted("fn_070c_07e3 (damage by difficulty)")
 	return d
 }
-func (g *Game) damageCharacter(ch, damage, source, a, how int) {
+func (g *Game) damageCharacter(ch, damage, source, a, how int) bool {
 	notPorted("fn_070c_07f5 (damage a character)")
+	return false
 }
+func (g *Game) attackRecovery(who, base int) int {
+	notPorted("fn_070c_012a (attack recovery time)")
+	return 0
+}
+func (g *Game) swapLevelPaletteBack() { notPorted("ovr_2d1b_0043 (swap the level palette back)") }
 func (g *Game) launchObject(kind, item, x, y, power, dir, a, owner, flags int) bool {
 	notPorted("fn_0b6b_032f (launch a flying object)")
 	return false
 }
-func (g *Game) freezeParty()               { notPorted("ovr_2da0_002a (freeze the party)") }
-func (g *Game) playSoundEffect(n int)      { notPorted("fn_17d6_0006 (sound effect)") }
-func (g *Game) shakeScreen(a, b, c, d int) { notPorted("ovr_2d28_0034 (shake the screen)") }
+func (g *Game) freezeParty()                     { notPorted("ovr_2da0_002a (freeze the party)") }
+func (g *Game) playSoundEffect(n int)            { notPorted("fn_17d6_0006 (sound effect)") }
+func (g *Game) shakeScreen(a, b, c, d int)       { notPorted("ovr_2d28_0034 (shake the screen)") }
+func (g *Game) moveFlyingObject(f *flyingObject) { notPorted("fn_0b6b_0472 (move a flying object)") }

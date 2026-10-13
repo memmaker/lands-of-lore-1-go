@@ -30,9 +30,9 @@ const (
 	timerLevel5
 	timerLevel6
 	timerLevel7
-	timerLamp
+	timerRegenerate
 	timerFaces
-	timerUpdates
+	timerLampOil
 	timerMessage
 	timerCount
 )
@@ -48,9 +48,9 @@ func newTimers() [timerCount]timer {
 		timerLevel5:       {fn: (*Game).levelTimer, clock: playClock},
 		timerLevel6:       {fn: (*Game).levelTimer, arg: 1, clock: playClock},
 		timerLevel7:       {fn: (*Game).levelTimer, arg: 2, clock: playClock},
-		timerLamp:         {fn: (*Game).burnLamp, interval: 1200, clock: playClock, enabled: true},
+		timerRegenerate:   {fn: (*Game).regenerate, interval: 1200, clock: playClock, enabled: true},
 		timerFaces:        {fn: (*Game).animateFaces, interval: 10, clock: playClock, enabled: true},
-		timerUpdates:      {fn: (*Game).timerUpdates, interval: 360, clock: playClock, enabled: true},
+		timerLampOil:      {fn: (*Game).burnLampOil, interval: 360, clock: playClock, enabled: true},
 		timerMessage:      {fn: (*Game).messageTimeout, interval: 360, clock: clock.GameClock},
 	}
 }
@@ -70,13 +70,94 @@ func (g *Game) setTimer(n, arg int, on bool) {
 	t.arg = arg
 }
 
-// Timer functions not ported yet.
+// moveFlyingObjects moves the thrown items and missiles (C: fn_0bbc_040b; it also
+// printed each to a debug console).
+func (g *Game) moveFlyingObjects(int) {
+	for i := range g.flying {
+		if g.flying[i].Active {
+			g.moveFlyingObject(&g.flying[i])
+		}
+	}
+}
 
-func (g *Game) updateCharacters(int)  { notPorted("fn_0bbc_0143 (characters timer)") }
-func (g *Game) moveFlyingObjects(int) { notPorted("fn_0bbc_040b (flying objects timer)") }
-func (g *Game) levelTimer(int)        { notPorted("fn_0bbc_0472 (level script timer)") }
-func (g *Game) burnLamp(int)          { notPorted("fn_0bbc_0488 (lamp timer)") }
-func (g *Game) timerUpdates(int)      { notPorted("fn_0bbc_061e (update timer)") }
+// levelTimer runs the level script's timer function n (C: fn_0bbc_0472).
+func (g *Game) levelTimer(n int) { g.runBlockScript(levelTimerFunction+n, allEvents) }
+
+const levelTimerFunction = 1025 // (C: 0x401)
+
+// Rings that speed up healing (C: item types 0xe3 and 0xe4).
+const (
+	itemTypeMagicRing   = 227
+	itemTypeHealingRing = 228
+	ringHealing         = 4
+	magicRingShare      = 10
+	drainShift          = 5
+	charNoHealing       = 1 << 7
+)
+
+// regenerate gives every living character a point of magic and health; a drain takes
+// magic instead (C: fn_0bbc_0488).
+func (g *Game) regenerate(int) {
+	for ch := range g.party {
+		c := &g.party[ch]
+		if c.Flags&charPresent == 0 {
+			continue
+		}
+		hp, mp := 1, 1
+		if c.Flags&charDead != 0 {
+			hp, mp = 0, 0
+		}
+		if mp != 0 && g.carries(ch, itemTypeMagicRing) {
+			mp = c.MaxMP / magicRingShare
+		}
+		if hp != 0 && g.carries(ch, itemTypeHealingRing) {
+			hp = ringHealing
+		}
+		if g.drainMagic != 0 {
+			c.MP -= c.MaxMP >> drainShift
+		} else {
+			c.MP += mp
+		}
+		c.MP = min(max(c.MP, 0), c.MaxMP)
+		if c.Flags&charNoHealing == 0 {
+			g.heal(ch, hp, false)
+		}
+		g.drawPortrait(ch)
+	}
+}
+
+// carries says whether character ch has an item of type t (C: fn_0a21_0997).
+func (g *Game) carries(ch, t int) bool {
+	if ch < 0 || ch >= partySize || g.party[ch].Flags&charPresent == 0 {
+		return false
+	}
+	for _, it := range g.party[ch].Items {
+		if it != 0 && g.items[it].Type == t {
+			return true
+		}
+	}
+	return false
+}
+
+// heal gives character ch amount, at least 1, hit points; the dead only with force
+// (C: fn_070c_0a8f).
+func (g *Game) heal(ch, amount int, force bool) {
+	c := &g.party[ch]
+	if c.HP <= 0 && !force {
+		return
+	}
+	c.HP = max(min(c.HP+max(amount, 1), c.MaxHP), 1)
+	if c.HP != 0 && c.Flags&charDead != 0 {
+		c.Flags &^= charDead
+	}
+}
+
+// burnLampOil burns a unit of the lit lamp's oil (C: fn_0bbc_061e).
+func (g *Game) burnLampOil(int) {
+	if g.flag(flagHasLamp) && g.flag(flagLampLit) && g.brightness != 0 && g.lampEffect != 0 {
+		g.lampEffect--
+	}
+}
 
 // messageTimeout lets the message fade (C: fn_0bbc_094b).
 func (g *Game) messageTimeout(int) {

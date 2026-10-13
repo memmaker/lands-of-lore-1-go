@@ -44,8 +44,8 @@ type Character struct {
 	SkillLevels             [skillCount]int // fighter, rogue, mage
 	SkillModifiers          [skillCount]int
 	Experience              [skillCount]int
-	UpdateEvents            [updateSlots]int // status effects that run out (C: timer)
-	UpdateDelays            [updateSlots]int // (C: timerType)
+	StatusTimers            [updateSlots]int // thinks of timer 3 until each effect ends (C: timer)
+	StatusEffects           [updateSlots]int // the effects, 0 for none (C: timerType)
 }
 
 // characterModifiers are the default modifier sets the templates point to
@@ -71,7 +71,7 @@ var characterTemplates = [...]Character{
 		AnimCountdown: 0, Items: [equipmentSlots]int{44, 0, 0, 0, 0, 138, 0, 0, 162, 0, 0},
 		SkillLevels: [skillCount]int{1, 1, 1}, SkillModifiers: [skillCount]int{0, 0, 0},
 		Experience:   [skillCount]int{1, 1, 1},
-		UpdateEvents: [updateSlots]int{0, 0, 0, 0, 0}, UpdateDelays: [updateSlots]int{0, 0, 0, 0, 0},
+		StatusTimers: [updateSlots]int{0, 0, 0, 0, 0}, StatusEffects: [updateSlots]int{0, 0, 0, 0, 0},
 	},
 	{
 		Flags: 1, Name: "Timothy", RaceClassSex: 0, ID: 2,
@@ -84,7 +84,7 @@ var characterTemplates = [...]Character{
 		AnimCountdown: 0, Items: [equipmentSlots]int{93, 131, 0, 0, 0, 153, 0, 0, 162, 0, 0},
 		SkillLevels: [skillCount]int{3, 2, 1}, SkillModifiers: [skillCount]int{0, 0, 0},
 		Experience:   [skillCount]int{2500, 1000, 250},
-		UpdateEvents: [updateSlots]int{0, 0, 0, 0, 0}, UpdateDelays: [updateSlots]int{0, 0, 0, 0, 0},
+		StatusTimers: [updateSlots]int{0, 0, 0, 0, 0}, StatusEffects: [updateSlots]int{0, 0, 0, 0, 0},
 	},
 	{
 		Flags: 1, Name: "Baccata", RaceClassSex: 3, ID: 3,
@@ -97,7 +97,7 @@ var characterTemplates = [...]Character{
 		AnimCountdown: 0, Items: [equipmentSlots]int{108, 149, 0, 0, 145, 153, 0, 0, 129, 0, 0},
 		SkillLevels: [skillCount]int{1, 1, 3}, SkillModifiers: [skillCount]int{0, 0, 0},
 		Experience:   [skillCount]int{1, 1, 4000},
-		UpdateEvents: [updateSlots]int{0, 0, 0, 0, 0}, UpdateDelays: [updateSlots]int{0, 0, 0, 0, 0},
+		StatusTimers: [updateSlots]int{0, 0, 0, 0, 0}, StatusEffects: [updateSlots]int{0, 0, 0, 0, 0},
 	},
 	{
 		Flags: 1, Name: "Lora", RaceClassSex: 1, ID: 4,
@@ -110,7 +110,7 @@ var characterTemplates = [...]Character{
 		AnimCountdown: 0, Items: [equipmentSlots]int{0, 0, 0, 0, 0, 137, 0, 0, 162, 0, 0},
 		SkillLevels: [skillCount]int{1, 4, 1}, SkillModifiers: [skillCount]int{0, 0, 0},
 		Experience:   [skillCount]int{1, 15001, 1},
-		UpdateEvents: [updateSlots]int{0, 0, 0, 0, 0}, UpdateDelays: [updateSlots]int{0, 0, 0, 0, 0},
+		StatusTimers: [updateSlots]int{0, 0, 0, 0, 0}, StatusEffects: [updateSlots]int{0, 0, 0, 0, 0},
 	},
 	{
 		Flags: 1, Name: "Conrad", RaceClassSex: 0, ID: -5,
@@ -123,7 +123,7 @@ var characterTemplates = [...]Character{
 		AnimCountdown: 0, Items: [equipmentSlots]int{44, 0, 0, 0, 0, 138, 0, 0, 162, 0, 0},
 		SkillLevels: [skillCount]int{1, 1, 1}, SkillModifiers: [skillCount]int{0, 0, 0},
 		Experience:   [skillCount]int{1, 1, 1},
-		UpdateEvents: [updateSlots]int{0, 0, 0, 0, 0}, UpdateDelays: [updateSlots]int{0, 0, 0, 0, 0},
+		StatusTimers: [updateSlots]int{0, 0, 0, 0, 0}, StatusEffects: [updateSlots]int{0, 0, 0, 0, 0},
 	},
 	{
 		Flags: 1, Name: "Paulson", RaceClassSex: 0, ID: 6,
@@ -136,7 +136,7 @@ var characterTemplates = [...]Character{
 		AnimCountdown: 0, Items: [equipmentSlots]int{0, 0, 0, 0, 0, 138, 0, 0, 129, 0, 0},
 		SkillLevels: [skillCount]int{5, 2, 3}, SkillModifiers: [skillCount]int{0, 0, 0},
 		Experience:   [skillCount]int{40000, 501, 3500},
-		UpdateEvents: [updateSlots]int{0, 0, 0, 0, 0}, UpdateDelays: [updateSlots]int{0, 0, 0, 0, 0},
+		StatusTimers: [updateSlots]int{0, 0, 0, 0, 0}, StatusEffects: [updateSlots]int{0, 0, 0, 0, 0},
 	},
 	{
 		Flags: 1, Name: "Dawn", RaceClassSex: 1, ID: 7,
@@ -149,7 +149,7 @@ var characterTemplates = [...]Character{
 		AnimCountdown: 0, Items: [equipmentSlots]int{0, 0, 0, 0, 0, 138, 0, 0, 129, 0, 0},
 		SkillLevels: [skillCount]int{1, 2, 10}, SkillModifiers: [skillCount]int{1, -2, -79},
 		Experience:   [skillCount]int{1, 501, 1},
-		UpdateEvents: [updateSlots]int{0, 0, 0, 0, 0}, UpdateDelays: [updateSlots]int{0, 0, 0, 0, 0},
+		StatusTimers: [updateSlots]int{0, 0, 0, 0, 0}, StatusEffects: [updateSlots]int{0, 0, 0, 0, 0},
 	},
 	{
 		Flags: 1, Name: "Kieran", RaceClassSex: 2, ID: -8,
@@ -162,7 +162,7 @@ var characterTemplates = [...]Character{
 		AnimCountdown: 0, Items: [equipmentSlots]int{44, 0, 0, 0, 0, 138, 0, 0, 162, 0, 0},
 		SkillLevels: [skillCount]int{1, 1, 1}, SkillModifiers: [skillCount]int{0, 0, 0},
 		Experience:   [skillCount]int{1, 1, 1},
-		UpdateEvents: [updateSlots]int{0, 0, 0, 0, 0}, UpdateDelays: [updateSlots]int{0, 0, 0, 0, 0},
+		StatusTimers: [updateSlots]int{0, 0, 0, 0, 0}, StatusEffects: [updateSlots]int{0, 0, 0, 0, 0},
 	},
 	{
 		Flags: 1, Name: "Ak'shel", RaceClassSex: 4, ID: -9,
@@ -175,6 +175,6 @@ var characterTemplates = [...]Character{
 		AnimCountdown: 0, Items: [equipmentSlots]int{44, 0, 0, 0, 0, 138, 0, 0, 162, 0, 0},
 		SkillLevels: [skillCount]int{1, 1, 1}, SkillModifiers: [skillCount]int{0, 0, 0},
 		Experience:   [skillCount]int{1, 1, 1},
-		UpdateEvents: [updateSlots]int{0, 0, 0, 0, 0}, UpdateDelays: [updateSlots]int{0, 0, 0, 0, 0},
+		StatusTimers: [updateSlots]int{0, 0, 0, 0, 0}, StatusEffects: [updateSlots]int{0, 0, 0, 0, 0},
 	},
 }
