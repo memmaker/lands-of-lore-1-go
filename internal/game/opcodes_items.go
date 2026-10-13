@@ -2,34 +2,51 @@ package game
 
 import "github.com/memmaker/lands-of-lore-1-go/internal/emc"
 
-// gameFlagWords is the size of the game flag bit array (C: g_804c, 15 words up to
-// g_806a).
+// Game flags are a bit array scripts set and test (C: g_804c, 16 words up to g_806a).
+// The engine keeps its own state in the last word, flags 240 to 255 (C: g_806a).
 const (
-	gameFlagWords = 15
+	gameFlagWords = 16
 	wordBits      = 16
+	gameFlagCount = gameFlagWords * wordBits
+
+	engineFlags    = (gameFlagWords - 1) * wordBits
+	flagBusy       = engineFlags + 9  // the busy cursor is up
+	flagLampLit    = engineFlags + 10 // (C: 0x400)
+	flagHasLamp    = engineFlags + 11 // (C: 0x800)
+	flagHasAutomap = engineFlags + 12 // (C: 0x1000)
+	flagHasMagic   = engineFlags + 13 // the spell list is shown (C: 0x2000)
+	flagHasCompass = engineFlags + 14 // (C: 0x4000)
 )
 
-// opSetGameFlag sets or clears game flag arg 0 (C: fn_0fbe_0290).
-func (g *Game) opSetGameFlag(s *emc.State) int {
-	n := int(uint16(s.Arg(0)))
-	if n/wordBits >= gameFlagWords { // fix: the original wrote past the flags
-		return 1
+// flag says whether game flag n is set.
+func (g *Game) flag(n int) bool {
+	if n < 0 || n >= gameFlagCount {
+		return false
 	}
-	if s.Arg(1) != 0 {
+	return g.gameFlags[n/wordBits]&(1<<(n%wordBits)) != 0
+}
+
+// setFlag sets or clears game flag n.
+func (g *Game) setFlag(n int, on bool) {
+	if n < 0 || n >= gameFlagCount { // fix: the original wrote past the flags
+		return
+	}
+	if on {
 		g.gameFlags[n/wordBits] |= 1 << (n % wordBits)
 	} else {
 		g.gameFlags[n/wordBits] &^= 1 << (n % wordBits)
 	}
+}
+
+// opSetGameFlag sets or clears game flag arg 0 (C: fn_0fbe_0290).
+func (g *Game) opSetGameFlag(s *emc.State) int {
+	g.setFlag(int(uint16(s.Arg(0))), s.Arg(1) != 0)
 	return 1
 }
 
 // opTestGameFlag returns game flag arg 0 (C: fn_0fbe_02e8).
 func (g *Game) opTestGameFlag(s *emc.State) int {
-	n := s.Arg(0)
-	if n < 0 || n/wordBits >= gameFlagWords {
-		return 0
-	}
-	if g.gameFlags[n/wordBits]&(1<<(n%wordBits)) != 0 {
+	if g.flag(s.Arg(0)) {
 		return 1
 	}
 	return 0

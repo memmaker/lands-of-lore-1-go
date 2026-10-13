@@ -32,7 +32,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
 - [ ] New game to the first dungeon view
   - [x] New game state (ovr_2d2c_0070), credits (o2d0e), item creation
   - [x] Party joining and leaving (o2d74), opcode 75
-  - [ ] Game screen button lists (o2ceb)
+  - [x] Game screen button lists (o2ceb); callbacks pending
   - [ ] Level load: LEVELn files, walls, decorations, monster shapes, palettes (o2d2c)
   - [ ] Main loop (fn_0ca0_0c33)
   - [ ] 3D view renderer (o2cda)

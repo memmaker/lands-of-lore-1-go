@@ -12,6 +12,7 @@ import (
 	"github.com/memmaker/lands-of-lore-1-go/internal/data"
 	"github.com/memmaker/lands-of-lore-1-go/internal/emc"
 	"github.com/memmaker/lands-of-lore-1-go/internal/gfx"
+	"github.com/memmaker/lands-of-lore-1-go/internal/gui"
 	"github.com/memmaker/lands-of-lore-1-go/internal/host"
 	"github.com/memmaker/lands-of-lore-1-go/internal/input"
 	"github.com/memmaker/lands-of-lore-1-go/internal/random"
@@ -28,6 +29,11 @@ type Game struct {
 
 	SystemFont *gfx.Font // FONT9P.FNT (C: g_ae4f, then g_7fb8)
 	SmallFont  *gfx.Font // FONT6P.FNT (C: g_7fbc)
+	GUI        *gui.System
+
+	buttons     *gui.Button // the current button list (C: g_7fae)
+	buttonCount int         // (C: g_4b00)
+	buttonDefs  [buttonDefCount]buttonDef
 
 	strings      []byte // the language's LANDS.ENG, FRE or GER (C: g_4d6c)
 	levelStrings []byte // the current level's strings (C: g_4d68)
@@ -80,9 +86,8 @@ type Game struct {
 	credits   int            // the party's money (C: g_81e0)
 	coinPiles [coinPiles]int // coins on each pile (C: g_09bc)
 
-	heldItem int  // the item on the cursor, 0 for none (C: g_8048)
-	busy     bool // the busy cursor is up (C: g_806a bit 9)
-	busyIcon int  // which icon it shows (C: g_ab1a)
+	heldItem int // the item on the cursor, 0 for none (C: g_8048)
+	busyIcon int // which icon it shows (C: g_ab1a)
 }
 
 // errSetup is main's message when LANDS.CFG is missing or damaged (C: g_18fc, whose
@@ -111,6 +116,8 @@ func New(dir string) (*Game, error) {
 	g.Config = cfg
 	files.SetLanguage(cfg.Language)
 	g.Text = text.New(g.Screen)
+	g.GUI = gui.New(g.Screen)
+	g.buttonDefs = buttonDefs
 	return g, nil
 }
 

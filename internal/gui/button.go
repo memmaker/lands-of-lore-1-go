@@ -79,6 +79,10 @@ type Button struct {
 	Extra   int // (C: +2ch)
 	State   int
 	Func    func(*Button) bool // called when it fires; true stops the list
+
+	// The game's buttons carry two more words (C: struct Btn of o2ceb, +38h and +3ah).
+	Arg   int // what the callback acts on: a character, a slot, a direction
+	Index int // the definition it was made from
 }
 
 // System holds the button system's state.

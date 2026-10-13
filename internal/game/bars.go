@@ -150,4 +150,3 @@ func (g *Game) setPoints(n int, magic bool, value, mode int) {
 	g.Text.SetFont(font)
 	s.SetPage(page)
 }
-

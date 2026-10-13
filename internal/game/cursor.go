@@ -36,7 +36,7 @@ func (g *Game) heldItemShape() int {
 
 // setBusyCursor shows an icon as the cursor while the game works (C: fn_0845_09f1).
 func (g *Game) setBusyCursor(icon int) {
-	g.busy = true
+	g.setFlag(flagBusy, true)
 	if g.heldItemShape() != icon {
 		g.Screen.SetMouseShape(0, 0, g.cursors[icon])
 		g.busyIcon = icon
@@ -45,7 +45,7 @@ func (g *Game) setBusyCursor(icon int) {
 
 // restoreCursor puts the hand or the held item back (C: fn_0845_0a5b).
 func (g *Game) restoreCursor() {
-	g.busy = false
+	g.setFlag(flagBusy, false)
 	if g.heldItemShape() != g.busyIcon {
 		hot := 0
 		if g.heldItem != 0 {
