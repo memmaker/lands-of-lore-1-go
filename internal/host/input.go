@@ -135,6 +135,7 @@ func pollInput(g *game) {
 	ShiftDown = ebiten.IsKeyPressed(ebiten.KeyShift)
 	CtrlDown = ebiten.IsKeyPressed(ebiten.KeyControl) || ebiten.IsKeyPressed(ebiten.KeyMeta)
 	AltDown = ebiten.IsKeyPressed(ebiten.KeyAlt)
+	pollScanEvents()
 	for k, key := range specialKeys {
 		if inpututil.IsKeyJustPressed(k) {
 			KeyQueue = append(KeyQueue, key)
