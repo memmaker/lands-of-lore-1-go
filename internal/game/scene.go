@@ -424,3 +424,21 @@ func (g *Game) opSceneRegion(s *emc.State) int {
 
 // opResetSceneRegion (C: ovr_2d5f_0129).
 func (g *Game) opResetSceneRegion(*emc.State) int { g.resetSceneButtons(); return 1 }
+
+// opClearDialogue clears the dialogue window and the label above it, unless the
+// controls are in a mode without the text area (C: fn_0fbe_0aa2). The dialogue window,
+// unlike the others, is set in pixels.
+func (g *Game) opClearDialogue(*emc.State) int {
+	if g.controlMode != 0 && !g.textEnabled {
+		return 1
+	}
+	t := g.Text
+	t.SelectWindow(textWindowMain)
+	g.Screen.HideMouse()
+	g.Screen.FillRect(t.X, t.Y, t.X+t.W-2, t.Y+t.H-2, t.Background)
+	t.SelectAndClear(textWindowLabel)
+	g.Screen.ShowMouse()
+	w := &g.Screen.Windows[textWindowLabel]
+	w.Column, w.Row = 0, 0
+	return 1
+}

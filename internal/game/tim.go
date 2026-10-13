@@ -328,7 +328,7 @@ func (g *Game) timOp(t *timScript, op, p int) int {
 				choices = append(choices, "")
 			}
 		}
-		g.showDialogueChoices(choices)
+		g.showDialogueChoices(t.choices, choices)
 		g.flushInput()
 		g.GUI.MarkChanged()
 		return timWaitAnswer
@@ -480,11 +480,3 @@ func (g *Game) opStartTIMDialogue(s *emc.State) int {
 }
 
 // Not ported yet.
-
-func (g *Game) dialogueAnswer() int {
-	notPorted("fn_13e8_06a1 (dialogue answer)")
-	return 0
-}
-func (g *Game) showDialogueChoices(choices []string) {
-	notPorted("fn_13e8_0903 (dialogue choices)")
-}

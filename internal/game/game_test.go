@@ -41,8 +41,10 @@ func savePNG(t *testing.T, f *host.Frame, name string) {
 }
 
 const (
-	scanReturn = 28
-	scanUp     = 72
+	newGameSteps = 20000
+	returnEvery  = 300
+	scanReturn   = 28
+	scanUp       = 72
 )
 
 func steps(n int) bool {
@@ -113,7 +115,12 @@ func TestNewGame(t *testing.T) {
 	steps(300)
 	host.PushScan(host.ScanEvent{Scan: scanReturn})
 	host.PushScan(host.ScanEvent{Scan: scanReturn, Released: true})
-	for steps(1) {
+	// Return now and then gets past the <MORE> prompts; the game may run on for good.
+	for i := 0; i < newGameSteps && steps(1); i++ {
+		if i%returnEvery == 0 {
+			host.PushScan(host.ScanEvent{Scan: scanReturn})
+			host.PushScan(host.ScanEvent{Scan: scanReturn, Released: true})
+		}
 	}
 	t.Logf("party: %q, items %v; ended with %v", g.party[0].Name, g.party[0].Items, runErr)
 	savePNG(t, host.ShowFrame(), "game.png")

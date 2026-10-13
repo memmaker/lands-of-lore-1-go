@@ -191,7 +191,7 @@ func (g *Game) resetSceneButtons() {
 // showLamp starts the lamp's flicker (C: ovr_2d5f_012e).
 func (g *Game) showLamp() {
 	g.setFlag(flagLampLit, true)
-	g.lampLevel = -1
+	g.lampLevel = noLampLevel
 	g.updateLamp()
 }
 
@@ -221,6 +221,5 @@ func (g *Game) pushMonstersOff(b int) {
 		}
 	}
 }
-func (g *Game) updateLamp() { notPorted("fn_0bbc_07ef (lamp)") }
 
 const noTalk = -1

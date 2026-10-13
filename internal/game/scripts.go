@@ -52,6 +52,8 @@ const (
 	opcodeStartTIMDialogue   = 135
 	opcodeLoadSoundFile      = 148
 	opcodeSceneOn            = 154
+	opcodeSay                = 122
+	opcodeClearDialogue      = 34
 	opcodeSceneOff           = 155
 	opcodeStartScene         = 81
 	opcodeEndScene           = 82
@@ -109,6 +111,8 @@ func (g *Game) opcodes() []emc.Opcode {
 	ops[opcodePendingBlockScript] = g.opSetPendingBlockScript
 	ops[opcodeLoadSoundFile] = g.opLoadSoundFile
 	ops[opcodeSceneOn] = g.opSceneOn
+	ops[opcodeSay] = g.opSay
+	ops[opcodeClearDialogue] = g.opClearDialogue
 	ops[opcodeSceneOff] = g.opSceneOff
 	ops[opcodeStartScene] = g.opStartScene
 	ops[opcodeEndScene] = g.opEndScene
