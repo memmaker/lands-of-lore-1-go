@@ -110,6 +110,11 @@ type Game struct {
 	sceneRegion         [4]int             // (C: g_4b74, g_4b72, g_4b70, g_4b6e)
 	sceneRegionActive   bool               // (C: g_20ec)
 	lampPending         bool               // (C: g_1216)
+	textBoxBackground   []byte             // what the dialogue box covers (C: g_4b66)
+	messageID           int                // the message shown last (C: g_20f4)
+	messageFading       bool               // the message fades out (C: g_20f6)
+	messageFadeStart    int                // (C: g_4bc8)
+	iconReleaseAt       int                // the pressed icon may come up from this tick (C: g_ab26)
 	talkingCharacter    int                // the character whose speech shows, or noTalk (C: g_4bf8)
 	scriptErr           error              // the first error a block script raised
 
@@ -119,7 +124,7 @@ type Game struct {
 	compassBroken  int                // (C: g_7fdd; ScummVM: _compassBroken)
 	drainMagic     int                // (C: g_7fde; ScummVM: _drainMagic)
 	soundVar       int                // (C: g_abb8)
-	playing        bool               // play has started (C: f_2803_0000[68])
+	sceneOn        bool               // a scene runs: play time stands still (C: struct Scene on, f_2803_0044)
 	shownIcon      int                // the game screen icon drawn pressed (C: g_ab24)
 
 	blockingSide  int // the side a placement test last reached over (C: g_4d60)
@@ -139,12 +144,13 @@ type Game struct {
 	compassSwing    int          // (C: g_06d7)
 	compassNextTick int          // (C: g_06d9)
 
-	quit           bool        // leaves the main loop (C: g_4bf4)
-	deadPartyCheck int         // flags for checkPartyDead, or noPartyCheck (C: g_20d1)
-	controlsLocked int         // the move buttons are off for a scene (C: f_2803_0048, struct Scene c48)
-	spellTarget    int         // the character picked as a spell's target, or noCharacter (C: g_23ba)
-	talkEnds       int         // when the character's speech ends (C: g_4c02)
-	animations     []animation // the level's looping animations (C: g_4ee0)
+	quit           bool                            // leaves the main loop (C: g_4bf4)
+	deadPartyCheck int                             // flags for checkPartyDead, or noPartyCheck (C: g_20d1)
+	controlsLocked int                             // the move buttons are off for a scene (C: f_2803_0048, struct Scene c48)
+	spellTarget    int                             // the character picked as a spell's target, or noCharacter (C: g_23ba)
+	talkEnds       int                             // when the character's speech ends (C: g_4c02)
+	animations     [sceneAnimations]sceneAnimation // (C: g_4ee0)
+	scenePalette   gfx.Palette                     // the palette scene animations bring (C: g_4edc)
 
 	tims                [timSlots]*timScript // (C: g_20fc)
 	tim                 *timScript           // the TIM running (C: g_4bae and the others)

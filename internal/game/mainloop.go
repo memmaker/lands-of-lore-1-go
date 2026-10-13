@@ -225,7 +225,7 @@ func (g *Game) updateAnimations() {
 		return
 	}
 	for _, a := range g.animations {
-		if a.active {
+		if a.playing {
 			notPorted("fn_130a_028a (level animations)")
 		}
 	}
@@ -250,9 +250,4 @@ func (g *Game) cancelSpellTarget() { notPorted("ovr_2ceb_0020 (cancel a spell's 
 func (g *Game) putKeyBack(k int)   { notPorted("fn_2169_0945 (put a key back)") }
 func (g *Game) highlightSpell(on bool) {
 	notPorted("fn_0ca0_05bb (highlight the selected spell)")
-}
-
-// animation is a looping WSA animation of the level (C: struct Anim of g_4ee0).
-type animation struct {
-	active bool
 }

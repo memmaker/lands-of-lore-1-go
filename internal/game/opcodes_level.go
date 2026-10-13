@@ -293,16 +293,6 @@ func (g *Game) opSetPendingBlockScript(s *emc.State) int {
 	return 1
 }
 
-// opStartPlay lets play time run (C: ovr_2d5f_00c5, ovr_2d5f_0039).
-func (g *Game) opStartPlay(*emc.State) int {
-	g.playing = true
-	if !g.textEnabled && g.controlMode&controlModeCharacter == 0 {
-		g.animateFaces(1)
-	}
-	clock.Disable(playClockSlot)
-	return 1
-}
-
 // Automap reveal.
 const (
 	blockRevealed = 1<<3 - 1    // (C: flags |= 7)
@@ -368,11 +358,7 @@ func (g *Game) setHeldItem(item int) {
 	g.Screen.SetMouseShape(0, 0, g.cursors[0])
 }
 
-func (g *Game) hideIcon() {
-	if g.shownIcon != 0 {
-		notPorted("fn_09aa_0007 (hide a game screen icon)")
-	}
-}
+func (g *Game) hideIcon() { g.setIcon(0, iconRelease) }
 
 // opSetLevelMusic (C: ovr_2d2c_00de).
 func (g *Game) opSetLevelMusic(s *emc.State) int {

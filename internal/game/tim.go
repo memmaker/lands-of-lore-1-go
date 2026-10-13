@@ -250,8 +250,8 @@ func (g *Game) timOp(t *timScript, op, p int) int {
 		n := arg(0)
 		w := &t.wsa[n]
 		w.x, w.y, w.unknown, w.flags = arg(2), arg(3), arg(4), arg(5)
-		const wsaOffset = 10
-		w.open = g.openSceneAnimation(n, t.timString(arg(1)), w.x, w.y, wsaOffset, w.flags)
+		const animDelay = 10
+		w.open = g.openSceneAnimation(n, t.timString(arg(1)), w.x, w.y, animDelay, w.flags)
 		return 1
 	case 3: // close an animation (C: fn_057f_034f)
 		n := arg(0)
@@ -481,14 +481,6 @@ func (g *Game) opStartTIMDialogue(s *emc.State) int {
 
 // Not ported yet.
 
-func (g *Game) openSceneAnimation(n int, name string, x, y, offset, flags int) bool {
-	notPorted("ovr_2d5f_0084 (open a scene animation)")
-	return false
-}
-func (g *Game) closeSceneAnimation(n int) { notPorted("ovr_2d5f_008e (close a scene animation)") }
-func (g *Game) showAnimationFrame(n, frame int) {
-	notPorted("fn_057f_0426 (show a level animation frame)")
-}
 func (g *Game) dialogueAnswer() int {
 	notPorted("fn_13e8_06a1 (dialogue answer)")
 	return 0

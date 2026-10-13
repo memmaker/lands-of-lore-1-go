@@ -33,7 +33,7 @@ const (
 	timerLamp
 	timerFaces
 	timerUpdates
-	timerOrbs
+	timerMessage
 	timerCount
 )
 
@@ -51,7 +51,7 @@ func newTimers() [timerCount]timer {
 		timerLamp:         {fn: (*Game).burnLamp, interval: 1200, clock: playClock, enabled: true},
 		timerFaces:        {fn: (*Game).animateFaces, interval: 10, clock: playClock, enabled: true},
 		timerUpdates:      {fn: (*Game).timerUpdates, interval: 360, clock: playClock, enabled: true},
-		timerOrbs:         {fn: (*Game).timerOrbs, interval: 360, clock: clock.GameClock},
+		timerMessage:      {fn: (*Game).messageTimeout, interval: 360, clock: clock.GameClock},
 	}
 }
 
@@ -79,7 +79,12 @@ func (g *Game) moveFlyingObjects(int) { notPorted("fn_0bbc_040b (flying objects 
 func (g *Game) levelTimer(int)        { notPorted("fn_0bbc_0472 (level script timer)") }
 func (g *Game) burnLamp(int)          { notPorted("fn_0bbc_0488 (lamp timer)") }
 func (g *Game) timerUpdates(int)      { notPorted("fn_0bbc_061e (update timer)") }
-func (g *Game) timerOrbs(int)         { notPorted("fn_0bbc_094b (orbs timer)") }
+
+// messageTimeout lets the message fade (C: fn_0bbc_094b).
+func (g *Game) messageTimeout(int) {
+	g.enableTimer(timerMessage, false)
+	g.fadeMessage(0, false)
+}
 
 // Face animation: a face blinks (frame 1) now and then and opens its eyes again
 // (C: fn_0bbc_058a). noBlink stops new blinks.

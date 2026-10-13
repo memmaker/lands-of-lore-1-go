@@ -264,7 +264,7 @@ func (g *Game) drawItemIcon(page, item, x, y int) {
 // drawInventory draws the inventory bar unless a character's inventory is open
 // (C: fn_0c59_0377).
 func (g *Game) drawInventory() {
-	if g.controlMode == 0 || !g.playing {
+	if g.controlMode == 0 || !g.sceneOn {
 		for i := range inventoryShown {
 			g.drawInventorySlot(i)
 		}
