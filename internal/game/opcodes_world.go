@@ -1141,3 +1141,106 @@ func (g *Game) opRemoveItemOfType(s *emc.State) int {
 	}
 	return 0
 }
+
+// opEnableClock: slot (C: fn_0fbe_2dc7).
+func (g *Game) opEnableClock(s *emc.State) int {
+	clock.Enable(s.Arg(0))
+	return 1
+}
+
+// opDisableClock: slot (C: fn_0fbe_2de4).
+func (g *Game) opDisableClock(s *emc.State) int {
+	clock.Disable(s.Arg(0))
+	return 1
+}
+
+// opLastSequence: animation; the sequence that last ended there, once
+// (C: fn_0fbe_2e01).
+func (g *Game) opLastSequence(s *emc.State) int {
+	a := &g.animations[s.Arg(0)]
+	r := a.lastSequence
+	a.lastSequence = -1
+	return r
+}
+
+// opWhoCarries: any, character or -1, type; the character with an item of the type,
+// or -1. Without any an item of the type in the inventory makes it 0
+// (C: fn_0fbe_2e3f).
+func (g *Game) opWhoCarries(s *emc.State) int {
+	return g.whoCarries(s.Arg(0) != 0, s.Arg(1), s.Arg(2))
+}
+
+// whoCarries (C: fn_130a_0d2b).
+func (g *Game) whoCarries(any bool, ch, t int) int {
+	if !any {
+		for _, it := range g.inventory {
+			if it != 0 && g.items[it].Type == t {
+				return 0
+			}
+		}
+	}
+	from, end := ch, ch
+	if ch == -1 {
+		from, end = 0, partySize
+	}
+	for i := from; i < end; i++ {
+		if g.carries(i, t) {
+			return i
+		}
+	}
+	return -1
+}
+
+// opRestoreLevelColours fades the upper half of the palette back to the level's
+// (C: fn_0fbe_2e7d).
+func (g *Game) opRestoreLevelColours(*emc.State) int {
+	const upperHalf = 128 * 3
+	copy(g.Palette[upperHalf:], g.darkPalette[upperHalf:])
+	g.Screen.FadePalette(g.Palette[:], restoreColoursTicks, nil)
+	g.paletteState = paletteNormal
+	return 1
+}
+
+const restoreColoursTicks = 10
+
+// opBlockInDirection: block, direction (C: fn_0fbe_2eca).
+func (g *Game) opBlockInDirection(s *emc.State) int {
+	return g.blockInDirection(s.Arg(0), s.Arg(1))
+}
+
+// opSelectedCharacter (C: fn_0fbe_2ec1).
+func (g *Game) opSelectedCharacter(*emc.State) int { return g.selectedCharacter }
+
+// opSetHeldItem: item (C: fn_0fbe_2ef6).
+func (g *Game) opSetHeldItem(s *emc.State) int {
+	g.setHeldItem(s.Arg(0))
+	return 1
+}
+
+// opTakeFromInventory: type, redraw (C: fn_0fbe_2f13).
+func (g *Game) opTakeFromInventory(s *emc.State) int {
+	return g.takeFromInventory(s.Arg(0), s.Arg(1) != 0)
+}
+
+// takeFromInventory swaps the first inventory item of type t with the held one and
+// returns what was held, or -1 without such an item (C: fn_0c59_0410).
+func (g *Game) takeFromInventory(t int, redraw bool) int {
+	slot := -1
+	for i, it := range g.inventory {
+		if it != 0 && g.items[it].Type == t {
+			slot = i
+			break
+		}
+	}
+	if slot < 0 {
+		return -1
+	}
+	g.inventoryStart = slot
+	held := g.heldItem
+	g.setHeldItem(g.inventory[slot])
+	g.inventory[slot] = held
+	if redraw {
+		g.drawInventory()
+	}
+	return held
+}
