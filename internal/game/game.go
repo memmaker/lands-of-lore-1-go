@@ -130,6 +130,7 @@ type Game struct {
 	exitProgram         bool               // a script quit the game (C: fn_0845_0bf6)
 	doorHandled         int                // a clicked door's script dealt with it (C: g_4be0)
 	lastFoundItem       int                // (C: g_2794)
+	nextCharacter       int                // (C: g_2796)
 	talkStyle           int                // where it talks (C: g_4bfa)
 	talkSteps           int                // mouth moves left (C: g_4bfc)
 	talkRestore         bool               // set the face back at the end (C: g_4c00)

@@ -17,14 +17,11 @@ func notPorted(name string) { panic(notPortedError{name}) }
 func (g *Game) playCharacterSound(c, sound int) { notPorted("fn_0bbc_0744 (character sound)") }
 
 // Combat and character effects the monsters call (CHECKLIST: Combat).
-func (g *Game) drainParty(a, b, c int) { notPorted("ovr_2d00_002a (drain the party)") }
 func (g *Game) takeCharacterItem(ch, slots, flags int) int {
 	notPorted("ovr_2d46_0048 (take a character's item)")
 	return 0
 }
-func (g *Game) poisonCharacter(ch, a, b, c, d int) { notPorted("ovr_2d00_0025 (poison a character)") }
-func (g *Game) paralyseCharacter(ch int)           { notPorted("ovr_2d00_0020 (paralyse a character)") }
-func (g *Game) swapLevelPaletteBack()              { notPorted("ovr_2d1b_0043 (swap the level palette back)") }
+func (g *Game) swapLevelPaletteBack() { notPorted("ovr_2d1b_0043 (swap the level palette back)") }
 func (g *Game) launchObject(kind, item, x, y, power, dir, a, owner, flags int) bool {
 	notPorted("fn_0b6b_032f (launch a flying object)")
 	return false

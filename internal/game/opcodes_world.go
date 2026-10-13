@@ -5,6 +5,7 @@ import (
 	"github.com/memmaker/lands-of-lore-1-go/internal/emc"
 	"github.com/memmaker/lands-of-lore-1-go/internal/gfx"
 	"github.com/memmaker/lands-of-lore-1-go/internal/input"
+	"github.com/memmaker/lands-of-lore-1-go/internal/random"
 )
 
 // setWalls sets block b's wall dir to type v, or with allSides all four; a whole door
@@ -998,4 +999,145 @@ func (g *Game) opFindItem(s *emc.State) int {
 func (g *Game) opTakeItemFromBlock(s *emc.State) int {
 	g.takeItemFromBlock(s.Arg(0), s.Arg(1))
 	return 1
+}
+
+// opNextMonsterOn: block, monster or -1; the monster on the block after the given
+// one, or with -1 the first, else -1 (C: fn_0fbe_2a1f).
+func (g *Game) opNextMonsterOn(s *emc.State) int {
+	id := g.lvl.blocks[s.Arg(0)].Objects
+	if m := s.Arg(1); m != -1 {
+		id = *g.objectNext(m | monsterFlag)
+	}
+	for id != 0 {
+		if isMonster(id) {
+			return id & monsterIndex
+		}
+		id = *g.objectNext(id)
+	}
+	return -1
+}
+
+// opMonsterOn: block, monster; the monster if it stands on the block, -1 the first
+// one, else -1 (C: fn_0fbe_2a97).
+func (g *Game) opMonsterOn(s *emc.State) int {
+	m := s.Arg(1) | monsterFlag
+	for id := g.lvl.blocks[s.Arg(0)].Objects; isMonster(id); id = *g.objectNext(id) {
+		if m == -1 || id == m { // sic: m has bit 15 set and is never -1
+			return id & monsterIndex
+		}
+	}
+	return -1
+}
+
+// opDissolve: x0, y0, x1, y1, w, h, from, to; copies a rectangle pixel by pixel in
+// random order (C: fn_0fbe_2aff).
+func (g *Game) opDissolve(s *emc.State) int {
+	g.Screen.HideMouse()
+	g.dissolve(s.Arg(0), s.Arg(1), s.Arg(2), s.Arg(3), s.Arg(4), s.Arg(5), s.Arg(6), s.Arg(7))
+	g.Screen.ShowMouse()
+	return 1
+}
+
+// dissolve copies a w by h rectangle at x0, y0 of page 2 to x1, y1 of page to, its
+// columns and rows shuffled (C: ovr_2d46_0039). The source is page 2 whatever from
+// says (sic).
+func (g *Game) dissolve(x0, y0, x1, y1, w, h, from, to int) {
+	cols, rows := make([]int, w), make([]int, h)
+	for i := range cols {
+		cols[i] = i
+	}
+	for i := range rows {
+		rows[i] = i
+	}
+	for i := range cols {
+		r := random.Range(0, w-1)
+		cols[r], cols[i] = cols[i], cols[r]
+	}
+	for i := range rows {
+		r := random.Range(0, h-1)
+		rows[r], rows[i] = rows[i], rows[r]
+	}
+	old := g.Screen.SetPage(from)
+	src := g.Screen.Page(pageBuild)
+	for k := range h {
+		l := k
+		for i := range w {
+			x, y := x0+cols[i], y0+rows[l]
+			x2, y2 := x1+cols[i], y1+rows[l]
+			l++
+			if l >= h {
+				l = 0
+			}
+			g.Screen.SetPage(to)
+			g.Screen.SetPixel(x2, y2, int(src[y*gfx.Width+x]))
+		}
+	}
+	g.Screen.SetPage(old)
+}
+
+// opTurnInBlock: x, y, direction, which; the turned position's x (which non-zero) or
+// y (C: fn_0fbe_2ba4).
+func (g *Game) opTurnInBlock(s *emc.State) int {
+	x, y := turnInBlock(s.Arg(0), s.Arg(1), s.Arg(2))
+	if s.Arg(3) != 0 {
+		return x
+	}
+	return y
+}
+
+// opNextCharacter: restart; the next present character's slot, or -1 after the last
+// (C: fn_0fbe_2c12).
+func (g *Game) opNextCharacter(s *emc.State) int {
+	if s.Arg(0) != 0 {
+		g.nextCharacter = 0
+	} else {
+		g.nextCharacter++
+	}
+	for ; g.nextCharacter < partySize; g.nextCharacter++ {
+		if g.party[g.nextCharacter].Flags&charPresent != 0 {
+			return g.nextCharacter
+		}
+	}
+	return -1
+}
+
+// opAfflict: character, affliction, mask, chance, redraw (C: fn_0fbe_2c5c).
+func (g *Game) opAfflict(s *emc.State) int {
+	return boolInt(g.afflict(s.Arg(0), s.Arg(1), s.Arg(2), s.Arg(3), s.Arg(4) != 0))
+}
+
+// opDrawPortraits: character or -1 for all (C: fn_0fbe_2cbe).
+func (g *Game) opDrawPortraits(s *emc.State) int {
+	if ch := s.Arg(0); ch != -1 {
+		g.drawPortrait(ch)
+	} else {
+		g.drawPortraits()
+	}
+	return 1
+}
+
+// opRemoveItemOfType: type; takes the first item of the type from the inventory, else
+// from a character, and says whether there was one (C: fn_0fbe_2cf4).
+func (g *Game) opRemoveItemOfType(s *emc.State) int {
+	t := s.Arg(0)
+	for i, it := range g.inventory {
+		if it != 0 && g.items[it].Type == t {
+			g.inventory[i] = 0
+			g.drawInventory()
+			return 1
+		}
+	}
+	for ch := range g.party {
+		c := &g.party[ch]
+		if c.Flags&charPresent == 0 {
+			continue
+		}
+		for j, it := range c.Items {
+			if it != 0 && g.items[it].Type == t {
+				c.Items[j] = 0
+				return 1
+			}
+		}
+	}
+	return 0
 }

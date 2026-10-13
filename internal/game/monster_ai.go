@@ -306,7 +306,7 @@ func (g *Game) monsterHitEffect(m *Monster, ch, damage int) {
 	c := &g.party[ch]
 	switch m.Type.attackSkill[1] {
 	case hitDrainsParty:
-		g.drainParty(64, 72, 100)
+		g.afflictParty(afflictOverlay, afflictOverlay|charDead, 100)
 	case hitHeals:
 		m.HitPoints = min(m.HitPoints+damage, m.Type.hitPoints)
 	case hitStealsItem:
@@ -342,7 +342,7 @@ func (g *Game) monsterHitEffect(m *Monster, ch, damage int) {
 			}
 		}
 	case hitPoisons:
-		g.poisonCharacter(ch, 128, 136, 100, 1)
+		g.afflict(ch, afflictPoison, afflictPoison|charDead, 100, true)
 	case hitParalyses:
 		g.paralyseCharacter(ch)
 	}
