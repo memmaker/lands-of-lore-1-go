@@ -221,7 +221,6 @@ func (g *Game) pushMonstersOff(b int) {
 		}
 	}
 }
-func (g *Game) updateLamp()     { notPorted("fn_0bbc_07ef (lamp)") }
-func (g *Game) drawGameScreen() { notPorted("ovr_2d2c_0043 (draw the game screen)") }
+func (g *Game) updateLamp() { notPorted("fn_0bbc_07ef (lamp)") }
 
 const noTalk = -1

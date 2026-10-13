@@ -12,9 +12,9 @@ type barDef struct {
 }
 
 var (
-	hitPointBar  = barDef{x: 33, colour: 162, textColour: 160, warns: false, label: 0x4253}
-	magicBar     = barDef{x: 39, colour: 154, textColour: 152, warns: true, label: 0x4254}
-	portraitBars = [2]barDef{magicBar, hitPointBar} // indexed by "not magic"
+	magicBar     = barDef{x: 33, colour: 162, textColour: 160, warns: false, label: stringMagicLabel}
+	hitPointBar  = barDef{x: 39, colour: 154, textColour: 152, warns: true, label: stringHitLabel}
+	portraitBars = [2]barDef{magicBar, hitPointBar} // indexed by "not magic" (C: g_2256)
 )
 
 // Bar geometry and colours (C: fn_0a21_06fd, fn_0845_00ac).

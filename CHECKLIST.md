@@ -34,10 +34,10 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] Party joining and leaving (o2d74), opcode 75
   - [x] Game screen button lists (o2ceb); callbacks pending
   - [x] Level load: LEVELn files, walls, decorations, monster shapes, palettes (o2d2c); level 1 INI and INF entry run (sound is a silent stand-in)
-  - [ ] Game screen (ovr_2d2c_0043)
+  - [x] Game screen (ovr_2d2c_0043): playfield, compass, automap icon, spell list, credits
   - [ ] Main loop (fn_0ca0_0c33)
   - [ ] 3D view renderer (o2cda)
-  - [ ] Portraits and bars (s010)
+  - [x] Portraits and bars (s010), inventory bar (s014)
 - [ ] Intro (TIM/WSA sequences), character selection
 - [ ] Scripts: EMC interpreter and opcodes (s018, s019), TIM (s001, s002)
   - [x] EMC loader and interpreter (s018, o2de9), tested on ONETIME.INF

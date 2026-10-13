@@ -125,6 +125,14 @@ type Game struct {
 	blockingSide  int // the side a placement test last reached over (C: g_4d60)
 	blockingBlock int // the block whose walls stopped it (C: g_4d5e)
 
+	inventoryStart int  // the first inventory slot the bar shows (C: g_8046)
+	screenFrozen   bool // the view is not redrawn and portraits are dimmed (C: g_4d66)
+
+	viewPage     int // the page the 3D view is drawn on (C: g_4d72)
+	viewBackPage int // the other one (C: g_4d70)
+
+	sceneReady bool // (C: g_20d3, 1 at start)
+
 	heldItem int // the item on the cursor, 0 for none (C: g_8048)
 	busyIcon int // which icon it shows (C: g_ab1a)
 }
@@ -159,6 +167,7 @@ func New(dir string) (*Game, error) {
 	g.buttonDefs = buttonDefs
 	g.timers = newTimers()
 	g.talkingCharacter = noTalk
+	g.sceneReady = true
 	return g, nil
 }
 

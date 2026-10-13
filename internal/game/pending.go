@@ -15,7 +15,5 @@ func (e notPortedError) Error() string { return fmt.Sprintf("not ported yet: %s"
 func notPorted(name string) { panic(notPortedError{name}) }
 
 func (g *Game) playCharacterSound(c, sound int) { notPorted("fn_0bbc_0744 (character sound)") }
-func (g *Game) drawPortrait(c int)              { notPorted("fn_0a21_022b (draw portrait)") }
-func (g *Game) drawPortraits()                  { notPorted("ovr_2d2c_0043 (draw the game screen)") }
 func (g *Game) waitTicks(n int)                 { notPorted("fn_0845_0bb6 (wait, running the game's idle work)") }
 func (g *Game) mainLoop() error                 { notPorted("fn_0ca0_0c33 (main loop)"); return nil }

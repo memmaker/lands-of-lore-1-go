@@ -122,6 +122,7 @@ func (g *Game) showTitle() error {
 		return err
 	}
 	g.Text.SetFont(g.SmallFont)
+	g.viewPage, g.viewBackPage = pageTitle, portraitPage // (C: g_4d72 = 2, g_4d70 = 6)
 	g.printAt(versionText, versionX, versionY, versionColour, 0, printShadow)
 	g.Text.SetFont(g.SystemFont)
 	return nil

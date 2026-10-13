@@ -116,4 +116,5 @@ func TestNewGame(t *testing.T) {
 	for steps(1) {
 	}
 	t.Logf("party: %q, items %v; ended with %v", g.party[0].Name, g.party[0].Items, runErr)
+	savePNG(t, host.ShowFrame(), "game.png")
 }
