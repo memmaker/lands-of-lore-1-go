@@ -22,7 +22,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] cmd/lol run(): host frame, input, clock wired up
   - [x] Title screen: title.cps fade-in, FONT6P, cursors, LANDS.ENG strings, version text (o2d50_0039; sound index and MT-32 sysex left to the sound port)
   - [x] Main menu boxes and selection (o2cfa, o2d43, PLAIN mode)
-  - [ ] Game data load after the menu (o2d50_0048)
+  - [x] Game data load after the menu (o2d50_0048): shapes, colour tables, ONETIME.INF, ITEM.INF, busy cursor
   - [x] Exit
   - [ ] Load game (ovr_2d56_002f) after the data load
   - [ ] New game: MAIN.EXE's numbered start (ovr_2d2c_0070, argv[1] 0-3 picks the character); until
@@ -32,7 +32,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
 - [ ] Intro (TIM/WSA sequences), character selection
 - [ ] Scripts: EMC interpreter and opcodes (s018, s019), TIM (s001, s002)
   - [x] EMC loader and interpreter (s018, o2de9), tested on ONETIME.INF
-  - [ ] Item type opcodes 13, 14 (ovr_2d50_003e, 0043) for ONETIME.INF
+  - [x] Item type opcodes 13, 14 (ovr_2d50_003e, 0043) for ONETIME.INF
   - [ ] The other 190 opcodes of g_2494, ported with the systems they drive
   - [ ] TIM interpreter (s001, s002)
 - [ ] Levels, 3D view renderer (o2d2c, o2cda), movement, automap

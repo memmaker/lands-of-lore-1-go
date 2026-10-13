@@ -10,6 +10,7 @@ import (
 	"github.com/memmaker/lands-of-lore-1-go/internal/clock"
 	"github.com/memmaker/lands-of-lore-1-go/internal/config"
 	"github.com/memmaker/lands-of-lore-1-go/internal/data"
+	"github.com/memmaker/lands-of-lore-1-go/internal/emc"
 	"github.com/memmaker/lands-of-lore-1-go/internal/gfx"
 	"github.com/memmaker/lands-of-lore-1-go/internal/host"
 	"github.com/memmaker/lands-of-lore-1-go/internal/input"
@@ -33,7 +34,27 @@ type Game struct {
 	menu         menuState
 
 	itemIcons []byte   // ITEMICN.SHP (C: in page 3)
-	cursors   [][]byte // cursor shapes (C: g_7d82)
+	cursors   [][]byte // item icons, which are also the cursors (C: g_7d82)
+
+	items     [maxItems]Item // (C: f_2803_1cfd)
+	itemTypes []ItemType     // (C: g_7fb2)
+
+	levelScript *emc.Script // (C: f_2803_3611)
+	itemScript  *emc.Script // ITEM.INF (C: f_2803_35fd)
+	runningOnce bool        // a one-off script is running (C: g_4bf6)
+
+	itemShapes   [][]byte // (C: g_7c92)
+	gameShapes   [][]byte // (C: f_2803_00a6)
+	thrownShapes [][]byte // (C: g_4e54)
+	iceShapes    [][]byte // (C: f_27b1_0000)
+	fireShapes   [][]byte // (C: g_088e)
+	shadowTable  []byte   // (C: f_2803_030a)
+	tintTable    []byte   // (C: f_2803_020a)
+	textReady    bool     // (C: g_20d9)
+
+	heldItem int  // the item on the cursor, 0 for none (C: g_8048)
+	busy     bool // the busy cursor is up (C: g_806a bit 9)
+	busyIcon int  // which icon it shows (C: g_ab1a)
 }
 
 // errSetup is main's message when LANDS.CFG is missing or damaged (C: g_18fc, whose

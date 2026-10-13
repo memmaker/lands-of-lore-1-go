@@ -84,3 +84,21 @@ func TestTitleAndMenu(t *testing.T) {
 		t.Fatal(runErr)
 	}
 }
+
+func TestLoadGameData(t *testing.T) {
+	g, err := New(gameDir(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := g.loadLanguageStrings(); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.loadGameData(); err != nil {
+		t.Fatal(err)
+	}
+	if len(g.itemTypes) == 0 || g.items[1].Flags&itemFree == 0 {
+		t.Fatalf("%d item types", len(g.itemTypes))
+	}
+	t.Logf("%d item types, %d icons, %d item shapes, %d game shapes; type 1 %q %+v",
+		len(g.itemTypes), len(g.cursors), len(g.itemShapes), len(g.gameShapes), g.text(g.itemTypes[1].Name), g.itemTypes[1])
+}
