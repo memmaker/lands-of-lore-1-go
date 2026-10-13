@@ -61,7 +61,7 @@ var scanCodes = map[ebiten.Key]scanCode{
 	ebiten.KeyNumpad5: {76, false}, ebiten.KeyNumpad6: {77, false}, ebiten.KeyNumpadAdd: {78, false},
 	ebiten.KeyNumpad1: {79, false}, ebiten.KeyNumpad2: {80, false}, ebiten.KeyNumpad3: {81, false},
 	ebiten.KeyNumpad0: {82, false}, ebiten.KeyNumpadDecimal: {83, false}, ebiten.KeyF11: {87, false},
-	ebiten.KeyF12: {88, false},
+	ebiten.KeyF12:         {88, false},
 	ebiten.KeyNumpadEnter: {28, true}, ebiten.KeyControlRight: {29, true},
 	ebiten.KeyNumpadDivide: {53, true}, ebiten.KeyAltRight: {56, true},
 	ebiten.KeyHome: {71, true}, ebiten.KeyArrowUp: {72, true}, ebiten.KeyPageUp: {73, true},
