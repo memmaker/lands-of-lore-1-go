@@ -66,24 +66,20 @@ const (
 // ScummVM: MonsterProperty).
 type monsterType struct {
 	shapeIndex             int // which of the three loaded monster shape sets (C: c00)
-	maxWidth               int // (C: size)
+	maxWidth               int // the widest shape's width, a signed byte (C: size)
 	fightingStats          [9]int
-	itemsMight             [8]int
-	protectionAgainstItems [8]int
-	itemProtection         int
-	hitPoints              int
-	speedTotalWaitTicks    int
-	skillLevel             int // (C: evade)
-	flags                  int
-	field40                int
-	field42                int
-	numDistAttacks         int
-	distWeapons            [3]int
-	attackSkillChance      int
-	attackSkillType        int
-	defenseSkillChance     int
-	defenseSkillType       int
-	sounds                 [3]int
+	itemsMight             [8]int // (C: dmg)
+	protectionAgainstItems [8]int // (C: res)
+	itemProtection         int    // (C: w38)
+	hitPoints              int    // (C: w3a)
+	defined                bool   // (C: c3c)
+	speedTotalWaitTicks    int    // (C: w3e)
+	skillLevel             int    // (C: w40)
+	flags                  int    // (C: w42[0])
+	distantAttack          [4]int // (C: w42[1..4]; ScummVM: unk5, numDistAttacks, numDistWeapons, distWeapons)
+	attackSkill            [2]int // chance and type (C: c4c)
+	defenseSkill           [2]int // chance and type (C: c4e)
+	sounds                 [3]int // (C: c50)
 }
 
 const (

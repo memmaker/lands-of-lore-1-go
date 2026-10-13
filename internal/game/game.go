@@ -113,6 +113,15 @@ type Game struct {
 	talkingCharacter    int                // the character whose speech shows, or noTalk (C: g_4bf8)
 	scriptErr           error              // the first error a block script raised
 
+	partyX, partyY int                // the party's position (C: g_7fd2, g_7fd4)
+	levelVars      [levelVarCount]int // (C: g_8114)
+	lampEffect     int                // (C: g_81dd; ScummVM: _lampEffect)
+	compassBroken  int                // (C: g_7fdd; ScummVM: _compassBroken)
+	drainMagic     int                // (C: g_7fde; ScummVM: _drainMagic)
+	soundVar       int                // (C: g_abb8)
+	playing        bool               // play has started (C: f_2803_0000[68])
+	shownIcon      int                // the game screen icon drawn pressed (C: g_ab24)
+
 	heldItem int // the item on the cursor, 0 for none (C: g_8048)
 	busyIcon int // which icon it shows (C: g_ab1a)
 }

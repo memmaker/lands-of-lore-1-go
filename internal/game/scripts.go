@@ -23,6 +23,28 @@ const (
 	opcodeCharJoins      = 75
 	opcodeSetItemField   = 171
 	opcodeNothingToo     = 191
+
+	opcodeDice              = 3
+	opcodeLoadGraphics      = 9
+	opcodeLoadMaze          = 10
+	opcodeLoadMonsterShapes = 11
+	opcodeOpenDecorations   = 21
+	opcodeCloseDecorations  = 22
+	opcodeLoadDoorShapes    = 24
+	opcodeSetLevelVar       = 46
+	opcodeGetEngineVar      = 47
+	opcodeSetEngineVar      = 48
+	opcodeAssignDecoration  = 53
+	opcodeDoorDecoration    = 54
+	opcodePlaceMonster      = 56
+	opcodeMonsterType       = 63
+	opcodeGiveMonsterItem   = 85
+	opcodeLevelStrings      = 86
+	opcodeQueueTrack        = 99
+	opcodeBrightness        = 107
+	opcodeLevelSoundsOff    = 124
+	opcodeLoadSoundFile     = 148
+	opcodeStartPlay         = 154
 )
 
 // opcodes is the table level, item and start-up scripts call into (C: g_2494). Entries
@@ -42,6 +64,27 @@ func (g *Game) opcodes() []emc.Opcode {
 	ops[opcodeCharJoins] = g.opCharacterJoinsOrLeaves
 	ops[opcodeNothing] = opNothing
 	ops[opcodeNothingToo] = opNothing
+	ops[opcodeDice] = g.opDice
+	ops[opcodeLoadGraphics] = g.opLoadGraphics
+	ops[opcodeLoadMaze] = g.opLoadMaze
+	ops[opcodeLoadMonsterShapes] = g.opLoadMonsterShapes
+	ops[opcodeOpenDecorations] = g.opOpenDecorations
+	ops[opcodeCloseDecorations] = g.opCloseDecorations
+	ops[opcodeLoadDoorShapes] = g.opLoadDoorShapes
+	ops[opcodeSetLevelVar] = g.opSetLevelVar
+	ops[opcodeGetEngineVar] = g.opGetEngineVar
+	ops[opcodeSetEngineVar] = g.opSetEngineVar
+	ops[opcodeAssignDecoration] = g.opAssignDecoration
+	ops[opcodeDoorDecoration] = g.opSetDoorDecoration
+	ops[opcodePlaceMonster] = g.opPlaceMonster
+	ops[opcodeMonsterType] = g.opDefineMonsterType
+	ops[opcodeGiveMonsterItem] = g.opGiveMonsterItem
+	ops[opcodeLevelStrings] = g.opLoadLevelStrings
+	ops[opcodeQueueTrack] = g.opQueueTrack
+	ops[opcodeBrightness] = g.opSetBrightness
+	ops[opcodeLevelSoundsOff] = g.opSetLevelSoundsOff
+	ops[opcodeLoadSoundFile] = g.opLoadSoundFile
+	ops[opcodeStartPlay] = g.opStartPlay
 	return ops
 }
 
