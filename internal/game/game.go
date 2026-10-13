@@ -122,6 +122,9 @@ type Game struct {
 	playing        bool               // play has started (C: f_2803_0000[68])
 	shownIcon      int                // the game screen icon drawn pressed (C: g_ab24)
 
+	blockingSide  int // the side a placement test last reached over (C: g_4d60)
+	blockingBlock int // the block whose walls stopped it (C: g_4d5e)
+
 	heldItem int // the item on the cursor, 0 for none (C: g_8048)
 	busyIcon int // which icon it shows (C: g_ab1a)
 }

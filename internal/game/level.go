@@ -65,21 +65,25 @@ const (
 // monsterType is a kind of monster (C: struct MonType, 83 bytes of f_2803_1b5e;
 // ScummVM: MonsterProperty).
 type monsterType struct {
-	shapeIndex             int // which of the three loaded monster shape sets (C: c00)
-	maxWidth               int // the widest shape's width, a signed byte (C: size)
-	fightingStats          [9]int
+	shapeIndex             int    // which of the three loaded monster shape sets (C: c00)
+	maxWidth               int    // the widest shape's width, a signed byte (C: size)
+	fightingStats          [9]int // 1/256 factors; [4] scales the attack count (C: a, atk)
 	itemsMight             [8]int // (C: dmg)
 	protectionAgainstItems [8]int // (C: res)
 	itemProtection         int    // (C: w38)
-	hitPoints              int    // (C: w3a)
-	defined                bool   // (C: c3c)
-	speedTotalWaitTicks    int    // (C: w3e)
-	skillLevel             int    // (C: w40)
-	flags                  int    // (C: w42[0])
-	distantAttack          [4]int // (C: w42[1..4]; ScummVM: unk5, numDistAttacks, numDistWeapons, distWeapons)
-	attackSkill            [2]int // chance and type (C: c4c)
-	defenseSkill           [2]int // chance and type (C: c4e)
-	sounds                 [3]int // (C: c50)
+	hitPoints              int    // (C: w3a, maxHp)
+	thinkDelay             int    // (C: c3c)
+	evade                  int    // never set by opcode 63 (C: c3d)
+	flags                  int    // (C: w3e)
+	field40                int    // (C: w40)
+	field42                int    // copied into each monster (C: w42)
+	spellCount             int    // (C: nSpells)
+	spells                 [3]int // (C: spells)
+	attackSkill            [2]int // chance and kind (C: hitChance, hitKind)
+	defenseSkill           [2]int // chance and kind (C: defChance, defKind)
+	moveSound              int    // (C: moveSnd)
+	attackSound            int    // (C: atkSnd)
+	sound                  int    // (C: sound)
 }
 
 const (

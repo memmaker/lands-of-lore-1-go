@@ -30,3 +30,6 @@ func (g *Game) queueTrack(n int) {}
 
 // playSound plays effect sound (C: fn_067a_0401).
 func (g *Game) playSound(sound, volume int) {}
+
+// playSoundAt plays a sound from a block, louder the nearer (C: fn_067a_02f5).
+func (g *Game) playSoundAt(sound, block int) {}

@@ -70,9 +70,10 @@ const (
 	monsterArgProtection  = 17
 	monsterArgItemProtect = 25
 	monsterArgHitPoints   = 26
-	monsterArgSpeed       = 27
-	monsterArgSkill       = 29 // the original wrote arg 28 here first and lost it
-	monsterArgFlags       = 30
+	monsterArgFlags       = 27
+	monsterArgField40     = 29 // the original wrote arg 28 here first and lost it
+	monsterArgField42     = 30
+	monsterArgSpells      = 31
 	monsterArgAttackSkill = 35
 	monsterArgDefense     = 37
 	monsterArgSounds      = 39
@@ -112,20 +113,21 @@ func (g *Game) opDefineMonsterType(s *emc.State) int {
 	}
 	m.itemProtection = s.Arg(monsterArgItemProtect)
 	m.hitPoints = s.Arg(monsterArgHitPoints)
-	m.speedTotalWaitTicks = s.Arg(monsterArgSpeed)
-	m.defined = true
-	m.skillLevel = s.Arg(monsterArgSkill)
 	m.flags = s.Arg(monsterArgFlags)
-	for i := range m.distantAttack {
-		m.distantAttack[i] = s.Arg(monsterArgFlags + 1 + i)
+	m.thinkDelay = 1
+	m.field40 = s.Arg(monsterArgField40)
+	m.field42 = s.Arg(monsterArgField42)
+	m.spellCount = s.Arg(monsterArgSpells)
+	for i := range m.spells {
+		m.spells[i] = s.Arg(monsterArgSpells + 1 + i)
 	}
 	for i := range m.attackSkill {
 		m.attackSkill[i] = int(int8(s.Arg(monsterArgAttackSkill + i)))
 		m.defenseSkill[i] = int(int8(s.Arg(monsterArgDefense + i)))
 	}
-	for i := range m.sounds {
-		m.sounds[i] = int(int8(s.Arg(monsterArgSounds + i)))
-	}
+	m.moveSound = int(uint8(s.Arg(monsterArgSounds)))
+	m.attackSound = int(uint8(s.Arg(monsterArgSounds + 1)))
+	m.sound = int(uint8(s.Arg(monsterArgSounds + 2)))
 	return 1
 }
 
@@ -370,14 +372,4 @@ func (g *Game) hideIcon() {
 	if g.shownIcon != 0 {
 		notPorted("fn_09aa_0007 (hide a game screen icon)")
 	}
-}
-
-func (g *Game) opPlaceMonster(*emc.State) int {
-	notPorted("fn_0fbe_1239 (place a monster)")
-	return 0
-}
-
-func (g *Game) opGiveMonsterItem(*emc.State) int {
-	notPorted("fn_0fbe_1a27 (give a monster an item)")
-	return 0
 }
