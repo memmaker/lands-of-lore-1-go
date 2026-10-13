@@ -310,36 +310,6 @@ func (g *Game) buildSpellTargetButtons() {
 
 // Button callbacks not ported yet.
 
-func (g *Game) clickMoveForward(*gui.Button) bool {
-	notPorted("fn_09aa_0197 (button)")
-	return false
-}
-
-func (g *Game) clickMoveBack(*gui.Button) bool {
-	notPorted("fn_09aa_01e4 (button)")
-	return false
-}
-
-func (g *Game) clickStrafeLeft(*gui.Button) bool {
-	notPorted("fn_09aa_0219 (button)")
-	return false
-}
-
-func (g *Game) clickStrafeRight(*gui.Button) bool {
-	notPorted("fn_09aa_026a (button)")
-	return false
-}
-
-func (g *Game) clickTurnLeft(*gui.Button) bool {
-	notPorted("fn_09aa_02bb (button)")
-	return false
-}
-
-func (g *Game) clickTurnRight(*gui.Button) bool {
-	notPorted("fn_09aa_033f (button)")
-	return false
-}
-
 func (g *Game) clickAttack(*gui.Button) bool {
 	notPorted("fn_0ca0_0012 (button)")
 	return false

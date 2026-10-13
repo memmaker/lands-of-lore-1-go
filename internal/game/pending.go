@@ -15,7 +15,6 @@ func (e notPortedError) Error() string { return fmt.Sprintf("not ported yet: %s"
 func notPorted(name string) { panic(notPortedError{name}) }
 
 func (g *Game) playCharacterSound(c, sound int) { notPorted("fn_0bbc_0744 (character sound)") }
-func (g *Game) waitTicks(n int)                 { notPorted("fn_0845_0bb6 (wait, running the game's idle work)") }
 
 // Combat and character effects the monsters call (CHECKLIST: Combat).
 func (g *Game) drainParty(a, b, c int) { notPorted("ovr_2d00_002a (drain the party)") }
@@ -26,9 +25,6 @@ func (g *Game) takeCharacterItem(ch, slots, flags int) int {
 func (g *Game) characterSays(id, character int, wait bool) bool {
 	notPorted("fn_154c_0057 (a character speaks)")
 	return false
-}
-func (g *Game) printMessage(flags int, format string, args ...any) {
-	notPorted("fn_0845_01c4 (print a message)")
 }
 func (g *Game) poisonCharacter(ch, a, b, c, d int) { notPorted("ovr_2d00_0025 (poison a character)") }
 func (g *Game) paralyseCharacter(ch int)           { notPorted("ovr_2d00_0020 (paralyse a character)") }

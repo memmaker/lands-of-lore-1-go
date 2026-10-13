@@ -149,11 +149,12 @@ type Game struct {
 
 	sceneReady bool // (C: g_20d3, 1 at start)
 
-	view            viewState    // the 3D view renderer's state
-	sceneOverlay    sceneOverlay // (C: g_4bd0)
-	compassNeedle   int          // the needle drawn, or noCompass (C: g_06d5)
-	compassSwing    int          // (C: g_06d7)
-	compassNextTick int          // (C: g_06d9)
+	view            viewState     // the 3D view renderer's state
+	sceneOverlay    sceneOverlay  // (C: g_4bd0)
+	overlayRows     []overlayLine // the overlay kept for the walk animations (C: g_4edc)
+	compassNeedle   int           // the needle drawn, or noCompass (C: g_06d5)
+	compassSwing    int           // (C: g_06d7)
+	compassNextTick int           // (C: g_06d9)
 
 	quit           bool                            // leaves the main loop (C: g_4bf4)
 	deadPartyCheck int                             // flags for checkPartyDead, or noPartyCheck (C: g_20d1)

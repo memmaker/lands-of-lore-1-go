@@ -70,7 +70,7 @@ func (g *Game) loadLevel(n int) error {
 		return err
 	}
 	g.placeLevelItems()
-	g.pushMonstersOff(g.currentBlock)
+	g.killMonstersOn(g.currentBlock)
 	g.redTint = tintedTable(g.Palette[:], redTintScale, redTintAdd, 0, 0, levelColours, true)
 	g.walkTransition = 0
 	if g.paletteState == paletteToFadeIn {
@@ -214,12 +214,5 @@ func (g *Game) endTalk() {
 }
 func (g *Game) loadSpeechIndex(level int)   {} // sound: the speech index (C: ovr_2da3_0020)
 func (g *Game) restoreLevelState(level int) { notPorted("ovr_2d3c_0025 (restore a visited level)") }
-func (g *Game) pushMonstersOff(b int) {
-	for o := g.lvl.blocks[b].Objects; o != 0; o = *g.objectNext(o) {
-		if o&monsterFlag != 0 {
-			notPorted("fn_0845_155d (monsters on the party's block)")
-		}
-	}
-}
 
 const noTalk = -1

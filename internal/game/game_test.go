@@ -45,6 +45,10 @@ const (
 	returnEvery  = 300
 	scanReturn   = 28
 	scanUp       = 72
+	scanLeft     = 75
+	scanDown     = 80
+	scanRight    = 77
+	scanHome     = 71
 )
 
 func steps(n int) bool {
@@ -124,4 +128,16 @@ func TestNewGame(t *testing.T) {
 	}
 	t.Logf("party: %q, items %v; ended with %v", g.party[0].Name, g.party[0].Items, runErr)
 	savePNG(t, host.ShowFrame(), "game.png")
+	// Walk: the arrow keys turn and step.
+	for _, k := range []struct {
+		scan byte
+		name string
+	}{{scanLeft, "strafe.png"}, {scanUp, "bump.png"}, {scanRight, "strafe2.png"}, {scanHome, "turn.png"}, {scanUp, "walk.png"}, {scanDown, "back.png"}} {
+		block, dir := g.currentBlock, g.direction
+		host.PushScan(host.ScanEvent{Scan: k.scan, Extended: true})
+		host.PushScan(host.ScanEvent{Scan: k.scan, Extended: true, Released: true})
+		steps(100)
+		t.Logf("%s: block %d dir %d -> block %d dir %d; %v", k.name, block, dir, g.currentBlock, g.direction, runErr)
+		savePNG(t, host.ShowFrame(), k.name)
+	}
 }

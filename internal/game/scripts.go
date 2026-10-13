@@ -54,6 +54,13 @@ const (
 	opcodeSceneOn            = 154
 	opcodeMoveMonster        = 68
 	opcodeSay                = 122
+	opcodeSetWall            = 0
+	opcodeDrawScene          = 2
+	opcodeMoveParty          = 4
+	opcodePrintMessage       = 5
+	opcodeWait               = 6
+	opcodeTakeHeldItem       = 12
+	opcodeToggleWall         = 52
 	opcodeClearDialogue      = 34
 	opcodeSceneOff           = 155
 	opcodeStartScene         = 81
@@ -114,6 +121,13 @@ func (g *Game) opcodes() []emc.Opcode {
 	ops[opcodeSceneOn] = g.opSceneOn
 	ops[opcodeMoveMonster] = g.opMoveMonster
 	ops[opcodeSay] = g.opSay
+	ops[opcodeSetWall] = g.opSetWall
+	ops[opcodeDrawScene] = g.opDrawScene
+	ops[opcodeMoveParty] = g.opMoveParty
+	ops[opcodePrintMessage] = g.opPrintMessage
+	ops[opcodeWait] = g.opWait
+	ops[opcodeTakeHeldItem] = g.opTakeHeldItem
+	ops[opcodeToggleWall] = g.opToggleWall
 	ops[opcodeClearDialogue] = g.opClearDialogue
 	ops[opcodeSceneOff] = g.opSceneOff
 	ops[opcodeStartScene] = g.opStartScene

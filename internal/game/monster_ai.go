@@ -838,3 +838,21 @@ func (g *Game) blockEmptyNorth(b int) bool {
 	w := g.lvl.blocks[b].Walls[0]
 	return g.lvl.wallVMP[w] == 0 && g.lvl.wallShape[w] == 0 && g.lvl.blocks[b].Flags&blockAutomapLeft == 0
 }
+
+// killMonstersOn removes the monsters on block b, as when a wall appears there, and
+// says how many there were (C: fn_0845_155d).
+func (g *Game) killMonstersOn(b int) int {
+	n := 0
+	for o := g.lvl.blocks[b].Objects; o != 0; {
+		next := *g.objectNext(o)
+		if o&monsterFlag != 0 {
+			m := &g.monsters[o&monsterIndex]
+			n++
+			g.setMonsterMode(m, monsterModeRemove)
+			g.noteBlockChanged(m.Block)
+			g.moveMonster(m, 0, 0)
+		}
+		o = next
+	}
+	return n
+}

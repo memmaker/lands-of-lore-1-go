@@ -350,14 +350,6 @@ func (g *Game) revealNeighbour(b, x, y, dx, dy int) bool {
 
 // Not ported yet.
 
-func (g *Game) setHeldItem(item int) {
-	if item != 0 {
-		notPorted("fn_0845_0acf (put an item on the cursor)")
-	}
-	g.heldItem = 0
-	g.Screen.SetMouseShape(0, 0, g.cursors[0])
-}
-
 func (g *Game) hideIcon() { g.setIcon(0, iconRelease) }
 
 // opSetLevelMusic (C: ovr_2d2c_00de).
