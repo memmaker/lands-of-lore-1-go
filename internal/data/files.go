@@ -199,3 +199,12 @@ func (f *Files) Size(name string) int {
 	}
 	return 0
 }
+
+// Names lists every file the index knows.
+func (f *Files) Names() []string {
+	names := make([]string, 0, len(f.byName))
+	for n := range f.byName {
+		names = append(names, n)
+	}
+	return names
+}

@@ -146,6 +146,14 @@ type Game struct {
 	talkEnds       int         // when the character's speech ends (C: g_4c02)
 	animations     []animation // the level's looping animations (C: g_4ee0)
 
+	tims                [timSlots]*timScript // (C: g_20fc)
+	tim                 *timScript           // the TIM running (C: g_4bae and the others)
+	timFunction         int                  // its function running (C: g_4bb6)
+	timResult           int                  // the dialogue's answer (C: g_4bb2)
+	timDialogueFunction int                  // the function a dialogue moves on, or noTimFunction (C: g_4bb4)
+	dialogueChoices     int                  // (C: g_4bde)
+	speechDelay         int                  // ticks speech took, added to the next wait (C: g_213c)
+
 	heldItem int // the item on the cursor, 0 for none (C: g_8048)
 	busyIcon int // which icon it shows (C: g_ab1a)
 }

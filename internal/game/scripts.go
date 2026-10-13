@@ -24,37 +24,42 @@ const (
 	opcodeSetItemField   = 171
 	opcodeNothingToo     = 191
 
-	opcodeDice              = 3
-	opcodeLoadGraphics      = 9
-	opcodeLoadMaze          = 10
-	opcodeLoadMonsterShapes = 11
-	opcodeOpenDecorations   = 21
-	opcodeCloseDecorations  = 22
-	opcodeLoadDoorShapes    = 24
-	opcodeSetLevelVar       = 46
-	opcodeGetEngineVar      = 47
-	opcodeSetEngineVar      = 48
-	opcodeAssignDecoration  = 53
-	opcodeDoorDecoration    = 54
-	opcodePlaceMonster      = 56
-	opcodeMonsterType       = 63
-	opcodeGiveMonsterItem   = 85
-	opcodeLevelStrings      = 86
-	opcodeQueueTrack        = 99
-	opcodeBrightness        = 107
-	opcodeLevelSoundsOff    = 124
-	opcodeLoadSoundFile     = 148
-	opcodeStartPlay         = 154
-	opcodeGetWall           = 1
-	opcodeGetDirection      = 28
-	opcodeHideMouse         = 37
-	opcodeShowMouse         = 38
-	opcodeFadeToBlack       = 39
-	opcodeGetLevelVar       = 45
-	opcodeHasCredits        = 71
-	opcodeSetLevelTimer     = 72
-	opcodeGetWallFlags      = 90
-	opcodeSetLevelMusic     = 30
+	opcodeDice               = 3
+	opcodeLoadGraphics       = 9
+	opcodeLoadMaze           = 10
+	opcodeLoadMonsterShapes  = 11
+	opcodeOpenDecorations    = 21
+	opcodeCloseDecorations   = 22
+	opcodeLoadDoorShapes     = 24
+	opcodeSetLevelVar        = 46
+	opcodeGetEngineVar       = 47
+	opcodeSetEngineVar       = 48
+	opcodeAssignDecoration   = 53
+	opcodeDoorDecoration     = 54
+	opcodePlaceMonster       = 56
+	opcodeMonsterType        = 63
+	opcodeGiveMonsterItem    = 85
+	opcodeLevelStrings       = 86
+	opcodeQueueTrack         = 99
+	opcodeBrightness         = 107
+	opcodePendingBlockScript = 124
+	opcodeLoadTIM            = 78
+	opcodeRunTIM             = 79
+	opcodeFreeTIM            = 80
+	opcodeStopTIM            = 89
+	opcodeStartTIMDialogue   = 135
+	opcodeLoadSoundFile      = 148
+	opcodeStartPlay          = 154
+	opcodeGetWall            = 1
+	opcodeGetDirection       = 28
+	opcodeHideMouse          = 37
+	opcodeShowMouse          = 38
+	opcodeFadeToBlack        = 39
+	opcodeGetLevelVar        = 45
+	opcodeHasCredits         = 71
+	opcodeSetLevelTimer      = 72
+	opcodeGetWallFlags       = 90
+	opcodeSetLevelMusic      = 30
 )
 
 // opcodes is the table level, item and start-up scripts call into (C: g_2494). Entries
@@ -92,7 +97,7 @@ func (g *Game) opcodes() []emc.Opcode {
 	ops[opcodeLevelStrings] = g.opLoadLevelStrings
 	ops[opcodeQueueTrack] = g.opQueueTrack
 	ops[opcodeBrightness] = g.opSetBrightness
-	ops[opcodeLevelSoundsOff] = g.opSetPendingBlockScript
+	ops[opcodePendingBlockScript] = g.opSetPendingBlockScript
 	ops[opcodeLoadSoundFile] = g.opLoadSoundFile
 	ops[opcodeStartPlay] = g.opStartPlay
 	ops[opcodeGetWall] = g.opGetWall
@@ -105,6 +110,11 @@ func (g *Game) opcodes() []emc.Opcode {
 	ops[opcodeSetLevelTimer] = g.opSetLevelTimer
 	ops[opcodeGetWallFlags] = g.opGetWallFlags
 	ops[opcodeSetLevelMusic] = g.opSetLevelMusic
+	ops[opcodeLoadTIM] = g.opLoadTIM
+	ops[opcodeRunTIM] = g.opRunTIM
+	ops[opcodeFreeTIM] = g.opFreeTIM
+	ops[opcodeStopTIM] = g.opStopTIM
+	ops[opcodeStartTIMDialogue] = g.opStartTIMDialogue
 	return ops
 }
 
