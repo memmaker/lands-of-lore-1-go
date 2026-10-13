@@ -111,6 +111,8 @@ func (f *Files) Read(name string) ([]byte, error) {
 			return nil, err
 		}
 		f.cache[archive] = whole
+		f.readDirectory(e.archive, whole)
+		e = f.entries[i]
 	}
 	if e.offset+e.size > len(whole) {
 		return nil, fmt.Errorf("%s: beyond the end of %s", name, archive)
@@ -118,13 +120,49 @@ func (f *Files) Read(name string) ([]byte, error) {
 	return whole[e.offset : e.offset+e.size : e.offset+e.size], nil
 }
 
+// readDirectory replaces the index's offsets and sizes of an archive's members by those of
+// the archive's own directory, as the original does when it first opens an archive: the
+// index's values are stale. The directory is a list of (offset (4), name, 0) ending with
+// an offset of 0; each member runs to the next one's offset, the last to the archive's end.
+func (f *Files) readDirectory(archive int, whole []byte) {
+	prev := -1
+	for at := 0; at+directoryOffsetSize <= len(whole); {
+		offset := int(binary.LittleEndian.Uint32(whole[at:]))
+		if offset == 0 {
+			break
+		}
+		at += directoryOffsetSize
+		end := bytes.IndexByte(whole[at:], 0)
+		if end < 0 {
+			break
+		}
+		name := strings.ToUpper(string(whole[at : at+end]))
+		at += end + 1
+		i, ok := f.byName[name]
+		if !ok || !f.entries[i].packed || f.entries[i].archive != archive {
+			continue
+		}
+		f.entries[i].offset = offset
+		if prev >= 0 {
+			f.entries[prev].size = offset - f.entries[prev].offset
+		}
+		prev = i
+	}
+	if prev >= 0 {
+		f.entries[prev].size = len(whole) - f.entries[prev].offset
+	}
+}
+
+// directoryOffsetSize is the size of a member's offset in an archive's directory.
+const directoryOffsetSize = 4
+
 // Size returns a file's length, 0 if it is missing (C: fn_1809_120c on a fresh handle).
 func (f *Files) Size(name string) int {
 	if fi, err := os.Stat(f.path(name)); err == nil {
 		return int(fi.Size())
 	}
-	if i, ok := f.byName[strings.ToUpper(name)]; ok {
-		return f.entries[i].size
+	if b, err := f.Read(name); err == nil {
+		return len(b)
 	}
 	return 0
 }
