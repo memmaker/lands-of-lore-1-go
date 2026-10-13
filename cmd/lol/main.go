@@ -1,4 +1,4 @@
-// Command lol runs Lands of Lore: The Throne of Chaos (the DOS CD version 1.02, LANDS.EXE) from
+// Command lol runs Lands of Lore: The Throne of Chaos (MAIN.EXE of the DOS CD version 1.02) from
 // the original data files, ported to Go.
 //
 //	lol [-data DIR]            play with the game files in DIR (default $GOPLAY_DATA, else ./game)

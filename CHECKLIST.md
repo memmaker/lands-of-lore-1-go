@@ -23,7 +23,12 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] Title screen: title.cps fade-in, FONT6P, cursors, LANDS.ENG strings, version text (o2d50_0039; sound index and MT-32 sysex left to the sound port)
   - [x] Main menu boxes and selection (o2cfa, o2d43, PLAIN mode)
   - [ ] Game data load after the menu (o2d50_0048)
-  - [ ] Hand-offs: CHARGEN/INTRO/HISTORY run the language LANDS.EXE, load game, exit
+  - [x] Exit
+  - [ ] Load game (ovr_2d56_002f) after the data load
+  - [ ] New game: MAIN.EXE's numbered start (ovr_2d2c_0070, argv[1] 0-3 picks the character); until
+        character generation exists, the menu choice starts with the default character
+  - [ ] BLOCKED: CHARGEN, INTRO and HISTORY are the language folder's LANDS.EXE, a separate
+        program with no decomp in lands-of-lore-1-re (only MAIN.EXE and LOLCD.EXE)
 - [ ] Intro (TIM/WSA sequences), character selection
 - [ ] Scripts: EMC interpreter and opcodes (s018, s019), TIM (s001, s002)
 - [ ] Levels, 3D view renderer (o2d2c, o2cda), movement, automap
