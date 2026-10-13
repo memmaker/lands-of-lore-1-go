@@ -3,6 +3,7 @@ package game
 import (
 	"github.com/memmaker/lands-of-lore-1-go/internal/clock"
 	"github.com/memmaker/lands-of-lore-1-go/internal/host"
+	"github.com/memmaker/lands-of-lore-1-go/internal/input"
 )
 
 // Events a block script can be run for (C: fn_0845_1343's mask bits).
@@ -247,7 +248,9 @@ func (g *Game) checkPartyDead(flags int) bool {
 // Not ported yet.
 
 func (g *Game) cancelSpellTarget() { notPorted("ovr_2ceb_0020 (cancel a spell's target)") }
-func (g *Game) putKeyBack(k int)   { notPorted("fn_2169_0945 (put a key back)") }
+
+// putKeyBack queues key k again (C: fn_2169_0945).
+func (g *Game) putKeyBack(k int) { input.Put(k) }
 func (g *Game) highlightSpell(on bool) {
 	notPorted("fn_0ca0_05bb (highlight the selected spell)")
 }

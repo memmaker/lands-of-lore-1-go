@@ -4,6 +4,7 @@ import (
 	"github.com/memmaker/lands-of-lore-1-go/internal/clock"
 	"github.com/memmaker/lands-of-lore-1-go/internal/emc"
 	"github.com/memmaker/lands-of-lore-1-go/internal/gfx"
+	"github.com/memmaker/lands-of-lore-1-go/internal/input"
 )
 
 // setWalls sets block b's wall dir to type v, or with allSides all four; a whole door
@@ -841,5 +842,160 @@ func (g *Game) opDrawGameScreen(s *emc.State) int {
 // opPrintString prints a string on the message line (C: fn_0fbe_24b4).
 func (g *Game) opPrintString(s *emc.State) int {
 	g.printText(textWindowMessage, g.text(s.Arg(0)), scriptArgs(s), 1)
+	return 1
+}
+
+// opTrue (C: ovr_2d77_0020).
+func (g *Game) opTrue(s *emc.State) int { return 1 }
+
+// opQuitGame ends the program (C: fn_0fbe_25c4, fn_0845_0bf6).
+func (g *Game) opQuitGame(s *emc.State) int {
+	g.quit = true
+	g.exitProgram = true
+	return 1
+}
+
+// opRemoveMonster (C: fn_0fbe_25d1). The test for a monster is always true (sic).
+func (g *Game) opRemoveMonster(s *emc.State) int {
+	m := &g.monsters[s.Arg(0)&monsterIndex]
+	g.setMonsterMode(m, monsterModeRemove)
+	g.noteBlockChanged(m.Block)
+	g.moveMonster(m, 0, 0)
+	return 1
+}
+
+// opSetScriptValue (C: fn_0fbe_262d).
+func (g *Game) opSetScriptValue(s *emc.State) int {
+	g.scriptValue = s.Arg(0)
+	return 1
+}
+
+// opKeyPressed says whether a key was pressed, and takes it or with keep puts it back
+// for later (C: fn_0fbe_2647).
+func (g *Game) opKeyPressed(s *emc.State) int {
+	g.GUI.Changed = true
+	g.updateSpeech()
+	if input.Peek() != 0 {
+		k := input.Get()
+		if k != 0 && k&input.Released == 0 {
+			if s.Arg(0) != 0 {
+				input.Put(k)
+				g.sceneRegionActive = true
+			} else {
+				input.Flush()
+			}
+			return 1
+		}
+	}
+	return 0
+}
+
+// Print flags of opPrintInWindow.
+const (
+	printClear = 1 << 0
+	printHome  = 1<<0 | 1<<1
+)
+
+// opPrintInWindow prints a string in a text window: window, flags, string id
+// (C: fn_0fbe_269d).
+func (g *Game) opPrintInWindow(s *emc.State) int {
+	w, f := s.Arg(0), s.Arg(1)
+	g.Text.SelectWindow(w)
+	if f&printClear != 0 {
+		g.Text.Clear()
+	}
+	if f&printHome != 0 {
+		g.Screen.Windows[w].Column, g.Screen.Windows[w].Row = 0, 0
+	}
+	g.printText(w, g.text(s.Arg(2)), scriptArgs(s), 3)
+	return 1
+}
+
+// opCountMonstersOfTypes counts the monsters there of the types listed up to a -1
+// (C: fn_0fbe_2725).
+func (g *Game) opCountMonstersOfTypes(s *emc.State) int {
+	mask := 0
+	for i := 0; s.Arg(i) != -1; i++ {
+		mask |= 1 << s.Arg(i)
+	}
+	n := 0
+	for i := range g.monsters {
+		if m := &g.monsters[i]; mask&(1<<m.TypeIndex) != 0 && m.Mode < monsterModeRemove {
+			n++
+		}
+	}
+	return n
+}
+
+// opAnimateWall sets a wall to frame n of a list: block, side, n, count, frames
+// (C: fn_0fbe_2798).
+func (g *Game) opAnimateWall(s *emc.State) int {
+	n, count := uint16(s.Arg(2)), uint16(s.Arg(3))
+	g.setWalls(s.Arg(0), s.Arg(1), s.Arg(4+int(n%count)))
+	return 0
+}
+
+// opHasItemType says whether an item of a type is in the inventory or held (unless
+// the third argument), or carried by a character or anyone for -1 (C: fn_0fbe_27f6).
+func (g *Game) opHasItemType(s *emc.State) int {
+	who, t := s.Arg(0), s.Arg(1)
+	if s.Arg(2) == 0 {
+		for _, it := range g.inventory {
+			if it != 0 && g.items[it].Type == t {
+				return 1
+			}
+		}
+		if g.items[g.heldItem].Type == t {
+			return 1
+		}
+	}
+	lo, hi := who, who
+	if who == -1 {
+		lo, hi = 0, partySize-1
+	}
+	for i := lo; i <= hi; i++ {
+		if g.carries(i, t) {
+			return 1
+		}
+	}
+	return 0
+}
+
+// opSetDoorHandled tells a door's click that its script has dealt with it
+// (C: fn_0fbe_28b5).
+func (g *Game) opSetDoorHandled(s *emc.State) int {
+	g.doorHandled = s.Arg(0)
+	return g.doorHandled
+}
+
+// opFindItem finds the next item in a block, at a position inside it or anywhere for
+// -1: block, x, y, start over (C: fn_0fbe_2922). Going on from the last item the
+// original read the block numbered like that item instead of the item (sic).
+func (g *Game) opFindItem(s *emc.State) int {
+	x, y := s.Arg(1), s.Arg(2)
+	if x != -1 {
+		x &= lowByteMask
+	}
+	if y != -1 {
+		y &= lowByteMask
+	}
+	if s.Arg(3) != 0 || g.lastFoundItem == -1 {
+		g.lastFoundItem = g.lvl.blocks[s.Arg(0)].Objects
+	} else {
+		g.lastFoundItem = g.lvl.blocks[g.lastFoundItem&blockMask].Objects
+	}
+	for g.lastFoundItem != 0 {
+		id := g.lastFoundItem
+		if !isMonster(id) && (x == -1 || g.items[id].X&lowByteMask == x) && (y == -1 || g.items[id].Y&lowByteMask == y) {
+			return id
+		}
+		g.lastFoundItem = g.lvl.blocks[id&monsterIndex&blockMask].Objects
+	}
+	return 0
+}
+
+// opTakeItemFromBlock: item, block (C: fn_0fbe_29f0).
+func (g *Game) opTakeItemFromBlock(s *emc.State) int {
+	g.takeItemFromBlock(s.Arg(0), s.Arg(1))
 	return 1
 }

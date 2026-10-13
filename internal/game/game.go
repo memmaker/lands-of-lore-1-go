@@ -127,6 +127,9 @@ type Game struct {
 	messageFadeStart    int                // (C: g_4bc8)
 	iconReleaseAt       int                // the pressed icon may come up from this tick (C: g_ab26)
 	talkingCharacter    int                // the character whose speech shows, or noTalk (C: g_4bf8)
+	exitProgram         bool               // a script quit the game (C: fn_0845_0bf6)
+	doorHandled         int                // a clicked door's script dealt with it (C: g_4be0)
+	lastFoundItem       int                // (C: g_2794)
 	talkStyle           int                // where it talks (C: g_4bfa)
 	talkSteps           int                // mouth moves left (C: g_4bfc)
 	talkRestore         bool               // set the face back at the end (C: g_4c00)
@@ -209,6 +212,7 @@ func New(dir string) (*Game, error) {
 	g.buttonDefs = buttonDefs
 	g.timers = newTimers()
 	g.talkingCharacter = noTalk
+	g.lastFoundItem = -1
 	g.sceneReady = true
 	g.compassNeedle = noCompass
 	g.deadPartyCheck = noPartyCheck
