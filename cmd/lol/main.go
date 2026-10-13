@@ -1,4 +1,4 @@
-// Command lol runs Lands of Lore: The Throne of Chaos (the DOS floppy version, MAIN.EXE) from
+// Command lol runs Lands of Lore: The Throne of Chaos (the DOS CD version 1.02, LANDS.EXE) from
 // the original data files, ported to Go.
 //
 //	lol [-data DIR]            play with the game files in DIR (default $GOPLAY_DATA, else ./game)
@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/memmaker/lands-of-lore-1-go/internal/data"
+	"github.com/memmaker/lands-of-lore-1-go/internal/game"
 	"github.com/memmaker/lands-of-lore-1-go/internal/gameimport"
 	"github.com/memmaker/lands-of-lore-1-go/internal/host"
 )
@@ -105,5 +106,11 @@ func importGame(source, dir string) error {
 	return nil
 }
 
-// run is the game; filled in as the port grows.
-func run(dir string) error { return nil }
+// run is the game.
+func run(dir string) error {
+	g, err := game.New(dir)
+	if err != nil {
+		return err
+	}
+	return g.Run()
+}

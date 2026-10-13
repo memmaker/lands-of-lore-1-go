@@ -17,11 +17,11 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] keyboard and mouse buttons (input: s127 queue, scan-code tables, ASCII, held keys, remap; s046 button events). Left out: input recording (never switched on), keypad-as-mouse (no-mouse only), Caps/Num Lock (count as off)
 - [ ] Start-up and main menu (o2db0, o2d50, o2d56)
   - [x] Import keeps the CD's language folders (DATA/ENG|FRE|GER) apart; lookups search them second
-  - [ ] LANDS.CFG reading (o2e1e) and config checks (o2db0 main)
-  - [ ] Video setup: clear, FONT9P.FNT, black palette (o2df7, o2df1)
-  - [ ] cmd/lol run(): host frame, input, clock wired up
-  - [ ] Title screen: title.cps fade-in, FONT6P, cursors, LANDS.ENG strings, version text (o2d50_0039)
-  - [ ] Main menu boxes and selection (o2cfa, o2d43, PLAIN mode)
+  - [x] LANDS.CFG reading (o2e1e) and config checks (o2db0 main)
+  - [x] Video setup: clear, FONT9P.FNT, black palette (o2df7, o2df1)
+  - [x] cmd/lol run(): host frame, input, clock wired up
+  - [x] Title screen: title.cps fade-in, FONT6P, cursors, LANDS.ENG strings, version text (o2d50_0039; sound index and MT-32 sysex left to the sound port)
+  - [x] Main menu boxes and selection (o2cfa, o2d43, PLAIN mode)
   - [ ] Game data load after the menu (o2d50_0048)
   - [ ] Hand-offs: CHARGEN/INTRO/HISTORY run the language LANDS.EXE, load game, exit
 - [ ] Intro (TIM/WSA sequences), character selection
