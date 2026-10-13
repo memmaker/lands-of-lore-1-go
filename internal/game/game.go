@@ -102,7 +102,7 @@ type Game struct {
 	lastMoveDirection   int                // (C: g_7fd8)
 	visitedLevels       int                // bit n-1: level n entered before (C: g_81f9)
 	loadingLevelInit    bool               // a level's .INI runs (C: g_206d)
-	levelSoundsOff      bool               // (C: g_20d7)
+	pendingBlockScript  int                // a block whose script runs from the main loop (C: g_20d7)
 	walkTransition      int                // (C: g_7fdc)
 	redTint             []byte             // (C: g_aa03)
 	sceneUpdateRequired bool               // (C: g_7fb6)
@@ -138,6 +138,13 @@ type Game struct {
 	compassNeedle   int          // the needle drawn, or noCompass (C: g_06d5)
 	compassSwing    int          // (C: g_06d7)
 	compassNextTick int          // (C: g_06d9)
+
+	quit           bool        // leaves the main loop (C: g_4bf4)
+	deadPartyCheck int         // flags for checkPartyDead, or noPartyCheck (C: g_20d1)
+	controlsLocked int         // the move buttons are off for a scene (C: f_2803_0048, struct Scene c48)
+	spellTarget    int         // the character picked as a spell's target, or noCharacter (C: g_23ba)
+	talkEnds       int         // when the character's speech ends (C: g_4c02)
+	animations     []animation // the level's looping animations (C: g_4ee0)
 
 	heldItem int // the item on the cursor, 0 for none (C: g_8048)
 	busyIcon int // which icon it shows (C: g_ab1a)
@@ -175,6 +182,8 @@ func New(dir string) (*Game, error) {
 	g.talkingCharacter = noTalk
 	g.sceneReady = true
 	g.compassNeedle = noCompass
+	g.deadPartyCheck = noPartyCheck
+	g.spellTarget = noCharacter
 	return g, nil
 }
 

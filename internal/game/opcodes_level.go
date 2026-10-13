@@ -287,9 +287,9 @@ func (g *Game) opQueueTrack(s *emc.State) int {
 	return 1
 }
 
-// opSetLevelSoundsOff (C: fn_0fbe_25aa).
-func (g *Game) opSetLevelSoundsOff(s *emc.State) int {
-	g.levelSoundsOff = s.Arg(0) != 0
+// opSetPendingBlockScript (C: fn_0fbe_25aa).
+func (g *Game) opSetPendingBlockScript(s *emc.State) int {
+	g.pendingBlockScript = s.Arg(0)
 	return 1
 }
 

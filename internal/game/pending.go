@@ -16,4 +16,3 @@ func notPorted(name string) { panic(notPortedError{name}) }
 
 func (g *Game) playCharacterSound(c, sound int) { notPorted("fn_0bbc_0744 (character sound)") }
 func (g *Game) waitTicks(n int)                 { notPorted("fn_0845_0bb6 (wait, running the game's idle work)") }
-func (g *Game) mainLoop() error                 { notPorted("fn_0ca0_0c33 (main loop)"); return nil }

@@ -92,7 +92,7 @@ func (g *Game) opcodes() []emc.Opcode {
 	ops[opcodeLevelStrings] = g.opLoadLevelStrings
 	ops[opcodeQueueTrack] = g.opQueueTrack
 	ops[opcodeBrightness] = g.opSetBrightness
-	ops[opcodeLevelSoundsOff] = g.opSetLevelSoundsOff
+	ops[opcodeLevelSoundsOff] = g.opSetPendingBlockScript
 	ops[opcodeLoadSoundFile] = g.opLoadSoundFile
 	ops[opcodeStartPlay] = g.opStartPlay
 	ops[opcodeGetWall] = g.opGetWall

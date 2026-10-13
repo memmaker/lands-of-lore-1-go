@@ -34,7 +34,7 @@ const (
 func (g *Game) loadLevel(n int) error {
 	g.setFlag(flagLevelChanged, true)
 	g.setBusyCursor(busyCursor)
-	g.levelSoundsOff = false
+	g.pendingBlockScript = 0
 	g.stopMusic()
 	g.endTalk()
 	g.freeLevel()
