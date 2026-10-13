@@ -133,6 +133,12 @@ type Game struct {
 
 	sceneReady bool // (C: g_20d3, 1 at start)
 
+	view            viewState    // the 3D view renderer's state
+	sceneOverlay    sceneOverlay // (C: g_4bd0)
+	compassNeedle   int          // the needle drawn, or noCompass (C: g_06d5)
+	compassSwing    int          // (C: g_06d7)
+	compassNextTick int          // (C: g_06d9)
+
 	heldItem int // the item on the cursor, 0 for none (C: g_8048)
 	busyIcon int // which icon it shows (C: g_ab1a)
 }
@@ -168,6 +174,7 @@ func New(dir string) (*Game, error) {
 	g.timers = newTimers()
 	g.talkingCharacter = noTalk
 	g.sceneReady = true
+	g.compassNeedle = noCompass
 	return g, nil
 }
 

@@ -136,5 +136,3 @@ func (g *Game) drawSpellList() {
 		y += spellLineH
 	}
 }
-
-func (g *Game) renderScene(page int) { notPorted("ovr_2cda_0061 (draw the 3D view)") }

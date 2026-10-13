@@ -185,7 +185,7 @@ func (g *Game) opPlaceMonster(s *emc.State) int {
 		}
 		m.Speed = int(int8(m.Type.field42))
 		m.Attack = int(int8(dice(1, g.attackCount(i|monsterFlag, monsterAttackBase)) - 1))
-		m.DestDirection = monsterStartDest
+		m.Sub = monsterStartDest
 		m.Flags = int(uint16(s.Arg(5)))
 		g.setMonsterMode(m, s.Arg(6))
 		g.moveMonster(m, m.X, m.Y)

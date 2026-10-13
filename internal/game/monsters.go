@@ -3,33 +3,32 @@ package game
 // Monster is a monster on the level (C: struct Monster, 46 bytes of f_2803_15fa;
 // ScummVM: MonsterInPlay).
 type Monster struct {
-	Next          int // next object on the same block
-	Unknown2      int // (C: c02)
-	Unknown3      int // (C: c03)
-	DestDirection int // (C: c04)
-	Block         int
-	X, Y          int
-	Shift         int // animation tick (C: c0b)
-	DestX, DestY  int // where it is going (C: tx, ty)
-	TargetDir     int // (C: tdir)
-	DX, DY        int // (C: dx, dy)
-	AnimFrame     int // (C: anim)
-	Mode          int // 13 and up: dying or dead
-	Fighting      int // (C: c15)
-	ID            int
-	Direction     int // 0-7
-	Facing        int // 0-3
-	Flags         int
-	Damage        int // (C: hitDmg)
-	HitPoints     int
-	Thinking      int // countdown to the next decision (C: c1f)
-	TypeIndex     int // (C: c20)
-	Type          *monsterType
-	Speed         int    // (C: c25)
-	NextSpell     int    // (C: c26)
-	Attack        int    // (C: c27)
-	Items         int    // first carried item
-	Equipment     [4]int // (C: c2a)
+	Next         int // next object on the same block
+	DrawNext     int // next object to draw in the same block (C: c02)
+	Sub          int // height in the block, like an item's sub position (C: c04)
+	Block        int
+	X, Y         int
+	Shift        int // animation tick (C: c0b)
+	DestX, DestY int // where it is going (C: tx, ty)
+	TargetDir    int // (C: tdir)
+	DX, DY       int // (C: dx, dy)
+	AnimFrame    int // (C: anim)
+	Mode         int // 13 and up: dying or dead
+	Fighting     int // (C: c15)
+	ID           int
+	Direction    int // 0-7
+	Facing       int // 0-3
+	Flags        int
+	Damage       int // (C: hitDmg)
+	HitPoints    int
+	Thinking     int // countdown to the next decision (C: c1f)
+	TypeIndex    int // (C: c20)
+	Type         *monsterType
+	Speed        int    // (C: c25)
+	NextSpell    int    // (C: c26)
+	Attack       int    // (C: c27)
+	Items        int    // first carried item
+	Equipment    [4]int // (C: c2a)
 }
 
 const (

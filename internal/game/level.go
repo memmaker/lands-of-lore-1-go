@@ -48,11 +48,11 @@ const (
 // decoration is a wall decoration, drawn at up to ten distances (C: struct Deco, 72 bytes
 // of g_5a52; ScummVM: LevelDecorationProperty).
 type decoration struct {
-	shapes [decorationViews]int // index into decorationShapes, -1 for none
-	scale  [decorationViews]int
-	x, y   [decorationViews]int
-	next   int // another decoration drawn with this one, 0 for none
-	flags  int
+	shapes    [decorationViews]int // index into decorationShapes, -1 for none
+	viewFlags [decorationViews]int // bit 0: drawn as its base view, moved by x and y (C: fl)
+	x, y      [decorationViews]int
+	next      int // another decoration drawn with this one, 0 for none
+	flags     int
 }
 
 const (
@@ -137,7 +137,7 @@ type level struct {
 	monsterShapes                [monsterShapeSets][monsterShapeCount][]byte // (C: f_2803_04ca)
 	monsterPalettes              [monsterShapeSets][monsterShapeCount][]byte // (C: f_2803_040a)
 	monsterFrames                [monsterShapeSets][monsterAnimations][monsterShapeCount]monsterFrame
-	monsterSetColour             [monsterShapeSets]int // (C: f_2803_0053)
+	monsterAnimType              [monsterShapeSets]int // (C: f_2803_0053)
 	monsterTypes                 [monsterTypes]monsterType
 	music                        int  // the level's music track (C: g_0cf4)
 	firstDecoration, firstShapes bool // (C: g_4b46, g_4b48 restart at 1)
@@ -218,7 +218,7 @@ func readDecoration(defs []byte, idx int) decoration {
 	word := func(o int) int { return int(int16(binary.LittleEndian.Uint16(b[o:]))) }
 	for i := range decorationViews {
 		d.shapes[i] = word(2 * i)
-		d.scale[i] = int(b[2*decorationViews+i])
+		d.viewFlags[i] = int(b[2*decorationViews+i])
 		d.x[i] = word(3*decorationViews + 2*i)
 		d.y[i] = word(5*decorationViews + 2*i)
 	}
@@ -546,7 +546,7 @@ func (g *Game) loadMonsterShapes(name string, set, colour int) error {
 			}
 		}
 	}
-	lv.monsterSetColour[set] = colour
+	lv.monsterAnimType[set] = colour
 	g.buildMonsterPalettes(set, gfx.CopyShape(file, monsterPaletteKey))
 	return nil
 }
