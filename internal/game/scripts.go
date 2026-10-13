@@ -11,9 +11,17 @@ const opcodeCount = 192
 
 // Opcodes with known numbers.
 const (
+	opcodeSetGameFlag    = 7
+	opcodeTestGameFlag   = 8
 	opcodeAllocItemTypes = 13
 	opcodeDefineItemType = 14
+	opcodeMakeItem       = 15
+	opcodeGetItemField   = 18
+	opcodeGetCharField   = 19
+	opcodeSetCharField   = 20
 	opcodeNothing        = 23
+	opcodeCharJoins      = 75
+	opcodeSetItemField   = 171
 	opcodeNothingToo     = 191
 )
 
@@ -24,6 +32,14 @@ func (g *Game) opcodes() []emc.Opcode {
 	ops := make([]emc.Opcode, opcodeCount)
 	ops[opcodeAllocItemTypes] = g.opAllocItemTypes
 	ops[opcodeDefineItemType] = g.opDefineItemType
+	ops[opcodeSetGameFlag] = g.opSetGameFlag
+	ops[opcodeTestGameFlag] = g.opTestGameFlag
+	ops[opcodeMakeItem] = g.opMakeItem
+	ops[opcodeGetItemField] = g.opGetItemField
+	ops[opcodeSetItemField] = g.opSetItemField
+	ops[opcodeGetCharField] = g.opGetCharacterField
+	ops[opcodeSetCharField] = g.opSetCharacterField
+	ops[opcodeCharJoins] = g.opCharacterJoinsOrLeaves
 	ops[opcodeNothing] = opNothing
 	ops[opcodeNothingToo] = opNothing
 	return ops

@@ -70,7 +70,16 @@ func (g *Game) start() error {
 	choice := g.runMainMenu()
 	switch choice {
 	case choiceNewGame:
-		return fmt.Errorf("character generation (the language folder's LANDS.EXE CHARGEN): %w", errNotPorted)
+		// Character generation is the language folder's LANDS.EXE, which is not ported;
+		// it would start this program again with the chosen hero's number, which shows
+		// the title once more and goes on below. Until then the default hero starts.
+		if err := g.loadGameData(); err != nil {
+			return err
+		}
+		if err := g.startNewGame(defaultHero); err != nil {
+			return err
+		}
+		return g.mainLoop()
 	case choiceIntro:
 		return fmt.Errorf("intro (LANDS.EXE INTRO): %w", errNotPorted)
 	case choiceHistory:

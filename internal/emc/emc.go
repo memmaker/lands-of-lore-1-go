@@ -174,3 +174,12 @@ func (st *State) stackAt(i int) *int {
 	}
 	return &st.Stack[i]
 }
+
+// EntryMask is the word before the entry point Start found: item and level scripts keep
+// a mask of the events the function handles there (C: ip[-1] after fn_0f28_035f).
+func (st *State) EntryMask() int {
+	if !st.Active() || st.IP < 1 || st.IP > len(st.Script.data) {
+		return 0
+	}
+	return int(uint16(st.Script.data[st.IP-1]))
+}

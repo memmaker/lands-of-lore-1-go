@@ -30,8 +30,8 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [ ] BLOCKED: CHARGEN, INTRO and HISTORY are the language folder's LANDS.EXE, a separate
         program with no decomp in lands-of-lore-1-re (only MAIN.EXE and LOLCD.EXE)
 - [ ] New game to the first dungeon view
-  - [ ] New game state (ovr_2d2c_0070)
-  - [ ] Party joining and leaving (o2d74)
+  - [x] New game state (ovr_2d2c_0070), credits (o2d0e), item creation
+  - [x] Party joining and leaving (o2d74), opcode 75
   - [ ] Game screen button lists (o2ceb)
   - [ ] Level load: LEVELn files, walls, decorations, monster shapes, palettes (o2d2c)
   - [ ] Main loop (fn_0ca0_0c33)
@@ -41,6 +41,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
 - [ ] Scripts: EMC interpreter and opcodes (s018, s019), TIM (s001, s002)
   - [x] EMC loader and interpreter (s018, o2de9), tested on ONETIME.INF
   - [x] Item type opcodes 13, 14 (ovr_2d50_003e, 0043) for ONETIME.INF
+  - [x] Game flags 7, 8; items 15, 18, 171; character fields 19, 20 (HP/MP bar animation)
   - [ ] The other 190 opcodes of g_2494, ported with the systems they drive
   - [ ] TIM interpreter (s001, s002)
 - [ ] Levels, 3D view renderer (o2d2c, o2cda), movement, automap

@@ -52,6 +52,34 @@ type Game struct {
 	tintTable    []byte   // (C: f_2803_020a)
 	textReady    bool     // (C: g_20d9)
 
+	party [partySize]Character // (C: f_2803_362d)
+	level int                  // the current level (C: g_7fe5)
+	faces [partySize][][]byte  // (C: g_4c06)
+
+	portraitX         [partySize]int // (C: f_2803_3625)
+	controlMode       int            // (C: f_2803_0000[69]; ScummVM: _currentControlMode)
+	textEnabled       bool           // (C: g_81fe)
+	selectedCharacter int            // (C: g_7fe3)
+	updateFlags       int            // scene and screen update state (C: g_7fd6; ScummVM: _updateFlags)
+
+	selectedSpell    int                 // (C: g_7fd9)
+	compassDirection int                 // the direction the compass shows, -1 to redraw (C: g_7fe1)
+	lastMouseRegion  int                 // (C: g_804a)
+	options          int                 // option bits (C: g_7fda)
+	inventory        [inventorySlots]int // (C: g_7fe6)
+	availableSpells  [spellSlots]int     // (C: g_81f2)
+	scriptVars       [scriptVarCount]int // (C: g_81e2; ScummVM: _globalScriptVars2)
+	language         int                 // (C: g_81fd)
+	gameFlags        [gameFlagWords]int  // (C: g_804c)
+
+	musicOn, effectsOn                bool // (C: g_35e4, g_35e2)
+	digitalEffectsOn, digitalSpeechOn bool // the VOC mixer's switches (C: g_20cd, g_20cf)
+	musicVolume, effectsVolume        int  // (C: g_8201, g_8200)
+	speechVolume                      int  // (C: g_81ff)
+
+	credits   int            // the party's money (C: g_81e0)
+	coinPiles [coinPiles]int // coins on each pile (C: g_09bc)
+
 	heldItem int  // the item on the cursor, 0 for none (C: g_8048)
 	busy     bool // the busy cursor is up (C: g_806a bit 9)
 	busyIcon int  // which icon it shows (C: g_ab1a)
@@ -87,7 +115,16 @@ func New(dir string) (*Game, error) {
 }
 
 // Run is the program from the video set-up on.
-func (g *Game) Run() error {
+func (g *Game) Run() (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			e, ok := r.(notPortedError)
+			if !ok {
+				panic(r)
+			}
+			err = e
+		}
+	}()
 	host.ShowFrame = g.Screen.Frame
 	clock.Reset()
 	input.Init(g.Screen)
