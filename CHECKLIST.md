@@ -43,14 +43,14 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] EMC loader and interpreter (s018, o2de9), tested on ONETIME.INF
   - [x] Item type opcodes 13, 14 (ovr_2d50_003e, 0043) for ONETIME.INF
   - [x] Game flags 7, 8; items 15, 18, 171; character fields 19, 20 (HP/MP bar animation)
-  - [ ] The other opcodes of g_2494, ported with the systems they drive (unported ones fail loudly with their C name)
+  - [x] The other opcodes of g_2494, ported with the systems they drive (unported ones fail loudly with their C name)
     - [x] Level set-up opcodes 3/9/10/11/21/22/24/30/46/47/48/53/54/56/63/85/86/99/107/124/148/154
     - [x] Simple ones 1/28/37/38/39/45/71/72/90
     - [x] World opcodes 0/2/4/5/6/12/16/17/26/29/33/35/36/40-44/49-52/123/125-134/136/137
     - [x] Party/item opcodes 55/57-59/61/62/64/65/69/70/73/74/76/77
     - [x] Talk opcodes 83/87/88/91/92/94-97/100-106/108-119/121
     - [x] 93, 149, 164, 173, 176, 186 (monster shapes, sound check, scene overlay, cast, flash, busy cursor)
-    - [ ] Left: 98/170/174/177/182
+    - [x] 98, 170, 174, 177, 182 (label, bezel heal, game end wipe, dark light, gas)
   - [ ] TIM interpreter (s001, s002)
 - [ ] Levels, 3D view renderer (o2d2c, o2cda), movement, automap
   - [x] Party movement, walk/turn/strafe animations (s011, s038), doors, timers

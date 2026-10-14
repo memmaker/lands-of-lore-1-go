@@ -61,6 +61,11 @@ const (
 	opcodeWait                   = 6
 	opcodeTakeHeldItem           = 12
 	opcodeToggleWall             = 52
+	opcodeGas                    = 182
+	opcodeDarkLite               = 177
+	opcodeGameEnd                = 174
+	opcodeDrawLabel              = 98
+	opcodeBezelHeal              = 170
 	opcodeFreeMonsterShapes      = 93
 	opcodeSoundLoaded            = 149
 	opcodeSetSceneOverlay        = 164
@@ -248,6 +253,11 @@ func (g *Game) opcodes() []emc.Opcode {
 	ops[opcodeWait] = g.opWait
 	ops[opcodeTakeHeldItem] = g.opTakeHeldItem
 	ops[opcodeToggleWall] = g.opToggleWall
+	ops[opcodeGas] = g.opGas
+	ops[opcodeDarkLite] = g.opDarkLite
+	ops[opcodeGameEnd] = g.opGameEnd
+	ops[opcodeDrawLabel] = g.opDrawLabel
+	ops[opcodeBezelHeal] = g.opBezelHeal
 	ops[opcodeFreeMonsterShapes] = g.opFreeMonsterShapes
 	ops[opcodeSoundLoaded] = g.opSoundLoaded
 	ops[opcodeSetSceneOverlay] = g.opSetSceneOverlay
