@@ -112,5 +112,6 @@ func run(dir string) error {
 	if err != nil {
 		return err
 	}
+	g.StartAudio()
 	return g.Run()
 }

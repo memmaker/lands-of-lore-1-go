@@ -355,7 +355,7 @@ func (g *Game) damageFighter(who, dmg, src, skill, how int) int {
 			if !isMonster(src) {
 				g.monsterDefence(m, src, how, skill, dmg)
 			}
-			g.playSoundAt(m.Type.sound, m.Block)
+			g.playSoundQueued(m.Type.sound, m.Block)
 			g.noteBlockChanged(m.Block)
 			if m.HitPoints <= 0 {
 				m.HitPoints = 0

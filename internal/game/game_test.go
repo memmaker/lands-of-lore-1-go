@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/memmaker/lands-of-lore-1-go/internal/host"
+	"github.com/memmaker/lands-of-lore-1-go/internal/sound"
 )
 
 func gameDir(t *testing.T) string {
@@ -155,6 +156,9 @@ func TestNewGame(t *testing.T) {
 	click(g.portraitX[0]+30, 160, "character.png")
 	click(viewLeft+160+20, 103, "character_exit.png")
 	if g.party[0].MaxHP > 0 {
+		if !g.audio.Loaded(sound.Music) || g.snd.file < 0 {
+			t.Errorf("no music file loaded (file %d, track %d)", g.snd.file, g.musicTrack)
+		}
 		g.party[0].HP--
 		click(43, 189, "rest.png")
 		steps(300)

@@ -16,6 +16,7 @@ import (
 	"github.com/memmaker/lands-of-lore-1-go/internal/host"
 	"github.com/memmaker/lands-of-lore-1-go/internal/input"
 	"github.com/memmaker/lands-of-lore-1-go/internal/random"
+	"github.com/memmaker/lands-of-lore-1-go/internal/sound"
 	"github.com/memmaker/lands-of-lore-1-go/internal/text"
 )
 
@@ -105,6 +106,9 @@ type Game struct {
 	swampPalette  gfx.Palette // level 11 frozen or not: the palette swapped with Palette (C: g_4bcc)
 	paletteState  int         // (C: g_20d5)
 	musicTrack    int         // (C: g_1e94)
+	snd           soundState
+	audio         *sound.Player         // the sound card
+	vocNames      [len(vocNames)]string // the effects' sample names, renamed by the levels (C: f_26a4_00f0)
 
 	currentBlock        int                          // the party's block (C: g_7fd0)
 	direction           int                          // the way the party faces (C: g_7fe1's source g_7fdf)
@@ -244,6 +248,8 @@ func New(dir string) (*Game, error) {
 	g.talkingCharacter = noTalk
 	g.loadedLanguage = cfg.Language
 	g.initGameMenu()
+	g.initSound()
+	g.vocNames = vocNames
 	g.lastFoundItem = -1
 	g.characterPicture = -1
 	g.sceneReady = true

@@ -480,23 +480,36 @@ func (g *Game) clickSlider(b *gui.Button) bool {
 	case sliderMusic:
 		g.musicVolume = v
 		if v != 0 {
+			g.setMusicVolume(musicDriverVolume(v))
 			g.options |= optionMusic
 			if old == 0 {
+				g.musicOn = true
 				g.playMusic(g.playMusic(-1))
 			}
 		} else {
 			g.options &^= optionMusic
-			g.stopMusic()
+			g.setMusicVolume(0)
+			g.stopSong()
+			g.musicOn = false
 		}
 	case sliderEffects:
 		g.effectsVolume = v
 		if v != 0 {
+			g.setEffectVolume(effectDriverVolume(v))
 			g.options |= optionSoundEffects
 		} else {
 			g.options &^= optionSoundEffects
 		}
+		if g.options&optionSoundEffects != 0 {
+			g.effectsOn, g.digitalEffectsOn = true, true
+		} else {
+			g.setEffectVolume(1) // sic: not 0, which would switch the driver off
+			g.effectsOn, g.digitalEffectsOn = false, false
+		}
 		g.playSound(g.gameMenu.testSound, 0)
-		g.gameMenu.testSound = g.nextSoundEffect(g.gameMenu.testSound)
+		if g.gameMenu.testSound = g.nextSoundEffect(g.gameMenu.testSound); g.gameMenu.testSound == skippedTestEffect {
+			g.gameMenu.testSound++
+		}
 	case sliderSpeech:
 		g.speechVolume = v
 	}

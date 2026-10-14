@@ -48,19 +48,26 @@ func (g *Game) applySoundSettings() {
 	if g.Config.Music == 0 {
 		g.musicVolume = 0
 	}
-	if g.musicVolume == 0 {
-		g.stopMusic()
+	if g.musicVolume != 0 {
+		g.musicOn = true
+	} else {
+		g.stopSong()
+		g.musicOn = false
 	}
 	if g.Config.Effects == 0 {
 		g.effectsVolume = 0
 	}
-	if g.effectsVolume == 0 {
-		g.stopSounds()
+	g.effectsOn = g.effectsVolume != 0
+	g.digitalEffectsOn = g.effectsOn
+	if !g.effectsOn {
+		g.stopSoundEffects()
 	}
 	if g.Config.Speech == 0 {
 		g.speechVolume = 0
 		g.textEnabled = true
+		g.digitalEffectsOn = false
 	}
+	g.digitalSpeechOn = g.speechVolume != 0
 }
 
 // record writes the little-endian fields of the original's structures.

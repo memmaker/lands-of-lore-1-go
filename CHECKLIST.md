@@ -69,6 +69,10 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] Byte-exact saves (o2d3c), level temp states with the original LCW packer (s119)
   - [x] Game menu (o2d56): load, save with name entry, delete, options, audio sliders (sound silent), quit; game over menu, dead party check (o2cf4)
 - [ ] Sound and music (AdLib .ADL, VOC)
+  - [x] ALFX.DRV ported from its disassembly (internal/sound: alfx.go, alfxops.go, all 75 opcodes), OPL2 emulator with rhythm mode, 72 Hz tick in the Ebiten stream
+  - [x] Front ends: s003 music/effects (tracks, LORE*.ADL / LORESFX.ADL, positional volume, delayed queue), s030 play/stop/fade with program byte scaling, s032 AdLib effects, driver volumes and on/off (o2db9, s026), audio sliders
+  - [ ] Digital effects: VOC cache and the four-channel mixer (s029, fn_067a_0649)
+  - [ ] Speech: TLK index and playback (s023)
 - [ ] Ending
   - [ ] BLOCKED: FINALE.EXE is not decompiled (opcode 98 calls runFinale, which fails loudly)
 - [ ] Parity checks against DOSBox-X
