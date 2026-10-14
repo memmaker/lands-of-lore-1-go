@@ -8,7 +8,8 @@ import (
 // The item tooltips' texts (an addition of the port, see tooltip.go). The item types
 // say how an item is used (its ITEM.INF function) and where it is worn; a melee
 // weapon's might is its damage and the low bits of its skill the kind of blow, a
-// launcher's might the ammunition it takes and its skill the damage.
+// launcher's might the ammunition it takes and its skill the damage; a herb heals its
+// might in dice of its skill's sides.
 
 // ITEM.INF functions the texts tell apart.
 const (
@@ -114,8 +115,8 @@ func itemPurpose(it *ItemType) string {
 		case it.Slot&slotFinger != 0:
 			return "Ring"
 		}
-	case itemScriptHeal:
-		return "Use to heal"
+	case itemScriptHeal: // heals might dice of skill sides (Aloe 1d6, Ginseng 2d6, Salve 4d16)
+		return fmt.Sprintf("Heals %d-%d HP", it.Might, int(it.Might)*int(it.Skill))
 	case itemScriptOil:
 		return "Fills the lantern"
 	case itemScriptPurse:
