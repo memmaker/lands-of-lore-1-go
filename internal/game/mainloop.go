@@ -225,11 +225,64 @@ func (g *Game) updateAnimations() {
 	if g.updateFlags&updateNoAnimations != 0 {
 		return
 	}
-	for _, a := range g.animations {
-		if a.playing {
-			notPorted("fn_130a_028a (level animations)")
+	for i := range g.animations {
+		a := &g.animations[i]
+		if a.playing && a.next < clock.Ticks() && g.stepAnimation(a) {
+			g.Screen.HideMouseIn(a.x, a.y, a.x+a.wsa.width(), a.y+a.wsa.height())
+			g.drawWSA(a.wsa, a.frame-1, a.x, a.y, pageScreen, 0, nil, nil)
+			g.Screen.ShowMouseIn()
+			a.next += clock.Ticks()
 		}
 	}
+}
+
+// The words of an animation sequence (C: struct Anim's frames).
+const (
+	seqFirst = iota
+	seqLast
+	seqLoops
+	seqNext // the sequence that follows, -1 for none
+	seqNextDelay
+	seqStopsOnAsk // with a stop asked it does not go on to the next
+	seqSound      // -1 for none
+	seqSoundFrame
+)
+
+// stepAnimation moves an animation a frame on: at its sequence's end it loops, goes
+// on to the next sequence or stops; it says whether there is a frame to show. next is
+// left as the delay to the frame (C: fn_130a_012a).
+func (g *Game) stepAnimation(a *sceneAnimation) bool {
+	f := &a.sequences[a.sequence]
+	a.next = 0
+	step := 1
+	if f[seqLast] < f[seqFirst] {
+		step = -1
+	}
+	a.frame = int(int8(a.frame + step))
+	if a.frame == f[seqLast]+step {
+		a.loops = int(int8(a.loops + 1))
+		if a.loops <= f[seqLoops] && !a.stopAsked {
+			a.frame = f[seqFirst]
+		} else {
+			a.lastSequence = a.sequence
+			if f[seqNext] != -1 && !(a.stopAsked && f[seqStopsOnAsk] != 0) {
+				a.next += f[seqNextDelay]
+				a.sequence = int(int8(f[seqNext]))
+				f = &a.sequences[a.sequence]
+				a.frame = f[seqFirst]
+				a.loops = 0
+			} else {
+				a.playing = false
+				a.stopAsked = false
+				return false
+			}
+		}
+	}
+	if f[seqSound] != -1 && a.frame == f[seqSoundFrame] {
+		g.playSound(f[seqSound], 0)
+	}
+	a.next += a.delay
+	return true
 }
 
 // checkPartyDead ends the game when nobody is left standing, or with flag 64 raises
@@ -249,6 +302,29 @@ func (g *Game) checkPartyDead(flags int) bool {
 
 // putKeyBack queues key k again (C: fn_2169_0945).
 func (g *Game) putKeyBack(k int) { input.Put(k) }
+
+// highlightSpell prints the selected spell's name in the list lit or plain
+// (C: fn_0ca0_05bb).
 func (g *Game) highlightSpell(on bool) {
-	notPorted("fn_0ca0_05bb (highlight the selected spell)")
+	const (
+		listX, listY, lineHeight = 24, 15, 9
+		plainColour, litColour   = 1, 132
+	)
+	colour := plainColour
+	if on {
+		colour = litColour
+	}
+	y := listY
+	for i, sp := range g.availableSpells {
+		if sp == noSpell {
+			break
+		}
+		if g.selectedSpell == i {
+			g.Screen.HideMouse()
+			g.printAt(g.text(spells[sp].Name), listX, y, colour, 0, 0)
+			g.Screen.ShowMouse()
+			break
+		}
+		y += lineHeight
+	}
 }

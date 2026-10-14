@@ -216,11 +216,10 @@ const (
 // attackCount is how many attacks base makes for character or monster who
 // (C: fn_070c_012a).
 func (g *Game) attackCount(who, base int) int {
-	var v int
-	if who&monsterFlag != 0 {
-		v = ratio(base, g.monsters[who&monsterIndex].Type.fightingStats[attackFactor])
-	} else {
-		notPorted("fn_070c_012a (a character's attacks)")
+	fighting, _, _ := g.fighterStats(who)
+	v := ratio(base, fighting[attackFactor])
+	if !isMonster(who) {
+		v = scale(v, difficultyAttacks[g.difficulty()]) // sic: the monsters' difficulty factor
 	}
 	// The original read the rogue skill of party slot who, wrapping a monster's number
 	// past the end of the party.
