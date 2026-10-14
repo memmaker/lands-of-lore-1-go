@@ -64,6 +64,7 @@ var errNotPorted = errors.New("not ported yet")
 // start is the game proper (C: ovr_2d40_0020 with ovr_2d50_0039 for "LANDS.EXE PLAIN",
 // the way the launcher starts it).
 func (g *Game) start() error {
+	g.Text.More = g.morePrompt // C: g_370d = fn_13e8_09b7
 	if err := g.showTitle(); err != nil {
 		return err
 	}

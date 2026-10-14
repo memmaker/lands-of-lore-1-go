@@ -203,3 +203,6 @@ func (s *Screen) Frame() *host.Frame {
 		PointerShown:  m.hidden == 0 && m.pixels != nil,
 	}
 }
+
+// MouseHidden is the hide count, 0 when the cursor shows (C: g_2f16).
+func (s *Screen) MouseHidden() int { return s.mouse.hidden }

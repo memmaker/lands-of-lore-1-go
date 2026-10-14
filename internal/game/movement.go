@@ -271,7 +271,7 @@ func (g *Game) smoothMoves(inScene bool) bool {
 func (g *Game) waitFrame(face bool) {
 	for clock.Get(clock.Countdown) != 0 {
 		if face {
-			g.updateSpeechFace()
+			g.updateMessageFade()
 		}
 		host.Yield()
 	}

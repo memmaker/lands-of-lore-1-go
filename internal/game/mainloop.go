@@ -50,7 +50,7 @@ func (g *Game) mainLoop() error {
 func (g *Game) runTimers() {
 	for i := range g.timers {
 		t := &g.timers[i]
-		g.updateSpeechFace()
+		g.updateMessageFade()
 		if t.enabled && t.next < clock.Get(t.clock) {
 			if clock.Enabled(playClockSlot) || t.clock != playClock {
 				t.fn(g, t.arg)
@@ -61,11 +61,6 @@ func (g *Game) runTimers() {
 		}
 	}
 }
-
-// updateSpeechFace ends a speaking character's face animation when the speech is
-// over (C: fn_0845_11b7). Speech is silent until the sound milestone, so no face is
-// ever speaking.
-func (g *Game) updateSpeechFace() int { return 0 }
 
 // Arrow cursors: with the option on, the cursor over the edges of the view turns into
 // an arrow for the way the party would move there, or a stop sign where it cannot
@@ -210,7 +205,7 @@ func (g *Game) idleWork() {
 		g.swingCompass()
 	}
 	g.updateSpeech()
-	g.updateSpeechFace()
+	g.updateMessageFade()
 }
 
 // updateAnimations runs the level's looping WSA animations (C: fn_130a_028a).

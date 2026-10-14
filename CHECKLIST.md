@@ -73,7 +73,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] Front ends: s003 music/effects (tracks, LORE*.ADL / LORESFX.ADL, positional volume, delayed queue), s030 play/stop/fade with program byte scaling, s032 AdLib effects, driver volumes and on/off (o2db9, s026), audio sliders
   - [x] Digital effects: VOC cache and the four-channel mixer (s029, fn_067a_0649)
   - [x] Speech: TLK index and playback (s023)
-- [ ] In-game <MORE> prompt with the speech deadline (fn_13e8_09b7 at g_370d, ovr_2da3_002f)
+- [x] In-game <MORE> prompt with the speech deadline (fn_13e8_09b7 at g_370d, ovr_2da3_002f); message fade-out (fn_0845_11b7)
 - [ ] Ending
   - [ ] BLOCKED: FINALE.EXE is not decompiled (opcode 98 calls runFinale, which fails loudly)
 - [ ] Parity checks against DOSBox-X
