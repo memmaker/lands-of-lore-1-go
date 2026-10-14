@@ -722,6 +722,7 @@ func (g *Game) slotMenu(mode int) int {
 					}
 					n := st.top - slot
 					g.Saves.Remove(name)
+					g.removeNotes(name)
 					for {
 						n++
 						next := saveFileName(n)
@@ -729,6 +730,7 @@ func (g *Game) slotMenu(mode int) int {
 							break
 						}
 						g.Saves.Rename(next, name)
+						g.moveNotes(next, name)
 						name = next
 					}
 					return 1

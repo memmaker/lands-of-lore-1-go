@@ -39,6 +39,7 @@ const defaultHero = 3
 // (C: ovr_2d2c_0070).
 func (g *Game) startNewGame(hero int) error {
 	g.selectedSpell = 0
+	g.notes = nil
 	g.compassDirection = noCompass
 	g.lastMouseRegion = noMouseRegion
 	g.options |= newGameOptions

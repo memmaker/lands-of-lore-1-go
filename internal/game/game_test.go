@@ -2,6 +2,7 @@ package game
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/color"
 	"image/png"
@@ -220,6 +221,7 @@ func TestNewGame(t *testing.T) {
 		click(300, 40, "automap.png")
 		steps(200)
 		savePNG(t, host.ShowFrame(), "automap_arrow.png")
+		checkAutomapNotes(t, g, click)
 		click(295, 185, "automap_exit.png")
 		steps(100)
 		if g.scriptErr != nil || g.automap.done != true {
@@ -244,6 +246,12 @@ func checkSaveRoundTrip(t *testing.T, g *Game) {
 	blocks := g.lvl.blocks
 	if err := g.saveGame("_SAVE000.DAT", "test"); err != nil {
 		t.Fatal(err)
+	}
+	notes := append([]automapNote(nil), g.notes...)
+	g.notes = nil
+	g.loadNotes("_SAVE000.DAT")
+	if len(notes) == 0 || fmt.Sprint(g.notes) != fmt.Sprint(notes) {
+		t.Errorf("notes saved %+v, read %+v", notes, g.notes)
 	}
 	b, _ := store.Read("_SAVE000.DAT")
 	want := saveDescriptionSize + saveMagicSize + saveVersionSize + partyRecordSize + globalsSize +
@@ -322,5 +330,51 @@ func checkGameMenu(t *testing.T, g *Game, click func(x, y int, name string)) {
 	click(150, 76, "menu_loaded.png")
 	if g.currentBlock != block || g.updateFlags&updateGameMenu != 0 {
 		t.Fatalf("after loading: block %d (was %d), menu flags %d", g.currentBlock, block, g.updateFlags)
+	}
+}
+
+// checkAutomapNotes adds a note on the party's cell, edits it and removes it again with
+// a right click, then leaves a second one for the save check.
+func checkAutomapNotes(t *testing.T, g *Game, click func(x, y int, name string)) {
+	a := &g.automap
+	x := a.left + (g.currentBlock%mapSize-g.automapLeft())*automapCellWidth + 3
+	y := a.top + (g.currentBlock/mapSize-g.automapTop())*automapCellHeight + 3
+	typeKeys := func(scans ...byte) {
+		for _, sc := range scans {
+			host.PushScan(host.ScanEvent{Scan: sc})
+			host.PushScan(host.ScanEvent{Scan: sc, Released: true})
+			steps(3)
+		}
+	}
+	const scanW, scanE, scanL, scanBackspace = 17, 18, 38, 14
+	click(x, y, "automap_prompt.png")
+	typeKeys(scanW, scanE, scanL, scanL)
+	savePNG(t, host.ShowFrame(), "automap_typing.png")
+	typeKeys(scanReturn)
+	steps(20)
+	savePNG(t, host.ShowFrame(), "automap_note.png")
+	if len(g.notes) != 1 || g.notes[0].label != "well" || g.notes[0].block != g.currentBlock {
+		t.Fatalf("notes after adding: %+v", g.notes)
+	}
+	click(x, y, "automap_edit.png")
+	typeKeys(scanBackspace, scanBackspace, scanReturn)
+	steps(20)
+	if len(g.notes) != 1 || g.notes[0].label != "we" {
+		t.Fatalf("notes after editing: %+v", g.notes)
+	}
+	host.MouseX, host.MouseY = x, y
+	steps(5)
+	host.MouseRight = true
+	steps(10)
+	host.MouseRight = false
+	steps(30)
+	if len(g.notes) != 0 {
+		t.Fatalf("notes after removing: %+v", g.notes)
+	}
+	click(x, y, "automap_prompt2.png")
+	typeKeys(scanE, scanReturn)
+	steps(20)
+	if len(g.notes) != 1 {
+		t.Fatalf("notes after the second: %+v", g.notes)
 	}
 }

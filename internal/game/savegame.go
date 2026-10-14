@@ -563,7 +563,10 @@ func (g *Game) saveGame(name, description string) error {
 		copy(rec, file)                      // sic: a longer file is cut short
 		r.b = append(r.b, rec...)
 	}
-	return g.Saves.Write(name, r.b)
+	if err := g.Saves.Write(name, r.b); err != nil {
+		return err
+	}
+	return g.saveNotes(name)
 }
 
 // loadGame reads a saved game; it returns loadBadSave for a file that is not one,
@@ -632,5 +635,6 @@ func (g *Game) readSave(name string) (int, error) {
 	g.drawGameScreen()
 	g.updateCharacters(0)
 	g.setFlag(flagLevelChanged, true)
+	g.loadNotes(name)
 	return loadDone, nil
 }

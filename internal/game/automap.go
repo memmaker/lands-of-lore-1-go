@@ -164,6 +164,7 @@ func (g *Game) showAutomap() {
 			clock.Set(clock.Countdown, automapArrowTicks)
 		}
 		g.automapButtons()
+		g.automapNoteClick()
 		key := 0
 		if input.Peek() != 0 {
 			key = input.Get()
@@ -264,14 +265,16 @@ func (g *Game) automapShape(i int) []byte {
 // twice so the blocks the legend reveals show (C: ovr_2ce1_0025).
 func (g *Game) drawAutomapPage(page int) {
 	a := &g.automap
+	row := 0
 	for range 2 {
 		if err := g.loadPicture(automapPicture, page, a.palette[:]); err != nil {
 			g.fail(err)
 			return
 		}
 		g.drawAutomap(page, g.levelName(a.level))
-		g.drawAutomapLegend()
+		row = g.drawAutomapLegend()
 	}
+	g.drawAutomapNotes(row)
 	g.drawAutomapHelp()
 }
 
@@ -452,8 +455,8 @@ func (g *Game) automapNextLevel(step int) {
 }
 
 // drawAutomapLegend lists the places seen and the symbols on the map
-// (C: ovr_2ce1_0061).
-func (g *Game) drawAutomapLegend() {
+// (C: ovr_2ce1_0061); it returns the rows it took, for the player's notes after them.
+func (g *Game) drawAutomapLegend() int {
 	a := &g.automap
 	s := g.Screen
 	row := 0
@@ -485,6 +488,7 @@ func (g *Game) drawAutomapLegend() {
 	}
 	s.SetPage(pg)
 	s.SetFont(font)
+	return row
 }
 
 // automapLegendText prints string id on the map's page (C: ovr_2ce1_0066).

@@ -60,7 +60,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
 - [x] Levels, 3D view renderer (o2d2c, o2cda), movement, automap
   - [x] Party movement, walk/turn/strafe animations (s011, s038), doors, timers; changed: Left/Right turn, Shift+Left/Right strafe
   - [x] Level change (op 60)
-  - [x] Automap (o2ce1): map, legend, level paging, party arrow
+  - [x] Automap (o2ce1): map, legend, level paging, party arrow; added: player notes (left click marks a cell A-Z with a label, or edits it; right click removes; kept in _saveNNN.not beside each save)
 - [x] Items, inventory, characters, portraits, stats screen
   - [x] Resting (o2d7a): healing, mana, poison, interruption
 - [x] Monsters, combat, magic
