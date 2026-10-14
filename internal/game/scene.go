@@ -256,23 +256,24 @@ func (g *Game) redrawAfterScene() {
 // The dialogue box: the part of the screen it covers and the strip its edge is drawn
 // from as it slides (C: ovr_2d5f_00f7, ovr_2d5f_013d).
 const (
-	textBoxX          = 80
-	textBoxY          = 142
-	textBoxW          = 240
-	textBoxH          = 37
-	slideX            = 83
-	slideW            = 235
-	slideH            = 3
-	slideTop          = 140
-	slideBottom       = 177
-	textWindowMessage = 3
-	scratchRows       = 40 // the rows of the build page the original used as scratch memory
-	stripRows         = 10
-	frameOn           = 212
-	frameOff          = 1
-	frameTop          = 143
-	frameBottom       = 176
-	frameWidth        = 65
+	textBoxX           = 80
+	textBoxY           = 142
+	textBoxW           = 240
+	textBoxH           = 37
+	slideX             = 83
+	slideW             = 235
+	slideH             = 3
+	slideTop           = 140
+	slideBottom        = 177
+	textWindowMessage  = 3
+	textWindowDialogue = 4  // the dialogue window speech text goes to
+	scratchRows        = 40 // the rows of the build page the original used as scratch memory
+	stripRows          = 10
+	frameOn            = 212
+	frameOff           = 1
+	frameTop           = 143
+	frameBottom        = 176
+	frameWidth         = 65
 )
 
 // saveUnderTextBox keeps what the dialogue box will cover (C: ovr_2d5f_00f7 mode 1).

@@ -52,3 +52,12 @@ func (g *Game) playSpeechSample(id int) {}
 // nextSoundEffect is the effect after n that the sound driver has, skipping the
 // empty ones (C: fn_067a_08c2); without the sound tables it stays n.
 func (g *Game) nextSoundEffect(n int) int { return n }
+
+// playSong starts a song of the sound driver (C: fn_178d_0091).
+func (g *Game) playSong(n int) {}
+
+// stopSong stops it (C: fn_178d_015e).
+func (g *Game) stopSong() {}
+
+// stopSoundEffects stops the digital effects playing (C: fn_17d6_0123).
+func (g *Game) stopSoundEffects() {}

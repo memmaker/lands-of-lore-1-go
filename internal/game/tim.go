@@ -271,17 +271,17 @@ func (g *Game) timOp(t *timScript, op, p int) int {
 	case 6: // show an animation frame (C: fn_057f_0426)
 		g.showAnimationFrame(arg(0), arg(1))
 		return 1
-	case 14: // (C: fn_057f_0501)
-		notPorted("fn_178d_0091 (TIM opcode 14)")
+	case 14: // play a song (C: fn_057f_0501)
+		g.playSong(arg(0))
 		return 1
-	case 15: // (C: fn_057f_0515)
-		notPorted("fn_178d_015e (TIM opcode 15)")
+	case 15: // stop the song (C: fn_057f_0515)
+		g.stopSong()
 		return 1
-	case 18: // (C: fn_057f_0532)
-		notPorted("fn_17d6_0006 (TIM opcode 18)")
+	case 18: // play a digital effect (C: fn_057f_0532)
+		g.playSoundEffect(arg(0))
 		return 1
-	case 19: // (C: fn_057f_0546)
-		notPorted("fn_17d6_0123 (TIM opcode 19)")
+	case 19: // stop the digital effects (C: fn_057f_0546)
+		g.stopSoundEffects()
 		return 1
 	case 20: // mark the loop start, unless speech is to be waited for (C: fn_057f_0553)
 		if g.speechVolume != 0 && g.updateSpeech() != speechPlaying {
@@ -403,7 +403,7 @@ func (g *Game) timSubOp(t *timScript, op, p int) int {
 			g.direction = arg(1)
 		}
 	case 5: // palette (C: fn_057f_08cd)
-		notPorted(fmt.Sprintf("fn_057f_08cd (TIM palette %d)", arg(0)))
+		g.timPalette(arg(0))
 	case 6: // copy a rectangle (C: fn_057f_099a)
 		g.Screen.HideMouse()
 		g.Screen.CopyRect(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7))
@@ -428,13 +428,17 @@ func (g *Game) timSubOp(t *timScript, op, p int) int {
 	case 12: // (C: fn_057f_0ad5)
 		g.playMusic(arg(0))
 	case 13: // speak and show a text (C: fn_057f_0ae9)
-		notPorted("fn_057f_0ae9 (TIM: speech)")
+		t0 := clock.Ticks()
+		if !g.playSpeech(arg(0), 0, false) || g.textEnabled {
+			g.printText(textWindowDialogue, g.text(arg(0)), arg, 1)
+		}
+		g.speechDelay = clock.Ticks() - t0
 	case 14: // (C: fn_057f_0b4a)
 		g.playSound(arg(0), 0)
 	case 15: // (C: fn_057f_0b62)
-		notPorted("fn_130a_0c28 (TIM sub-opcode 15)")
+		g.startAnimationSequence(arg(0), arg(1))
 	case 16: // (C: fn_057f_0b7c)
-		notPorted("fn_130a_0cf6 (TIM sub-opcode 16)")
+		g.stopAnimation(arg(0))
 	}
 	return 1
 }
@@ -486,3 +490,31 @@ func (g *Game) opStartTIMDialogue(s *emc.State) int {
 }
 
 // Not ported yet.
+
+// timPalette is the TIM palette sub-opcode: 0 fades the view out, 1 fades to the scene
+// palette with the game palette's upper half, 2 to black, 3 to the scene palette,
+// 4 redraws the game after a scene, 5 fades to the level palette (C: fn_057f_08cd).
+func (g *Game) timPalette(n int) {
+	const upperHalf = 128 * 3
+	switch n {
+	case 0:
+		g.fadeOutView(fadeTicks)
+	case 1:
+		copy(g.scenePalette[upperHalf:], g.Palette[upperHalf:])
+		g.keepInterfaceColours(g.scenePalette[:])
+		g.Screen.FadePalette(g.scenePalette[:], fadeTicks, nil)
+		g.paletteState = paletteNormal
+	case 2:
+		g.fadeToBlack(fadeTicks)
+	case 3:
+		g.keepInterfaceColours(g.scenePalette[:])
+		g.Screen.FadePalette(g.scenePalette[:], fadeTicks, nil)
+		g.paletteState = paletteNormal
+	case 4:
+		g.redrawAfterScene()
+	case 5:
+		g.keepInterfaceColours(g.scenePalette[:]) // sic: kept in the palette it does not fade to
+		g.Screen.FadePalette(g.darkPalette[:], fadeTicks, nil)
+		g.paletteState = paletteNormal
+	}
+}

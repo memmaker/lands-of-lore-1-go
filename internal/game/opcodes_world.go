@@ -293,14 +293,19 @@ func (g *Game) opLoadPicture(s *emc.State) int {
 // opStopAnimation stops a scene animation at once; slot 5 is also closed
 // (C: fn_0fbe_0d17, fn_130a_0cf6).
 func (g *Game) opStopAnimation(s *emc.State) int {
-	n := s.Arg(0)
+	g.stopAnimation(s.Arg(0))
+	return 1
+}
+
+// stopAnimation stops scene animation n at once; slot 5 is also closed
+// (C: fn_130a_0cf6).
+func (g *Game) stopAnimation(n int) {
 	a := &g.animations[n]
 	a.playing = false
 	a.stopAsked = false
 	if n == speechAnimation {
 		a.wsa = nil
 	}
-	return 1
 }
 
 // speechAnimation is the slot speaking characters' animations use.
