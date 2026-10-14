@@ -33,3 +33,6 @@ func (g *Game) playSound(sound, volume int) {}
 
 // playSoundAt plays a sound from a block, louder the nearer (C: fn_067a_02f5).
 func (g *Game) playSoundAt(sound, block int) {}
+
+// playSoundEffect plays a digital effect through the sound driver (C: fn_17d6_0006).
+func (g *Game) playSoundEffect(n int) {}

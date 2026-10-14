@@ -325,26 +325,6 @@ func (g *Game) clickExitCharacterInventory(*gui.Button) bool {
 	return false
 }
 
-func (g *Game) clickInventorySlot(*gui.Button) bool {
-	notPorted("fn_0c59_015f (button)")
-	return false
-}
-
-func (g *Game) clickInventoryScroll(*gui.Button) bool {
-	notPorted("fn_0c59_00ef (button)")
-	return false
-}
-
-func (g *Game) clickWall(*gui.Button) bool {
-	notPorted("fn_13e8_02fa (button)")
-	return false
-}
-
-func (g *Game) clickDialogueArea(*gui.Button) bool {
-	notPorted("ovr_2d5f_002a (button)")
-	return false
-}
-
 func (g *Game) clickSpellTargetCharacter(*gui.Button) bool {
 	notPorted("ovr_2d8a_0034 (button)")
 	return false

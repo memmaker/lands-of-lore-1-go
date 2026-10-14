@@ -384,12 +384,16 @@ func (g *Game) timSubOp(t *timScript, op, p int) int {
 	arg := func(i int) int { return t.param(p, i) }
 	switch op {
 	case 0: // (C: fn_057f_081f)
-		notPorted("ovr_2d5f_00fc (TIM sub-opcode 0)")
+		g.startScene(arg(0))
 	case 1: // (C: fn_057f_0833)
-		notPorted("ovr_2d5f_0101 (TIM sub-opcode 1)")
+		g.endScene(arg(0))
 	case 2:
 	case 3: // give an item (C: fn_057f_084f)
-		notPorted("fn_07bc_012d (TIM: give an item)")
+		it := g.newItem(arg(0), arg(1), arg(2))
+		if !g.addToInventory(it) {
+			g.freeItem(it)
+			return 0
+		}
 	case 4: // set the party's block or direction (C: fn_057f_0887)
 		switch arg(0) {
 		case 0:
