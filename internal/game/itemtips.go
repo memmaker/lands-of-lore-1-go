@@ -22,8 +22,28 @@ const (
 	itemScriptLantern  = 10
 	itemScriptLauncher = 11
 	itemScriptRead     = 12
+	itemScriptGlass    = 13
 	itemScriptScroll   = 14
+	itemScriptGoblet   = 15
+	itemScriptRiddle   = 17
+	itemScriptBezel    = 18
+	itemScriptReadOnce = 19
 	itemScriptWand     = 20
+	itemScriptCube     = 21
+	itemScriptCard     = 24
+	itemScriptGauntlet = 28
+	itemScriptSkull    = 29
+	itemScriptMagic    = 30
+	itemScriptNecklace = 31
+	itemScriptVial     = 32
+	itemTypeFullCube   = 263
+	itemTypeJade       = 219
+	itemTypeGinseng    = 218
+	itemTypePoisonStar = 6
+	spellHandOfFate    = 4
+	spellReveal        = 12
+	spellSwarm         = 9
+	spellGuardian      = 16
 	itemScriptNoUse    = 255
 	itemAmmoArrow      = 2
 	itemAmmoGoodArrow  = 3
@@ -54,7 +74,7 @@ func (g *Game) itemTooltip(item int) string {
 	}
 	it := &g.itemTypes[t]
 	lines := []string{g.text(it.Name)}
-	if what := itemPurpose(it); what != "" {
+	if what := g.itemPurpose(item, t, it); what != "" {
 		lines = append(lines, what)
 	}
 	switch it.Script {
@@ -74,11 +94,63 @@ func (g *Game) itemTooltip(item int) string {
 		}
 		lines = append(lines, fmt.Sprintf("%s %d", label, it.Protection))
 	}
+	if fx, ok := itemSpecials[t]; ok {
+		lines = append(lines, fx)
+	}
 	return strings.Join(lines, "\r")
 }
 
+// itemSpecials are the extra effects ITEM.INF gives single item types: function 0 for
+// the weapons, 2 and 11 for the missiles, 4 for the herbs, 31 for the necklaces.
+var itemSpecials = map[int]string{
+	itemTypePoisonStar: "Poisons",
+	31:                 "+4 damage for a Dracoid", // C: RaceClassSex 3
+	32:                 "+4 damage for a Dracoid",
+	103:                "+4 damage for a Dracoid",
+	104:                "+4 damage for a Dracoid",
+	36:                 "Shoots two arrows",
+	53:                 "Rogue skill +1",
+	54:                 "Rogue skill -1",
+	64:                 "1 in 10: triple damage",
+	82:                 "1 in 7: also hurts its wielder",
+	88:                 "Fighter skill +1",
+	94:                 "Slays a foe below 1/4 health",
+	114:                "1 in 20: triple damage",
+	123:                "1 in 4: slays, then breaks",
+	127:                "Fighter skill -1",
+	274:                "Triple damage to illusions", // C: monsterIsIllusion
+	itemTypeGinseng:    "Also cures poison",
+	itemTypeJade:       "Worn: rogue skill +1",
+	itemTypeTruthHalfB: "Worn: protection +5",
+	itemTypeTruthHalfA: "Worn: protection +5",
+}
+
 // itemPurpose is a few words on what an item type is for, "" when there is nothing to say.
-func itemPurpose(it *ItemType) string {
+func (g *Game) itemPurpose(item, t int, it *ItemType) string {
+	spell := func(sp int) string {
+		if sp < 0 || sp >= len(spells) || spells[sp].Name == 0 {
+			return "a spell"
+		}
+		return g.text(spells[sp].Name)
+	}
+	// an item's cast runs the handler of that number (spellcast.go's castSpell)
+	cast := func(h int) string {
+		for i := range spells {
+			if g.handlerOf(i) == h && spells[i].Name != 0 {
+				return g.text(spells[i].Name)
+			}
+		}
+		switch h {
+		case spellSwarm:
+			return "a swarm"
+		case spellGuardian:
+			return "a guardian"
+		case spellReveal:
+			return "a spell that unmasks illusions"
+		}
+		return "a spell"
+	}
+	count := g.items[item].Flags & itemFlagsMask
 	switch it.Script {
 	case itemScriptMelee:
 		if it.Slot&slotHand == 0 {
@@ -123,12 +195,38 @@ func itemPurpose(it *ItemType) string {
 		return "Use to take the coins"
 	case itemScriptLantern:
 		return "Gives light"
-	case itemScriptRead:
+	case itemScriptRead, itemScriptRiddle, itemScriptReadOnce:
 		return "Use to read"
-	case itemScriptScroll:
-		return "Casts its spell once"
+	case itemScriptGlass:
+		return "Useless"
+	case itemScriptScroll: // C: opLearnSpell
+		return "Teaches " + spell(int(it.Might))
+	case itemScriptGoblet: // C: heals Might HP for 1 MP
+		return "Heals fully for 1 MP"
+	case itemScriptBezel:
+		return fmt.Sprintf("Heals fully, %d uses left", count)
 	case itemScriptWand:
-		return "Casts a spell"
+		return fmt.Sprintf("Casts %s, %d charges", cast(int(it.Might)), count)
+	case itemScriptCube:
+		if t == itemTypeFullCube {
+			return "Restores 25 MP"
+		}
+		return "Unmasks illusions, then holds 25 MP"
+	case itemScriptCard:
+		return "Casts " + cast(int(it.Might)) + " once"
+	case itemScriptGauntlet:
+		return "Casts " + cast(spellHandOfFate)
+	case itemScriptSkull:
+		return "Casts " + spell(int(it.Might)) + " with your MP"
+	case itemScriptMagic:
+		return "Restores all MP, once"
+	case itemScriptNecklace:
+		if t == itemTypeTruth {
+			return "Use on a creature to show its true self"
+		}
+		return ""
+	case itemScriptVial:
+		return "Can be emptied"
 	case itemScriptNoUse:
 		switch {
 		case it.Flags&itemFlagKey != 0:
