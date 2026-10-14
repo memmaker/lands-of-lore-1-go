@@ -310,11 +310,6 @@ func (g *Game) buildSpellTargetButtons() {
 
 // Button callbacks not ported yet.
 
-func (g *Game) clickOptions(*gui.Button) bool {
-	notPorted("ovr_2d56_0020 (button)")
-	return false
-}
-
 func (g *Game) clickRestParty(*gui.Button) bool {
 	notPorted("ovr_2d7a_0020 (button)")
 	return false

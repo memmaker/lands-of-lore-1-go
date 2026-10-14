@@ -69,6 +69,20 @@ func (g *Game) start() error {
 	}
 	choice := g.runMainMenu()
 	switch choice {
+	case choiceLoadGame:
+		if err := g.loadGameData(); err != nil {
+			return err
+		}
+		g.Screen.ShowMouse()
+		if g.slotMenu(slotLoad) != 0 {
+			g.reloadLanguage()
+			if g.scriptErr != nil {
+				return g.scriptErr
+			}
+			return g.mainLoop()
+		}
+		// The original started the launcher again, which shows the title anew.
+		return g.start()
 	case choiceNewGame:
 		// Character generation is the language folder's LANDS.EXE, which is not ported;
 		// it would start this program again with the chosen hero's number, which shows
@@ -84,8 +98,6 @@ func (g *Game) start() error {
 		return fmt.Errorf("intro (LANDS.EXE INTRO): %w", errNotPorted)
 	case choiceHistory:
 		return fmt.Errorf("history (LANDS.EXE HISTORY): %w", errNotPorted)
-	case choiceLoadGame:
-		return fmt.Errorf("loading a game: %w", errNotPorted)
 	}
 	return nil // C: fn_0845_0bf6, exit
 }
@@ -153,7 +165,7 @@ func (g *Game) runMainMenu() int {
 	s.ShowMouse()
 	s.HideMouse()
 	hasSave := 0
-	if g.Files.Exists(firstSave) {
+	if g.Saves.Exists(firstSave) {
 		hasSave = 1
 	}
 	choices := mainMenuChoices[hasSave]

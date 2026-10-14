@@ -39,6 +39,9 @@ type Game struct {
 	strings      []byte // the language's LANDS.ENG, FRE or GER (C: g_4d6c)
 	levelStrings []byte // the current level's strings (C: g_4d68)
 	menu         menuState
+	gameMenu     gameMenuState
+	// loadedLanguage is the language the strings are in (C: g_20db).
+	loadedLanguage int
 
 	itemIcons []byte   // ITEMICN.SHP (C: in page 3)
 	cursors   [][]byte // item icons, which are also the cursors (C: g_7d82)
@@ -237,6 +240,8 @@ func New(dir string) (*Game, error) {
 	g.buttonDefs = buttonDefs
 	g.timers = newTimers()
 	g.talkingCharacter = noTalk
+	g.loadedLanguage = cfg.Language
+	g.initGameMenu()
 	g.lastFoundItem = -1
 	g.characterPicture = -1
 	g.sceneReady = true

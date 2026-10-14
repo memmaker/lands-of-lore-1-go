@@ -40,3 +40,15 @@ func (g *Game) playSoundEffect(n int) {}
 // playDelayedSounds plays the effects held back while delaySounds was set; the
 // count is never reset (sic), so earlier ones play again (C: fn_067a_02c7).
 func (g *Game) playDelayedSounds() {}
+
+// stopSpeech stops the speech playing; with hold it stays stopped for the queued one
+// (C: fn_154c_000f).
+func (g *Game) stopSpeech(hold bool) {}
+
+// playSpeechSample plays the speech of a string, as the audio menu does to let the
+// volume be heard (C: fn_154c_029f).
+func (g *Game) playSpeechSample(id int) {}
+
+// nextSoundEffect is the effect after n that the sound driver has, skipping the
+// empty ones (C: fn_067a_08c2); without the sound tables it stays n.
+func (g *Game) nextSoundEffect(n int) int { return n }

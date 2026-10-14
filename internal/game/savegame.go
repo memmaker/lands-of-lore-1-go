@@ -34,8 +34,12 @@ const (
 	savedFile           = "_SAVE%03d.DAT"
 	levelTempFile       = "_LEVEL%d.TMP"
 	levelMazeFile       = "level%d.cmz"
+	loadFailed          = 0
+	loadDone            = 1
 	loadBadSave         = 2 // the load result for a file without the magic
-	loadFadeTicks       = 10
+	saveSize            = saveDescriptionSize + saveMagicSize + saveVersionSize + partyRecordSize +
+		globalsSize + itemTableSize + savedLevels*(levelLengthSize+levelRecordSize)
+	loadFadeTicks = 10
 )
 
 // applySoundSettings turns off what a loaded game has on but no driver plays, and
@@ -555,26 +559,38 @@ func (g *Game) saveGame(name, description string) error {
 	return g.Saves.Write(name, r.b)
 }
 
-// loadGame reads a saved game; it returns loadBadSave for a file that is not one, else
-// 1 (C: ovr_2d3c_002a).
-func (g *Game) loadGame(name string) (int, error) {
+// loadGame reads a saved game; it returns loadBadSave for a file that is not one,
+// loadFailed for one it cannot read, else loadDone (C: ovr_2d3c_002a). Errors past the
+// header stop the game like a script's.
+func (g *Game) loadGame(name string) int {
+	r, err := g.readSave(name)
+	if err != nil && r == loadDone && g.scriptErr == nil {
+		g.scriptErr = err
+	}
+	return r
+}
+
+func (g *Game) readSave(name string) (int, error) {
 	g.fadeOutView(loadFadeTicks)
 	g.finishDoors()
 	g.Screen.FillRect(viewLeft, 0, viewLeft+viewWidth-1, viewHeight-1, 0)
 	file, err := g.Saves.Read(name)
 	if err != nil {
-		return 0, err
+		return loadFailed, nil // fix: the original stopped on a file it could not open
 	}
 	r := reader{b: file, at: saveDescriptionSize}
 	if r.str(saveMagicSize) != saveMagic {
 		return loadBadSave, nil
+	}
+	if len(file) < saveSize {
+		return loadFailed, nil // fix: the original read on past the end
 	}
 	r.skip(saveVersionSize)
 	for i := range g.party {
 		g.party[i] = readCharacter(&r)
 		if g.party[i].Flags&charPresent != 0 {
 			if err := g.loadFaces(i, g.party[i].ID); err != nil {
-				return 0, err
+				return loadDone, err
 			}
 		}
 	}
@@ -604,10 +620,10 @@ func (g *Game) loadGame(name string) (int, error) {
 	g.recountCredits()
 	g.setHeldItem(g.heldItem)
 	if err := g.loadLevel(g.level); err != nil {
-		return 0, err
+		return loadDone, err
 	}
 	g.drawGameScreen()
 	g.updateCharacters(0)
 	g.setFlag(flagLevelChanged, true)
-	return 1, nil
+	return loadDone, nil
 }

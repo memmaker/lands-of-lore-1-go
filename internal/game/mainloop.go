@@ -294,9 +294,31 @@ func (g *Game) checkPartyDead(flags int) bool {
 			return false
 		}
 	}
-	notPorted("ovr_2cf4_0020 (the party died)")
+	if g.screenFrozen {
+		g.clickExitCharacterInventory(nil)
+	}
+	g.drawPortraits()
+	if flags&raiseDead != 0 {
+		g.fadeToBlack(raiseDeadFade)
+		for i := range g.party {
+			if g.party[i].Flags&charPresent != 0 {
+				g.heal(i, 1, true)
+			}
+		}
+		g.drawPortraits()
+		g.fadeInDark(raiseDeadFade)
+		return false
+	}
+	g.fadeOutView(levelFadeTicks)
+	g.endFullScene(0, 1, 1, 0)
+	g.gameOverMenu()
 	return true
 }
+
+const (
+	raiseDead     = 1 << 6
+	raiseDeadFade = 40
+)
 
 // Not ported yet.
 

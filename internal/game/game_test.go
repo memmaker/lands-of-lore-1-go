@@ -154,6 +154,7 @@ func TestNewGame(t *testing.T) {
 	}
 	click(g.portraitX[0]+30, 160, "character.png")
 	click(viewLeft+160+20, 103, "character_exit.png")
+	checkGameMenu(t, g, click)
 	checkSaveRoundTrip(t, g)
 }
 
@@ -212,4 +213,41 @@ func checkSaveRoundTrip(t *testing.T, g *Game) {
 		}
 	}
 	t.Logf("save: %d bytes, level file %d bytes", len(b), len(g.levelFiles[g.level]))
+}
+
+// checkGameMenu opens the game menu, saves under a typed name and loads that save.
+func checkGameMenu(t *testing.T, g *Game, click func(x, y int, name string)) {
+	if g.level == 0 {
+		return
+	}
+	store := MemoryStore{}
+	g.Saves = store
+	click(20, 188, "menu.png")
+	click(160, 72, "menu_save.png")
+	click(150, 76, "menu_name.png")
+	for _, scan := range []byte{20, 18, 31, 20} { // t e s t
+		host.PushScan(host.ScanEvent{Scan: scan})
+		host.PushScan(host.ScanEvent{Scan: scan, Released: true})
+		steps(2)
+	}
+	steps(30)
+	savePNG(t, host.ShowFrame(), "menu_typed.png")
+	host.PushScan(host.ScanEvent{Scan: scanReturn})
+	host.PushScan(host.ScanEvent{Scan: scanReturn, Released: true})
+	steps(60)
+	b, err := store.Read("_SAVE000.DAT")
+	if err != nil {
+		t.Fatalf("no save written; menu flags %d", g.updateFlags)
+	}
+	if desc := (&reader{b: b}).str(saveDescriptionSize); desc != "test" {
+		t.Fatalf("save named %q", desc)
+	}
+	savePNG(t, host.ShowFrame(), "menu_saved.png")
+	block := g.currentBlock
+	click(20, 188, "menu2.png")
+	click(160, 55, "menu_load.png")
+	click(150, 76, "menu_loaded.png")
+	if g.currentBlock != block || g.updateFlags&updateGameMenu != 0 {
+		t.Fatalf("after loading: block %d (was %d), menu flags %d", g.currentBlock, block, g.updateFlags)
+	}
 }

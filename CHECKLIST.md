@@ -24,7 +24,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] Main menu boxes and selection (o2cfa, o2d43, PLAIN mode)
   - [x] Game data load after the menu (o2d50_0048): shapes, colour tables, ONETIME.INF, ITEM.INF, busy cursor
   - [x] Exit
-  - [ ] Load game (ovr_2d56_002f) after the data load
+  - [x] Load game (ovr_2d56_002f) after the data load
   - [ ] New game: MAIN.EXE's numbered start (ovr_2d2c_0070, argv[1] 0-3 picks the character); until
         character generation exists, the menu choice starts with the default character
   - [ ] BLOCKED: CHARGEN, INTRO and HISTORY are the language folder's LANDS.EXE, a separate
@@ -49,11 +49,12 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
     - [x] World opcodes 0/2/4/5/6/12/16/17/26/29/33/35/36/40-44/49-52/123/125-134/136/137
     - [x] Party/item opcodes 55/57-59/61/62/64/65/69/70/73/74/76/77
     - [x] Talk opcodes 83/87/88/91/92/94-97/100-106/108-119/121
-    - [ ] Left: 60/93/98/149/164/170/173/174/176/177/182/186
+    - [ ] Left: 93/98/149/164/170/173/174/176/177/182/186
   - [ ] TIM interpreter (s001, s002)
 - [ ] Levels, 3D view renderer (o2d2c, o2cda), movement, automap
   - [x] Party movement, walk/turn/strafe animations (s011, s038), doors, timers
-  - [ ] Automap, level change (op 60)
+  - [x] Level change (op 60)
+  - [ ] Automap
 - [ ] Items, inventory, characters, portraits, stats screen
 - [ ] Monsters, combat, magic
   - [x] Monster AI, combat rules (s004), status effects
@@ -62,7 +63,9 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] Flying objects (s012)
 - [ ] Dialogue/scenes, text window, speech
   - [x] Scenes, dialogue, message line, talking faces (talk.go)
-- [ ] Save/load
+- [x] Save/load
+  - [x] Byte-exact saves (o2d3c), level temp states with the original LCW packer (s119)
+  - [x] Game menu (o2d56): load, save with name entry, delete, options, audio sliders (sound silent), quit; game over menu, dead party check (o2cf4)
 - [ ] Sound and music (AdLib .ADL, VOC)
 - [ ] Ending
 - [ ] Parity checks against DOSBox-X
