@@ -75,7 +75,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] Byte-exact saves (o2d3c), level temp states with the original LCW packer (s119)
   - [x] Game menu (o2d56): load, save with name entry, delete, options, audio sliders, quit; game over menu, dead party check (o2cf4)
 - [x] Sound and music (MT-32 .XMI, AdLib .ADL, VOC)
-  - [x] ALFX.DRV ported from its disassembly (internal/sound: alfx.go, alfxops.go, all 75 opcodes), OPL2 emulator with rhythm mode, 72 Hz tick in the Ebiten stream
+  - [x] ALFX.DRV ported from its disassembly (internal/sound: alfx.go, alfxops.go, all 75 opcodes), OPL2 emulator with rhythm mode (github.com/memmaker/opl2), 72 Hz tick in the Ebiten stream
   - [x] Front ends: s003 music/effects (tracks, LORE*.ADL / LORESFX.ADL, positional volume, delayed queue), s030 play/stop/fade with program byte scaling, s032 AdLib effects, driver volumes and on/off (o2db9, s026), audio sliders
   - [x] Digital effects: VOC cache and the four-channel mixer (s029, fn_067a_0649)
   - [x] Speech: TLK index and playback (s023)
