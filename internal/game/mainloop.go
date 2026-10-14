@@ -151,7 +151,8 @@ const (
 	keyNextSpell  = 0x37
 	keyDebugPrint = 0x71a
 	keyVolumeDown = 0x2b
-	keyVolumeUp   = 0x3d
+	keySpace      = 61 // the original stopped the speech with it, too
+	keyAutomapM   = 52
 	buttonFired   = 1 << 15
 	keyReleased   = 1<<15 | 1<<11
 	noCharacter   = -1
@@ -160,7 +161,13 @@ const (
 
 // handleInput runs the buttons and the keys the loop handles (C: fn_0ca0_0b2f).
 func (g *Game) handleInput() {
-	k := g.GUI.ProcessKeys(g.buttons)
+	key := 0
+	if input.Peek() != 0 {
+		if key = input.Get(); key == input.KeyMouseMoved {
+			key = 0
+		}
+	}
+	k := g.GUI.Process(g.buttons, aliasKey(key))
 	if k != 0 && g.spellTarget != noCharacter && k&keyReleased == 0 {
 		g.buildButtons()
 		g.party[g.spellTarget].Flags &^= charSelected
@@ -185,8 +192,14 @@ func (g *Game) handleInput() {
 		}
 	case keyDebugPrint:
 		// the original printed the level, block and direction to a debug console
-	case keyVolumeDown, keyVolumeUp:
+	case keyVolumeDown:
 		g.stopSpeech(true)
+	case keySpace:
+		// changed: Space uses the wall ahead (its buttons, levers, niches) as a click on
+		// its decoration would; the original only stopped the speech with it
+		if g.screenFrozen || !g.interact() {
+			g.stopSpeech(true)
+		}
 	}
 }
 
@@ -311,6 +324,37 @@ const (
 
 // putKeyBack queues key k again (C: fn_2169_0945).
 func (g *Game) putKeyBack(k int) { input.Put(k) }
+
+// Keys of the port's WASD layout (changed: additions of the port).
+const (
+	keyQ, keyW, keyE = 17, 18, 19
+	keyA, keyS, keyD = 31, 32, 33
+	keyUp, keyDown   = 96, 97
+)
+
+// keyAliases turn the WASD layout's key numbers into the arrow keys the buttons take:
+// W and S step, A and D strafe, Q and E turn.
+var keyAliases = map[int]int{
+	keyW: keyUp, keyS: keyDown, keyA: keyShiftLeft, keyD: keyShiftRight,
+	keyQ: keyLeft, keyE: keyRight,
+}
+
+// aliasKey gives key with its key number replaced from keyAliases, its press, release
+// and shift bits kept.
+func aliasKey(key int) int {
+	const lowByte = 1<<8 - 1
+	if to, ok := keyAliases[key&lowByte]; ok {
+		return key&^lowByte | to
+	}
+	return key
+}
+
+// interact uses the wall ahead as if its decoration were clicked; false if it does nothing.
+func (g *Game) interact() bool {
+	g.anyDecoration = true
+	defer func() { g.anyDecoration = false }()
+	return g.clickWall(nil)
+}
 
 // highlightSpell prints the selected spell's name in the list lit or plain
 // (C: fn_0ca0_05bb).

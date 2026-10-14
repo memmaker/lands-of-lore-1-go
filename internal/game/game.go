@@ -145,6 +145,7 @@ type Game struct {
 	iconReleaseAt             int                // the pressed icon may come up from this tick (C: g_ab26)
 	talkingCharacter          int                // the character whose speech shows, or noTalk (C: g_4bf8)
 	exitProgram               bool               // a script quit the game (C: fn_0845_0bf6)
+	anyDecoration             bool               // changed: Space hits any decoration of the wall ahead
 	doorHandled               int                // a clicked door's script dealt with it (C: g_4be0)
 	lastFoundItem             int                // (C: g_2794)
 	nextCharacter             int                // (C: g_2796)

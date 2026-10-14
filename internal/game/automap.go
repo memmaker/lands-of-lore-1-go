@@ -113,7 +113,8 @@ type automapLegend struct {
 type automapState struct {
 	level        int
 	redraw, done bool
-	left, top    int // the screen position of the map's first column and row
+	open         bool // the map is shown (for the tests)
+	left, top    int  // the screen position of the map's first column and row
 	palette      gfx.Palette
 	shade        [fadeTableSize]byte
 	arrow        [fadeTableSize]byte // (C: g_075c; its 256-byte read runs past the 25 entries into other data, the arrow uses only these)
@@ -153,6 +154,7 @@ func (g *Game) showAutomap() {
 	g.showAutomapPage()
 	g.Screen.FadePalette(a.palette[:], automapFadeTicks, nil)
 	clock.Set(clock.Countdown, automapArrowTicks)
+	a.open = true
 	for !a.done && !g.quit {
 		if a.redraw {
 			g.drawAutomapPage(automapPage)
@@ -178,11 +180,12 @@ func (g *Game) showAutomap() {
 				}
 				a.redraw = true
 			}
-		case keyEscape:
+		case keyEscape, keyAutomapM: // changed: M closes it as it opened it
 			a.done = true
 		}
 		host.Yield()
 	}
+	a.open = false
 	g.fadeToBlack(automapFadeTicks)
 	if err := g.loadWalls(g.level, false); err != nil {
 		g.fail(err)

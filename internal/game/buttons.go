@@ -129,7 +129,7 @@ var buttonDefs = [buttonDefCount]buttonDef{
 	{gui.EventLeftPress, 20, 0, (*Game).clickRestParty, 32, 178, 22, 22, 0, 0},           // 89
 	{gui.EventLeftPress, 0, 0, (*Game).clickMoneyBox, 291, 96, 27, 24, 0, 0},             // 90
 	{gui.EventLeftPress, 0, 0, (*Game).clickCompass, 289, 0, 31, 28, 0, 0},               // 91
-	{gui.EventLeftPress, 0, 0, (*Game).clickAutomap, 289, 31, 31, 23, 0, 0},              // 92
+	{gui.EventLeftPress, keyAutomapM, 0, (*Game).clickAutomap, 289, 31, 31, 23, 0, 0},    // 92 (changed: M opens it)
 	{gui.EventLeftPress, 0, 0, (*Game).clickLamp, 291, 56, 29, 24, 0, 0},                 // 93
 	{eventsBoth, 0, 0, (*Game).clickStatsButtons, 220, 98, 43, 19, 0, 0},                 // 94
 }

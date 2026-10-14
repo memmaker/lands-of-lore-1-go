@@ -55,6 +55,9 @@ func (g *Game) decorationHit(d int) bool {
 	for d != 0 {
 		dec := &g.lvl.decorations[d]
 		if v := dec.shapes[decorationNear]; v != noShape {
+			if g.anyDecoration { // changed: Space hits any decoration of the wall
+				return true
+			}
 			shape := g.lvl.decorationShapes[v]
 			x := dec.x[decorationNear] + decorationViewX
 			y := dec.y[decorationNear] + decorationViewY

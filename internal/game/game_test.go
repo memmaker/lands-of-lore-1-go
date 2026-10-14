@@ -192,6 +192,39 @@ func TestNewGame(t *testing.T) {
 			t.Errorf("scan %d: block %d dir %d -> block %d dir %d", k.scan, block, dir, g.currentBlock, g.direction)
 		}
 	}
+	// The port's layout: E and Q turn, D and A strafe back where the party stood; M opens
+	// the automap and closes it again.
+	for _, k := range []struct {
+		scan    byte
+		turn    int
+		strafes bool
+	}{{18, 1, false}, {16, -1, false}, {32, 0, true}, {30, 0, true}} { // E Q D A
+		block, dir := g.currentBlock, g.direction
+		host.PushScan(host.ScanEvent{Scan: k.scan})
+		host.PushScan(host.ScanEvent{Scan: k.scan, Released: true})
+		steps(100)
+		if g.direction != (dir+k.turn)&(directionCount-1) || (k.turn != 0 && g.currentBlock != block) {
+			t.Errorf("scan %d: block %d dir %d -> block %d dir %d", k.scan, block, dir, g.currentBlock, g.direction)
+		}
+		t.Logf("scan %d: block %d -> %d", k.scan, block, g.currentBlock)
+	}
+	const scanM = 50
+	hadMap := g.flag(flagHasAutomap)
+	g.setFlag(flagHasAutomap, true)
+	host.PushScan(host.ScanEvent{Scan: scanM})
+	host.PushScan(host.ScanEvent{Scan: scanM, Released: true})
+	steps(100)
+	savePNG(t, host.ShowFrame(), "automap_m.png")
+	if !g.automap.open {
+		t.Errorf("M did not open the automap")
+	}
+	host.PushScan(host.ScanEvent{Scan: scanM})
+	host.PushScan(host.ScanEvent{Scan: scanM, Released: true})
+	steps(100)
+	if g.automap.open {
+		t.Errorf("M did not close the automap")
+	}
+	g.setFlag(flagHasAutomap, hadMap)
 	// The character screen: a click on the first portrait opens it, its exit closes it.
 	click := func(x, y int, name string) {
 		host.MouseX, host.MouseY = x, y
