@@ -140,4 +140,17 @@ func TestNewGame(t *testing.T) {
 		t.Logf("%s: block %d dir %d -> block %d dir %d; %v", k.name, block, dir, g.currentBlock, g.direction, runErr)
 		savePNG(t, host.ShowFrame(), k.name)
 	}
+	// The character screen: a click on the first portrait opens it, its exit closes it.
+	click := func(x, y int, name string) {
+		host.MouseX, host.MouseY = x, y
+		steps(5)
+		host.MouseLeft = true
+		steps(10)
+		host.MouseLeft = false
+		steps(60)
+		t.Logf("%s: frozen %v, selected %d; %v", name, g.screenFrozen, g.selectedCharacter, runErr)
+		savePNG(t, host.ShowFrame(), name)
+	}
+	click(g.portraitX[0]+30, 160, "character.png")
+	click(viewLeft+160+20, 103, "character_exit.png")
 }

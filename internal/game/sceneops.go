@@ -29,7 +29,7 @@ const (
 // saveSparePage keeps the spare page while a scene uses it (C: ovr_2d5f_0048).
 func (g *Game) saveSparePage() {
 	if !g.sparePageSaved {
-		copy(g.sparePageBackup[:], g.Screen.Page(pageSpare))
+		copy(g.pageBackup[:], g.Screen.Page(pageSpare))
 		g.sparePageSaved = true
 	}
 }
@@ -43,7 +43,7 @@ func (g *Game) restoreSparePage() {
 				g.closeSceneAnimation(i)
 			}
 		}
-		copy(g.Screen.Page(pageSpare), g.sparePageBackup[:])
+		copy(g.Screen.Page(pageSpare), g.pageBackup[:])
 	}
 	g.sparePageSaved = false
 }

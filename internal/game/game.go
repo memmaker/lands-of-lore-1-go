@@ -135,7 +135,12 @@ type Game struct {
 	queuedSpeaker       int                          // (C: g_aba6)
 	queuedSpeechStarted bool                         // (C: g_aba7)
 	sparePageSaved      bool                         // (C: struct Scene c4a)
-	sparePageBackup     [gfx.Width * gfx.Height]byte // (C: g_4d56)
+	pageBackup          [gfx.Width * gfx.Height]byte // (C: g_4d56)
+	pageBackup2         [gfx.Width * gfx.Height]byte // (C: g_4d5a)
+	statsShown          int                          // bit per character whose stats the screen showed (C: g_0c4c)
+	shownStats          [characterStats]int          // the values on the screen as they count up (C: g_4b18)
+	shownAilments       [ailmentIcons]int            // (C: g_4b12)
+	characterPicture    int                          // the INVENTn.CPS on the back page, -1 for none (C: g_2136)
 	sceneBoxOpen        bool                         // (C: struct Scene c46)
 	controlsHidden      bool                         // (C: struct Scene c47)
 	sceneArea           [4]int                       // x, y, w, h (C: struct Scene x, y, w, h)
@@ -223,6 +228,7 @@ func New(dir string) (*Game, error) {
 	g.timers = newTimers()
 	g.talkingCharacter = noTalk
 	g.lastFoundItem = -1
+	g.characterPicture = -1
 	g.sceneReady = true
 	g.compassNeedle = noCompass
 	g.deadPartyCheck = noPartyCheck

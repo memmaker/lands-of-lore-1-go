@@ -310,21 +310,6 @@ func (g *Game) buildSpellTargetButtons() {
 
 // Button callbacks not ported yet.
 
-func (g *Game) clickPortraitLeft(*gui.Button) bool {
-	notPorted("ovr_2d22_0039 (button)")
-	return false
-}
-
-func (g *Game) clickCharacterInventorySlot(*gui.Button) bool {
-	notPorted("ovr_2d22_004d (button)")
-	return false
-}
-
-func (g *Game) clickExitCharacterInventory(*gui.Button) bool {
-	notPorted("ovr_2d22_0034 (button)")
-	return false
-}
-
 func (g *Game) clickSpellTargetCharacter(*gui.Button) bool {
 	notPorted("ovr_2d8a_0034 (button)")
 	return false
@@ -342,10 +327,5 @@ func (g *Game) clickOptions(*gui.Button) bool {
 
 func (g *Game) clickRestParty(*gui.Button) bool {
 	notPorted("ovr_2d7a_0020 (button)")
-	return false
-}
-
-func (g *Game) clickStatsButtons(*gui.Button) bool {
-	notPorted("ovr_2d22_0057 (button)")
 	return false
 }
