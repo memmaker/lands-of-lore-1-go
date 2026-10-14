@@ -86,12 +86,12 @@ func (g *Game) start() error {
 		return g.start()
 	case choiceNewGame:
 		// Character generation is the language folder's LANDS.EXE, which is not ported;
-		// it would start this program again with the chosen hero's number, which shows
-		// the title once more and goes on below. Until then the default hero starts.
+		// it would start this program again with the chosen hero's number (-hero), which
+		// shows the title once more and goes on below.
 		if err := g.loadGameData(); err != nil {
 			return err
 		}
-		if err := g.startNewGame(defaultHero); err != nil {
+		if err := g.startNewGame(g.Hero); err != nil {
 			return err
 		}
 		return g.mainLoop()

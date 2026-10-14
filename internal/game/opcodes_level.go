@@ -348,8 +348,6 @@ func (g *Game) revealNeighbour(b, x, y, dx, dy int) bool {
 	return true
 }
 
-// Not ported yet.
-
 func (g *Game) hideIcon() { g.setIcon(0, iconRelease) }
 
 // opSetLevelMusic (C: ovr_2d2c_00de).

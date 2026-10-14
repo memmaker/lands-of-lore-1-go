@@ -489,8 +489,6 @@ func (g *Game) opStartTIMDialogue(s *emc.State) int {
 	return 1
 }
 
-// Not ported yet.
-
 // timPalette is the TIM palette sub-opcode: 0 fades the view out, 1 fades to the scene
 // palette with the game palette's upper half, 2 to black, 3 to the scene palette,
 // 4 redraws the game after a scene, 5 fades to the level palette (C: fn_057f_08cd).

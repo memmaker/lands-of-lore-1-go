@@ -46,6 +46,7 @@ func main() {
 	dir := flag.String("data", defaultDir, "directory with the original game files")
 	source := flag.String("import", "", "import the game files from this folder/zip/ISO/installer into -data and exit")
 	scale := flag.Int("scale", 3, "window scale")
+	hero := flag.Int("hero", -1, "start a new game with hero 0-3, as MAIN.EXE's argument (Ak'shel, Michael, Kieran, Conrad)")
 	flag.Parse()
 
 	if *source != "" {
@@ -60,7 +61,7 @@ func main() {
 		os.Exit(1)
 	}
 	var gameErr error
-	err := host.Run("Lands of Lore", *scale, func() { gameErr = run(*dir) })
+	err := host.Run("Lands of Lore", *scale, func() { gameErr = run(*dir, *hero) })
 	if err == nil {
 		err = gameErr
 	}
@@ -107,10 +108,13 @@ func importGame(source, dir string) error {
 }
 
 // run is the game.
-func run(dir string) error {
+func run(dir string, hero int) error {
 	g, err := game.New(dir)
 	if err != nil {
 		return err
+	}
+	if hero >= 0 {
+		g.Hero = hero
 	}
 	g.StartAudio()
 	return g.Run()

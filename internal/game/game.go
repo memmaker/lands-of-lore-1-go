@@ -23,6 +23,7 @@ import (
 // Game is the state the original kept in globals.
 type Game struct {
 	Files   *data.Files
+	Hero    int // the hero a new game starts with, MAIN.EXE's argument
 	Screen  *gfx.Screen
 	Text    *text.Printer
 	Config  config.Config
@@ -234,7 +235,7 @@ func New(dir string) (*Game, error) {
 	if err != nil {
 		return nil, err
 	}
-	g := &Game{Files: files, Saves: dirStore{dir}, Screen: gfx.NewScreen(), menu: menuState{mouseHovers: true}}
+	g := &Game{Files: files, Saves: dirStore{dir}, Screen: gfx.NewScreen(), menu: menuState{mouseHovers: true}, Hero: defaultHero}
 	raw, err := files.Read(config.FileName)
 	if err != nil {
 		return nil, errSetup

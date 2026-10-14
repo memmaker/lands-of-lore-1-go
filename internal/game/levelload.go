@@ -206,8 +206,6 @@ func (g *Game) fadeToBlack(ticks int) {
 // flushInput drops queued keys and clicks (C: fn_2169_062e).
 func (g *Game) flushInput() { input.Flush() }
 
-// Not ported yet.
-
 const noTalk = -1
 
 // opChangeLevel leaves for another level: thrown items land where they fly, the level

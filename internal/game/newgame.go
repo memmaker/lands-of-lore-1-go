@@ -52,8 +52,8 @@ func (g *Game) startNewGame(hero int) error {
 		g.availableSpells[i] = noSpell
 	}
 	g.availableSpells[0] = 0
-	// The original asks the sound start-up which drivers it installed; until the sound is
-	// ported the configured ones stand in for them.
+	// The original asks the sound start-up which drivers it installed; the configured ones
+	// stand for them, as every driver is the port's.
 	g.language = g.Config.Language
 	if g.Config.Speech == 0 {
 		g.speechVolume, g.textEnabled = 0, true

@@ -309,8 +309,6 @@ const (
 	raiseDeadFade = 40
 )
 
-// Not ported yet.
-
 // putKeyBack queues key k again (C: fn_2169_0945).
 func (g *Game) putKeyBack(k int) { input.Put(k) }
 

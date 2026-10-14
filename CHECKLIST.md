@@ -3,7 +3,7 @@
 Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
 
 - [x] Repo skeleton: go.mod, cmd/lol, host (Ebiten lockstep), gameimport (-import incl. GOG GAME.DAT ISO)
-- [ ] Data layer: PAK archives, LCW/RLE decompression, CPS, shapes, fonts, palettes, WSA
+- [x] Data layer: PAK archives, LCW/RLE decompression, CPS, shapes, fonts, palettes, WSA
   - [x] FILEDATA.FDT index, PAK members, loose-file override (data.Files)
   - [x] LCW (format80) and RLE decoders
   - [x] PAK members: offsets/sizes re-read from each archive's own directory (FDT values are stale, s034)
@@ -25,17 +25,16 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] Game data load after the menu (o2d50_0048): shapes, colour tables, ONETIME.INF, ITEM.INF, busy cursor
   - [x] Exit
   - [x] Load game (ovr_2d56_002f) after the data load
-  - [ ] New game: MAIN.EXE's numbered start (ovr_2d2c_0070, argv[1] 0-3 picks the character); until
-        character generation exists, the menu choice starts with the default character
+  - [x] New game: MAIN.EXE's numbered start (ovr_2d2c_0070): -hero 0-3 picks the character, Conrad by default
   - [ ] BLOCKED: CHARGEN, INTRO and HISTORY are the language folder's LANDS.EXE, a separate
         program with no decomp in lands-of-lore-1-re (only MAIN.EXE and LOLCD.EXE)
-- [ ] New game to the first dungeon view
+- [x] New game to the first dungeon view
   - [x] New game state (ovr_2d2c_0070), credits (o2d0e), item creation
   - [x] Party joining and leaving (o2d74), opcode 75
   - [x] Game screen button lists (o2ceb); callbacks pending
   - [x] Level load: LEVELn files, walls, decorations, monster shapes, palettes (o2d2c); level 1 INI and INF entry run (sound is a silent stand-in)
   - [x] Game screen (ovr_2d2c_0043): playfield, compass, automap icon, spell list, credits
-  - [ ] Main loop (fn_0ca0_0c33)
+  - [x] Main loop (fn_0ca0_0c33)
   - [x] 3D view renderer (o2cda)
   - [x] Portraits and bars (s010), inventory bar (s014)
 - [ ] Intro (TIM/WSA sequences), character selection
@@ -56,18 +55,19 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] Party movement, walk/turn/strafe animations (s011, s038), doors, timers
   - [x] Level change (op 60)
   - [x] Automap (o2ce1): map, legend, level paging, party arrow
-- [ ] Items, inventory, characters, portraits, stats screen
+- [x] Items, inventory, characters, portraits, stats screen
   - [x] Resting (o2d7a): healing, mana, poison, interruption
-- [ ] Monsters, combat, magic
+- [x] Monsters, combat, magic
   - [x] Monster AI, combat rules (s004), status effects
   - [x] Spell casting, targets, learning (o2d8a, o2d86), heal (o2d18)
   - [x] Spell effects (o2d83, o2d1b, o2d03, o2d15, o2d4d, o2d28, o2d07, o2d99, o2d9d, o2d12), level 11 swamp ice, crystal wall shatter
   - [x] Flying objects (s012)
-- [ ] Dialogue/scenes, text window, speech
+- [x] Dialogue/scenes, text window, speech
+  - [x] Speech playback and the <MORE> prompt
   - [x] Scenes, dialogue, message line, talking faces (talk.go)
 - [x] Save/load
   - [x] Byte-exact saves (o2d3c), level temp states with the original LCW packer (s119)
-  - [x] Game menu (o2d56): load, save with name entry, delete, options, audio sliders (sound silent), quit; game over menu, dead party check (o2cf4)
+  - [x] Game menu (o2d56): load, save with name entry, delete, options, audio sliders, quit; game over menu, dead party check (o2cf4)
 - [x] Sound and music (AdLib .ADL, VOC)
   - [x] ALFX.DRV ported from its disassembly (internal/sound: alfx.go, alfxops.go, all 75 opcodes), OPL2 emulator with rhythm mode, 72 Hz tick in the Ebiten stream
   - [x] Front ends: s003 music/effects (tracks, LORE*.ADL / LORESFX.ADL, positional volume, delayed queue), s030 play/stop/fade with program byte scaling, s032 AdLib effects, driver volumes and on/off (o2db9, s026), audio sliders
