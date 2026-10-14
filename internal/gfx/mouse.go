@@ -215,7 +215,7 @@ func shapePixels(shape []byte) (pixels []byte, w, h int) {
 func (s *Screen) Frame() *host.Frame {
 	m := &s.mouse
 	return &host.Frame{
-		Pixels:        s.Page(0),
+		Pixels:        s.framePixels(),
 		Palette:       (*[data.PaletteSize]byte)(&s.Palette),
 		Pointer:       m.pixels,
 		PointerWidth:  m.width,

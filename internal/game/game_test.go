@@ -228,6 +228,27 @@ func TestNewGame(t *testing.T) {
 		t.Errorf("decorations %d after the automap, %d before", len(g.lvl.decorations), decorations)
 	}
 	g.setFlag(flagHasAutomap, hadMap)
+	// A tooltip names the spell the pointer rests on in the list.
+	hadMagic := g.flag(flagHasMagic)
+	g.setFlag(flagHasMagic, true)
+	g.drawGameScreen()
+	g.buildButtons()
+	if g.availableSpells[0] != noSpell {
+		host.MouseX, host.MouseY = 34, 19
+		steps(60)
+		savePNG(t, host.ShowFrame(), "tooltip.png")
+		if want := g.text(spells[g.availableSpells[0]].Name); !g.tooltip.shown || !strings.HasPrefix(g.tooltip.text, want) {
+			t.Errorf("tooltip %q shown %v, want %q", g.tooltip.text, g.tooltip.shown, want)
+		}
+		host.MouseX, host.MouseY = 160, 60
+		steps(5)
+		if g.tooltip.shown {
+			t.Errorf("tooltip %q still shown", g.tooltip.text)
+		}
+	}
+	g.setFlag(flagHasMagic, hadMagic)
+	g.drawGameScreen()
+	g.buildButtons()
 	// The character screen: a click on the first portrait opens it, its exit closes it.
 	click := func(x, y int, name string) {
 		host.MouseX, host.MouseY = x, y

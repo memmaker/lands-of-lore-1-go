@@ -167,6 +167,10 @@ func (g *Game) handleInput() {
 			key = 0
 		}
 	}
+	if key != 0 { // a click or key may leave the main loop: no tooltip over what comes
+		g.tooltip = tooltipState{}
+		g.Screen.ClearOverlay()
+	}
 	k := g.GUI.Process(g.buttons, aliasKey(key))
 	if k != 0 && g.spellTarget != noCharacter && k&keyReleased == 0 {
 		g.buildButtons()
@@ -219,6 +223,7 @@ func (g *Game) idleWork() {
 	}
 	g.updateSpeech()
 	g.updateMessageFade()
+	g.updateTooltip(clock.Ticks())
 }
 
 // updateAnimations runs the level's looping WSA animations (C: fn_130a_028a).

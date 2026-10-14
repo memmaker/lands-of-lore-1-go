@@ -83,6 +83,7 @@ type Screen struct {
 	scratch  []byte // unpacked shape data (C: the buffer at g_35ac)
 	mouse    mouseState
 	lineClip clipRect
+	overlay  overlay
 }
 
 // NewScreen allocates the pages and the window table.
