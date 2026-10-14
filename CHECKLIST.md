@@ -76,6 +76,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
 - [x] In-game <MORE> prompt with the speech deadline (fn_13e8_09b7 at g_370d, ovr_2da3_002f); message fade-out (fn_0845_11b7)
 - [ ] Ending
   - [ ] BLOCKED: FINALE.EXE is not decompiled (opcode 98 calls runFinale, which fails loudly)
+- Note: ENG/FRE/GER.LM (o2dad) hold only the WW library's error messages (heap corrupt and the like); the port has no use for them.
 - [ ] Parity checks against DOSBox-X
 - [ ] wasm build, goplay registration
   - [x] -import writes COVER.PNG (the title picture); the wasm build of cmd/lol compiles
