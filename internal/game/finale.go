@@ -12,7 +12,7 @@ import (
 )
 
 // FINALE.EXE is the language folder's third program: the ending. MAIN.EXE replaces
-// itself with it as "FINALE.EXE <hero> HOMIE <difficulty> <name>"; it plays LOLFINAL.TIM
+// itself with it as "FINALE.EXE <hero> HOMIE <difficulty> <folder>" (the folder must start with a drive); it plays LOLFINAL.TIM
 // with LANDS.EXE's AV engine, rolls the credits, shows the hero's picture and starts
 // over until Escape is pressed at it, then ends the program (C: FINALE.EXE _Main_Program,
 // _Finale). Unlike LANDS.EXE it draws straight onto the screen.
@@ -20,6 +20,7 @@ import (
 // Files and settings (C: FINALE.EXE g_142, g_14c, g_159, g_71a).
 const (
 	finaleTextFile = "LOLFINAL.DIP"
+	finaleFont     = "NEW6P.FNT" // the startup font, which the credits use (C: g_218)
 	finaleScript   = "LOLFINAL.TIM"
 
 	finaleFadeTicks  = 5 // the animations' fades (C: _LOL_Open_Animation)
@@ -86,6 +87,9 @@ func (g *Game) runFinale(hero, difficulty int) error {
 	defer s.ShowMouse()
 
 	var err error
+	if l.font8, err = l.loadFont(finaleFont); err != nil {
+		return err
+	}
 	if l.introFont, err = l.loadFont(introFontFile); err != nil {
 		return err
 	}
@@ -450,7 +454,7 @@ func (g *Game) finaleCredits() error {
 	if err != nil {
 		return err
 	}
-	s.SetFont(l.introFont)
+	s.SetFont(l.font8) // both credits fonts are the startup font (C: g_39fd into g_2d54, g_2d58)
 	s.SetFontPalette(finCreditsFontPalette)
 	s.CharSpacing = 0
 	if err := g.loadPictureLands(finCreditsPicture, landsPicPage, l.palette[:]); err != nil {

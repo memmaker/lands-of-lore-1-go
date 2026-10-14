@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"testing"
 
@@ -40,7 +41,36 @@ func TestFinale(t *testing.T) {
 		return d
 	}
 	every, total := env("LOLEVERY", 600), env("LOLFINSTEPS", 40000)
+	// LOLCMP: a parity.py dump folder; each dump's closest frame is reported
+	var dumps [][]byte
+	var names []string
+	if dir := os.Getenv("LOLCMP"); dir != "" {
+		names, _ = filepath.Glob(filepath.Join(dir, "*.raw"))
+		for _, n := range names {
+			b, _ := os.ReadFile(n)
+			dumps = append(dumps, b)
+		}
+	}
+	best := make([]int, len(dumps))
+	bestAt := make([]int, len(dumps))
+	for i := range best {
+		best[i] = 1 << 30
+	}
 	for i := 0; !done && steps(1); i++ {
+		if len(dumps) > 0 && i%2 == 0 {
+			f := host.ShowFrame().Pixels
+			for k, d := range dumps {
+				n := 0
+				for j := range d {
+					if d[j] != f[j] {
+						n++
+					}
+				}
+				if n < best[k] {
+					best[k], bestAt[k] = n, i
+				}
+			}
+		}
 		if i%every == 0 {
 			savePNG(t, host.ShowFrame(), fmt.Sprintf("finale%05d.png", i))
 		}
@@ -51,6 +81,9 @@ func TestFinale(t *testing.T) {
 		if i > total+20000 {
 			t.Fatal("the ending did not end")
 		}
+	}
+	for k := range dumps {
+		t.Logf("%s: %d pixels differ at step %d", filepath.Base(names[k]), best[k], bestAt[k])
 	}
 	if runErr != nil {
 		t.Fatal(runErr)

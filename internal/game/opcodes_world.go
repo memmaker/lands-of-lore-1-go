@@ -689,7 +689,7 @@ func (g *Game) opCountLiveMonsters(s *emc.State) int {
 
 // opFinale ends the game with the ending for the hero who led the party; FINALE.EXE
 // returned to DOS (C: fn_0fbe_3282, which ran FINALE.EXE with the hero, the difficulty
-// and the player's name).
+// and the game's folder).
 func (g *Game) opFinale(s *emc.State) int {
 	for g.updateSpeech() != 0 {
 		g.waitTicks(1)

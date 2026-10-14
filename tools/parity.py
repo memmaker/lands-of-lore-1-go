@@ -50,7 +50,7 @@ subprocess.run(['cp', exe, game + '/MAIN.EXE'], check=True)
 ARGS = os.environ.get('LOLARGS', '3')  # PLAIN shows the menu; a number starts that hero's new game
 # LANDS CHARGEN, LANDS INTRO, LANDS HISTORY run the language folder's LANDS.EXE instead and dump
 # the screen every LOLEVERY seconds (default 2) for LOLFOR seconds (default 30)
-# FINALE <hero> HOMIE <difficulty> <name> runs FINALE.EXE the same way
+# FINALE <hero> HOMIE <difficulty> C:\ runs FINALE.EXE the same way (argv[4] must be a drive path)
 LANDS = ARGS.upper().startswith(('LANDS', 'FINALE'))
 run = 'main.exe %s' % ARGS
 if LANDS:

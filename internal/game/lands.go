@@ -77,7 +77,7 @@ type lands struct {
 	palette gfx.Palette // the colours being faded to (C: _Palette)
 	black   gfx.Palette // (C: _BlackPalette)
 
-	introFont, font8 *gfx.Font // (C: _IntroFont, _Font8Ptr)
+	introFont, font8 *gfx.Font // (C: _IntroFont, _Font8Ptr; FINALE.EXE: NEW6P.FNT)
 	rawText          []byte    // LOLINTRO.DIP (C: _RawText)
 
 	textUp   bool   // the text's rows are saved in textRows (C: _up)
