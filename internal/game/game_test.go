@@ -248,6 +248,17 @@ func TestNewGame(t *testing.T) {
 			t.Errorf("tooltip %q still shown", g.tooltip.text)
 		}
 	}
+	// One on the first inventory slot names its item.
+	if it := g.inventory[g.inventoryStart]; it != 0 {
+		host.MouseX, host.MouseY = inventorySlotX[0]+10, inventoryY+10
+		steps(60)
+		savePNG(t, host.ShowFrame(), "tooltip_item.png")
+		if want := g.text(g.itemTypes[g.items[it].Type].Name); !g.tooltip.shown || !strings.HasPrefix(g.tooltip.text, want) {
+			t.Errorf("item tooltip %q shown %v, want %q", g.tooltip.text, g.tooltip.shown, want)
+		}
+		host.MouseX, host.MouseY = 160, 60
+		steps(5)
+	}
 	g.setFlag(flagHasMagic, hadMagic)
 	g.drawGameScreen()
 	g.buildButtons()

@@ -11,15 +11,20 @@ import (
 
 // Tooltips are an addition of the port: with the pointer resting on a spell in the
 // list, on a magic button or on a level of the spell menu, a box beside it names the
-// spell and what its levels cost. The box is an overlay of the frame (gfx.SetOverlay),
+// spell and what its levels cost; on an item in the inventory bar or a character's
+// slots it names the item, says what it is for and gives a weapon's or armour's
+// numbers (itemtips.go). The box is an overlay of the frame (gfx.SetOverlay),
 // so the game's pages stay as the original drew them.
 
 const (
-	tooltipDelay         = 20 // ticks the pointer rests before the box shows
-	tooltipPadding       = 3
-	tooltipGap           = 10 // between the pointer and the box
-	buttonSpellListFirst = 71
-	buttonSpellListLast  = 80
+	tooltipDelay            = 20 // ticks the pointer rests before the box shows
+	tooltipPadding          = 3
+	tooltipGap              = 10 // between the pointer and the box
+	buttonInventoryFirst    = 50
+	buttonInventoryLast     = 58
+	buttonCharInventoryLast = 43
+	buttonSpellListFirst    = 71
+	buttonSpellListLast     = 80
 )
 
 // The tooltip colours, the nearest of the palette to these.
@@ -40,7 +45,7 @@ type tooltipState struct {
 func (g *Game) updateTooltip(now int) {
 	t := &g.tooltip
 	text := ""
-	if g.updateFlags&updateGameMenu == 0 && !g.screenFrozen {
+	if g.updateFlags&updateGameMenu == 0 && g.heldItem == 0 {
 		text = g.tooltipText()
 	}
 	if text != t.text {
@@ -58,10 +63,15 @@ func (g *Game) updateTooltip(now int) {
 func (g *Game) tooltipText() string {
 	mx, my := g.Screen.Mouse()
 	for b := g.buttons; b != nil; b = b.Next {
-		if b.Window != 0 || mx < b.X || my < b.Y || mx > b.X+b.W || my > b.Y+b.H {
+		if !g.GUI.Contains(b, mx, my) {
 			continue
 		}
 		switch {
+		case b.Index >= buttonInventoryFirst && b.Index <= buttonInventoryLast:
+			return g.itemTooltip(g.inventory[(g.inventoryStart+b.Arg)%inventorySlots])
+		case b.Index >= buttonCharInventorySlot && b.Index <= buttonCharInventoryLast:
+			return g.itemTooltip(g.party[g.selectedCharacter].Items[b.Arg])
+		case g.screenFrozen:
 		case b.Index >= buttonSpellListFirst && b.Index <= buttonSpellListLast:
 			return g.spellTooltip(g.availableSpells[b.Arg])
 		case b.Index >= buttonMagic && b.Index < buttonMagicSubmenu:

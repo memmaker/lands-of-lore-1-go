@@ -265,6 +265,12 @@ func (g *System) ProcessKeys(list *Button) int {
 	return g.Process(list, key)
 }
 
+// Contains says whether screen point (x, y) is on button b, as Process tests it.
+func (g *System) Contains(b *Button, x, y int) bool {
+	bx, by := g.position(b)
+	return !(x < bx || y < by || bx+b.W < x || by+b.H < y)
+}
+
 // position is a button's screen position.
 func (g *System) position(b *Button) (x, y int) {
 	w := g.Screen.Windows[b.Window]
