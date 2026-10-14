@@ -77,7 +77,8 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
 - [ ] Ending
   - [ ] BLOCKED: FINALE.EXE is not decompiled (opcode 98 calls runFinale, which fails loudly)
 - Note: ENG/FRE/GER.LM (o2dad) hold only the WW library's error messages (heap corrupt and the like); the port has no use for them.
-- [ ] Parity checks against DOSBox-X
+- [x] Parity checks against DOSBox-X (tools/parity.py: MAIN.EXE in the remote-debug DOSBox-X, host input off, keys over QMP, mode-13h dumps vs. TestNewGame's LOLSHOT .raw)
+  - [x] Title menu, first view, strafe, walk, turn, step back: identical but for the mouse cursor (the original draws it into video memory) and the guard's idle sway and animation, which follow the random roll per monster update
 - [ ] wasm build, goplay registration
   - [x] -import writes COVER.PNG (the title picture); the wasm build of cmd/lol compiles
   - [x] goplay entry (games.js, deploy.sh, README) on goplay branch add-lol, not merged or deployed
