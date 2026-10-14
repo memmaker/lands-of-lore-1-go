@@ -39,7 +39,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] 3D view renderer (o2cda)
   - [x] Portraits and bars (s010), inventory bar (s014)
 - [ ] Intro (TIM/WSA sequences), character selection
-- [ ] Scripts: EMC interpreter and opcodes (s018, s019), TIM (s001, s002)
+- [x] Scripts: EMC interpreter and opcodes (s018, s019), TIM (s001, s002)
   - [x] EMC loader and interpreter (s018, o2de9), tested on ONETIME.INF
   - [x] Item type opcodes 13, 14 (ovr_2d50_003e, 0043) for ONETIME.INF
   - [x] Game flags 7, 8; items 15, 18, 171; character fields 19, 20 (HP/MP bar animation)
@@ -70,5 +70,9 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] Game menu (o2d56): load, save with name entry, delete, options, audio sliders (sound silent), quit; game over menu, dead party check (o2cf4)
 - [ ] Sound and music (AdLib .ADL, VOC)
 - [ ] Ending
+  - [ ] BLOCKED: FINALE.EXE is not decompiled (opcode 98 calls runFinale, which fails loudly)
 - [ ] Parity checks against DOSBox-X
 - [ ] wasm build, goplay registration
+  - [x] -import writes COVER.PNG (the title picture); the wasm build of cmd/lol compiles
+  - [x] goplay entry (games.js, deploy.sh, README) on goplay branch add-lol, not merged or deployed
+  - [ ] Browser test on the desk, deploy

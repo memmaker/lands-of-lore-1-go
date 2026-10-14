@@ -103,7 +103,7 @@ func importGame(source, dir string) error {
 			return err
 		}
 	}
-	return nil
+	return writeCover(dir)
 }
 
 // run is the game.
