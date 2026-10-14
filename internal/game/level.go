@@ -244,8 +244,11 @@ func (g *Game) loadWalls(n int, assign bool) error {
 	if set < 0 || set >= len(decorationSets) {
 		return fmt.Errorf("level %d: decoration set %d", n, set)
 	}
-	if err := g.openDecorations(decorationSets[set].shapes, decorationSets[set].defs, false); err != nil {
-		return err
+	if assign { // fix: without assign the decorations stay; reopening the set emptied them (the automap lost the fountain)
+		if err := g.openDecorations(decorationSets[set].shapes, decorationSets[set].defs, false); err != nil {
+			return err
+		}
+		defer g.closeDecorations()
 	}
 	lv := &g.lvl
 	for at := 2; at+wllRecordSize <= len(file); at += wllRecordSize {
@@ -264,7 +267,6 @@ func (g *Game) loadWalls(n int, assign bool) error {
 		lv.wallFlags[idx] = int(uint8(word(8)))
 		lv.automapData[idx] = int(int8(word(10)))
 	}
-	g.closeDecorations()
 	return nil
 }
 

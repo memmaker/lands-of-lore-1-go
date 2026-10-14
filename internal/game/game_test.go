@@ -209,7 +209,7 @@ func TestNewGame(t *testing.T) {
 		t.Logf("scan %d: block %d -> %d", k.scan, block, g.currentBlock)
 	}
 	const scanM = 50
-	hadMap := g.flag(flagHasAutomap)
+	hadMap, decorations := g.flag(flagHasAutomap), len(g.lvl.decorations)
 	g.setFlag(flagHasAutomap, true)
 	host.PushScan(host.ScanEvent{Scan: scanM})
 	host.PushScan(host.ScanEvent{Scan: scanM, Released: true})
@@ -223,6 +223,9 @@ func TestNewGame(t *testing.T) {
 	steps(100)
 	if g.automap.open {
 		t.Errorf("M did not close the automap")
+	}
+	if len(g.lvl.decorations) != decorations { // the automap once emptied them (the fountain went)
+		t.Errorf("decorations %d after the automap, %d before", len(g.lvl.decorations), decorations)
 	}
 	g.setFlag(flagHasAutomap, hadMap)
 	// The character screen: a click on the first portrait opens it, its exit closes it.
