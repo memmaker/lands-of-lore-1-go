@@ -48,14 +48,11 @@ func TestMT32Music(t *testing.T) {
 	p.offline = true
 	p.UseMIDI(mt, true, true)
 	p.Load(Music, sysex)
-	p.Play(Music, 0, maxVolume)
-	second := make([]float32, outChannels*outputRate)
-	for i := 0; p.Playing(); i++ {
-		if i > 30 {
-			t.Fatal("LOLSYSEX still plays after 30 seconds")
-		}
-		p.render(second)
+	p.PlayThrough(0)
+	if p.Playing() {
+		t.Fatal("LOLSYSEX still plays after PlayThrough")
 	}
+	second := make([]float32, outChannels*outputRate)
 	song, err := data.OpenArchives(game, []string{"MUSIC.PAK"}).Read("LORE01A.XMI")
 	if err != nil {
 		t.Skip(err)

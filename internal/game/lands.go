@@ -126,8 +126,7 @@ func (g *Game) runLands(arg string) (int, error) {
 		s.SetFont(font)
 		s.CharSpacing, s.LineSpacing = 0, 0
 	}()
-	s.HideMouse()
-	defer s.ShowMouse()
+	defer s.RestoreMouseHidden(s.StartMouseHidden()) // a program of its own, its mouse fresh
 	defer g.audio.SetMusicVolume(landsSoundVolume) // MAIN.EXE loads the driver anew
 
 	var err error

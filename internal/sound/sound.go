@@ -260,6 +260,33 @@ func (p *Player) Fade(slot int) {
 	}
 }
 
+// PlayThrough plays sequence n of the music slot to its end at once, rendering the
+// synthesiser silently on the way: a set-up of sysex messages needs no real time on the
+// emulator. It gives up after maxThrough of sound.
+func (p *Player) PlayThrough(n int) {
+	if !p.MIDI(Music) {
+		return
+	}
+	p.playMIDI(Music, n, maxVolume)
+	scratch := make([]float32, outChannels*outputRate/throughChunks)
+	for i := 0; i < maxThrough*throughChunks; i++ {
+		p.mu.Lock()
+		done := p.song == nil || p.song.status != seqPlaying
+		if !done {
+			p.midi.render(scratch)
+		}
+		p.mu.Unlock()
+		if done {
+			return
+		}
+	}
+}
+
+const (
+	throughChunks = 10 // PlayThrough renders a tenth of a second at a time, letting the stream in between
+	maxThrough    = 60 // seconds
+)
+
 // waitStarted waits for the driver to start what was queued (C: the loop on function 16
 // in fn_178d_01ef); without the stream there is no tick to wait for.
 func (p *Player) waitStarted() {

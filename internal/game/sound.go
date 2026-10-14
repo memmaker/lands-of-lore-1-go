@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/memmaker/lands-of-lore-1-go/internal/clock"
-	"github.com/memmaker/lands-of-lore-1-go/internal/host"
 	"github.com/memmaker/lands-of-lore-1-go/internal/sound"
 )
 
@@ -57,6 +56,7 @@ type soundState struct {
 	pending         int  // the effect waiting to be played (C: g_1e96)
 	pendingVolume   int  // C: g_1e98
 	lastEffect      int  // C: g_1eaa
+	sysexSent       bool // LOLSYSEX has set the MT-32 up
 	delayed         []delayedSound
 	delayedOverflow bool
 }
@@ -92,21 +92,21 @@ func (g *Game) UseMT32(s sound.Synth) {
 
 const mt32Driver = 6 // SETUP's driver number of the MT-32 (C: g_3747 == 6)
 
-// sendSysex plays LOLSYSEX's sequence 0, which sets up the MT-32's patches, and waits for
-// it (C: ovr_2d50_0039 with g_3747 6 or 7).
+// sendSysex plays LOLSYSEX's sequence 0, which sets up the MT-32's patches
+// (C: ovr_2d50_0039 with g_3747 6 or 7). fix: the original waited the ~10 seconds the
+// sequence spaces its messages for a real MT-32, on every start of MAIN.EXE; the emulator
+// takes them at once, and keeps them, so it is sent once and played through.
 func (g *Game) sendSysex() {
-	if !g.audio.MIDI(sound.Music) {
+	if !g.audio.MIDI(sound.Music) || g.snd.sysexSent {
 		return
 	}
+	g.snd.sysexSent = true
 	b, err := g.Files.Read(sysexFile + midiFileExt)
 	if err != nil {
 		return
 	}
 	g.audio.Load(sound.Music, b)
-	g.audio.Play(sound.Music, 0, fullVolume)
-	for g.audio.Playing() {
-		host.Yield() // fix: the original spun without yielding
-	}
+	g.audio.PlayThrough(0)
 	g.audio.Load(sound.Music, nil)
 }
 

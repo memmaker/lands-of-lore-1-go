@@ -72,6 +72,18 @@ func (s *Screen) HideMouse() {
 	}
 }
 
+// StartMouseHidden gives the cursor the hide count a program starts with, for a program
+// of the game that the port runs inside this one (LANDS.EXE, FINALE.EXE), and returns the
+// count it had, for RestoreMouseHidden.
+func (s *Screen) StartMouseHidden() int {
+	old := s.mouse.hidden
+	s.mouse.hidden = mouseStartHidden
+	return old
+}
+
+// RestoreMouseHidden sets the hide count StartMouseHidden returned.
+func (s *Screen) RestoreMouseHidden(n int) { s.mouse.hidden = n }
+
 // ShowMouse undoes one HideMouse (C: fn_1ebc_0053, fn_1ebc_00fe).
 func (s *Screen) ShowMouse() {
 	if s.mouse.hidden > 0 {

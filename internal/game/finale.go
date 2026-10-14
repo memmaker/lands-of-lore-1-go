@@ -83,8 +83,7 @@ func (g *Game) runFinale(hero, difficulty int) error {
 		s.SetFont(font)
 		s.CharSpacing, s.LineSpacing = 0, 0
 	}()
-	s.HideMouse()
-	defer s.ShowMouse()
+	defer s.RestoreMouseHidden(s.StartMouseHidden()) // a program of its own, its mouse fresh
 
 	var err error
 	if l.font8, err = l.loadFont(finaleFont); err != nil {
