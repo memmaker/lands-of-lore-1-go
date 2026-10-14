@@ -38,9 +38,7 @@ const (
 	introTextFile  = "LOLINTRO.DIP"
 	introScript    = "LOLINTRO.TIM"
 	introScore     = "LOREINTR"
-	mt32Palette    = "COLPAL.PAL"               // shown while the MT-32 is set up (C: g_1200)
-	mt32Text       = "Initializing sound card." // C: g_120b
-	voiceExtension = ".VOC"                     // (C: g_11fb)
+	voiceExtension = ".VOC" // (C: g_11fb)
 
 	landsWorkPage   = 8 // what the AV scripts draw on
 	landsShadowPage = 4 // the copy of the screen the work page is shown through
@@ -52,10 +50,6 @@ const (
 	scoreTitle       = 6 // the character generation's song (C: _Play_Score(6))
 	scoreAfter       = 1
 	landsSoundVolume = 255 // (C: __SoundVolume)
-	mt32Poll         = 60  // ticks between the set-up's checks (C: _Delay(0x3c))
-	mt32DotStep      = 6   // the dots after the text step this far right
-	mt32DotY         = 10
-	mt32TextColour   = 255
 	maxSoundTrack    = 250 // tracks Play_Sound_Vol takes (C: < 0xfa)
 	alwaysSounds     = 2   // tracks played with the effects off (C: param_1 < 2)
 	noPriority       = -1
@@ -127,7 +121,7 @@ func (g *Game) runLands(arg string) (int, error) {
 		s.CharSpacing, s.LineSpacing = 0, 0
 	}()
 	defer s.RestoreMouseHidden(s.StartMouseHidden()) // a program of its own, its mouse fresh
-	defer g.audio.SetMusicVolume(landsSoundVolume) // MAIN.EXE loads the driver anew
+	defer g.audio.SetMusicVolume(landsSoundVolume)   // MAIN.EXE loads the driver anew
 
 	var err error
 	if l.introFont, err = l.loadFont(introFontFile); err != nil {
@@ -137,7 +131,7 @@ func (g *Game) runLands(arg string) (int, error) {
 		return 0, err
 	}
 	s.SetFont(l.font8)
-	g.mt32Init(true)
+	g.mt32Init()
 	input.Flush()
 	l.bumpRate = 0
 	s.SetPalette(l.black[:])
@@ -276,38 +270,25 @@ func (g *Game) loadScore(name string) bool {
 	return found
 }
 
-// mt32Init sets up the MT-32 with LOREINTR's first song, which holds its patches, and
-// waits for it, the screen black but for the text; LANDS.EXE prints a dot a second
-// under it (C: MT32_Init, FINALE.EXE _MT32_Init). sic: FINALE.EXE's archives have no
-// LOREINTR, so there it only clears the screen.
-func (g *Game) mt32Init(dots bool) {
+// mt32Init sets up the MT-32 with LOREINTR's first song, the same patches as LOLSYSEX
+// (C: MT32_Init, FINALE.EXE _MT32_Init). fix: the original printed "Initializing sound
+// card." and a dot a second for the ~10 seconds the messages are spaced for a real MT-32;
+// the emulator has them from the title already, or takes them at once. sic: FINALE.EXE's
+// archives have no LOREINTR, so there it only clears the screen.
+func (g *Game) mt32Init() {
 	if !g.audio.MIDI(sound.Music) && !g.audio.MIDI(sound.Effects) {
 		return
 	}
 	s := g.Screen
 	l := g.lands
-	found := g.loadScore(introScore)
+	found := !g.snd.sysexSent && g.loadScore(introScore)
 	s.ClearPage(pageScreen)
 	if !l.finale {
 		s.ClearPage(landsShadowPage)
-		if b, err := l.files.Read(mt32Palette); err == nil {
-			copy(l.palette[:], b)
-			s.SetPalette(l.palette[:])
-		}
 	}
-	if !found {
-		return
-	}
-	g.playScore(0)
-	g.landsPrint(mt32Text, 0, 0, mt32TextColour, 0, 0, 0)
-	for x := mt32DotStep; g.audio.Playing(); x += mt32DotStep {
-		end := clock.Ticks() + mt32Poll
-		for clock.Ticks() < end {
-			host.Yield()
-		}
-		if dots {
-			g.landsPrint(".", x, mt32DotY, mt32TextColour, 0, 0, 0)
-		}
+	if found {
+		g.audio.PlayThrough(0)
+		g.snd.sysexSent = true
 	}
 	s.SetPalette(l.black[:])
 }

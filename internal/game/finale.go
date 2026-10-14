@@ -92,7 +92,7 @@ func (g *Game) runFinale(hero, difficulty int) error {
 	if l.introFont, err = l.loadFont(introFontFile); err != nil {
 		return err
 	}
-	g.mt32Init(false)
+	g.mt32Init()
 	input.Flush()
 	l.bumpRate = 0
 	s.SetPalette(l.black[:])
