@@ -22,13 +22,16 @@ import (
 
 // Game is the state the original kept in globals.
 type Game struct {
-	Files   *data.Files
-	Hero    int // the hero a new game starts with, MAIN.EXE's argument
-	Screen  *gfx.Screen
-	Text    *text.Printer
-	Config  config.Config
-	Saves   SaveStore   // where saved games go (C: the game folder)
-	Palette gfx.Palette // the working palette (C: g_adea)
+	Files *data.Files
+	Hero  int // the hero a new game starts with, MAIN.EXE's argument
+	// SkipCharGen starts a new game with Hero without LANDS.EXE's character generation,
+	// as MAIN.EXE started with the hero's number does.
+	SkipCharGen bool
+	Screen      *gfx.Screen
+	Text        *text.Printer
+	Config      config.Config
+	Saves       SaveStore   // where saved games go (C: the game folder)
+	Palette     gfx.Palette // the working palette (C: g_adea)
 
 	SystemFont *gfx.Font // FONT9P.FNT (C: g_ae4f, then g_7fb8)
 	SmallFont  *gfx.Font // FONT6P.FNT (C: g_7fbc)

@@ -122,6 +122,7 @@ func (g *Game) runLands(arg string) (int, error) {
 	}()
 	s.HideMouse()
 	defer s.ShowMouse()
+	defer g.audio.SetMusicVolume(landsSoundVolume) // MAIN.EXE loads the driver anew
 
 	var err error
 	if l.introFont, err = l.loadFont(introFontFile); err != nil {

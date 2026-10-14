@@ -119,6 +119,7 @@ func TestNewGame(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	g.SkipCharGen = true
 	var runErr error
 	host.StartHeadless(func() { runErr = g.Run() })
 	steps(300)

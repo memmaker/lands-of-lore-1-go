@@ -26,8 +26,14 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] Exit
   - [x] Load game (ovr_2d56_002f) after the data load
   - [x] New game: MAIN.EXE's numbered start (ovr_2d2c_0070): -hero 0-3 picks the character, Conrad by default
-  - [ ] BLOCKED: CHARGEN, INTRO and HISTORY are the language folder's LANDS.EXE, a separate
-        program with no decomp in lands-of-lore-1-re (only MAIN.EXE and LOLCD.EXE)
+  - [x] LANDS.EXE (language folder; RE from its Turbo Debugger symbols, decomp/lands): menu
+        New game / Intro / History run it as MAIN's launcher did (CHARGEN / INTRO / HISTORY)
+    - [x] _Main_Program: archives, fonts, LOLINTRO.DIP, intro loop with background fade
+    - [x] AV engine (_Process_AV, opcodes 0-30, user functions 0-7), _Intro_Print, _LOL_Open_Animation,
+          _Raw_Palette_Fade, _Big_Copy_View, _Scale_Bit_Blit
+    - [x] Character generation (_Char_Gen, _Process_Char, _Animate_King_1-3, _Animate_Character,
+          _Party_Wait_Processing, confirm); -hero N skips it like MAIN.EXE N
+    - [ ] History (_Patrick_Stewart)
 - [x] New game to the first dungeon view
   - [x] New game state (ovr_2d2c_0070), credits (o2d0e), item creation
   - [x] Party joining and leaving (o2d74), opcode 75
@@ -37,7 +43,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] Main loop (fn_0ca0_0c33)
   - [x] 3D view renderer (o2cda)
   - [x] Portraits and bars (s010), inventory bar (s014)
-- [ ] Intro (TIM/WSA sequences), character selection
+- [x] Intro (TIM/WSA sequences), character selection (LANDS.EXE, above)
 - [x] Scripts: EMC interpreter and opcodes (s018, s019), TIM (s001, s002)
   - [x] EMC loader and interpreter (s018, o2de9), tested on ONETIME.INF
   - [x] Item type opcodes 13, 14 (ovr_2d50_003e, 0043) for ONETIME.INF

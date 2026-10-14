@@ -86,9 +86,12 @@ func (g *Game) start() error {
 	case choiceNewGame:
 		// The launcher runs LANDS.EXE CHARGEN, which starts this program again with the
 		// chosen hero's number; that shows the title once more and goes on below.
-		hero, err := g.runLands(landsCharGen)
-		if err != nil {
-			return err
+		hero := g.Hero
+		if !g.SkipCharGen {
+			var err error
+			if hero, err = g.runLands(landsCharGen); err != nil {
+				return err
+			}
 		}
 		if err := g.loadGameData(); err != nil {
 			return err

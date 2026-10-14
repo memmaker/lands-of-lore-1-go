@@ -23,7 +23,7 @@ const (
 	introTextRows    = gfx.Height - introTextTop
 	introTextBottomY = 188 // where a one-line caption goes (col < 0)
 	introVoiceVolume = 208 // (C: 0xd0)
-	animDelay        = 10 // the delay LOL_Open_Animation is given by the opcode
+	animDelay        = 10  // the delay LOL_Open_Animation is given by the opcode
 )
 
 // avScript is a loaded AV file with its lines (C: struct AVHdr).

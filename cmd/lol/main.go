@@ -115,6 +115,7 @@ func run(dir string, hero int) error {
 	}
 	if hero >= 0 {
 		g.Hero = hero
+		g.SkipCharGen = true
 	}
 	g.StartAudio()
 	return g.Run()
