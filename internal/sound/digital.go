@@ -142,6 +142,8 @@ type digitalChannel struct {
 	active   bool
 	priority int
 	volume   int // 100, 75, 50, 25, 12 or 0 percent
+	level    int // with linear, 0 to maxLevel
+	linear   bool
 	pos      int
 	elapsed  int // timer ticks since it started
 	frames   int // output frames into the current tick
@@ -231,6 +233,30 @@ func (p *Player) PlayDigital(s *Sample, priority, vol int) bool {
 	return true
 }
 
+// maxLevel is the loudest of the AIL driver's digital volumes, which LANDS.EXE plays
+// through (C: AIL_set_digital_playback_volume).
+const maxLevel = 127
+
+// PlayDigitalLevel plays a sample as PlayDigital does, scaled linearly to level of
+// maxLevel, as the AIL driver scales (C: LANDS.EXE _Play_Long_Sample_Vol).
+func (p *Player) PlayDigitalLevel(s *Sample, priority, level int) bool {
+	if s == nil {
+		return false
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if !p.running && !p.offline {
+		return false
+	}
+	i := p.digitalSlot(min(priority, maxVolume))
+	if i < 0 {
+		return false
+	}
+	p.digital[i] = digitalChannel{sample: s, active: true, priority: min(priority, maxVolume),
+		level: max(0, min(level, maxLevel)), linear: true}
+	return true
+}
+
 // StopDigital stops the channels playing a sample, or all with nil; it says whether it
 // stopped any (C: fn_16cf_00b9).
 func (p *Player) StopDigital(s *Sample) bool {
@@ -293,7 +319,11 @@ func (p *Player) mixDigital(out []float32) {
 				}
 				continue
 			}
-			sum += int(scaleSample(c.sample.data[c.pos], c.volume))
+			if c.linear {
+				sum += (int(c.sample.data[c.pos])-silence)*c.level/maxLevel + silence
+			} else {
+				sum += int(scaleSample(c.sample.data[c.pos], c.volume))
+			}
 			if next {
 				c.pos++
 			}

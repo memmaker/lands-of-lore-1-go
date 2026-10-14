@@ -109,6 +109,7 @@ type Game struct {
 	musicTrack    int         // (C: g_1e94)
 	snd           soundState
 	audio         *sound.Player         // the sound card
+	lands         *lands                // LANDS.EXE while it runs
 	vocNames      [len(vocNames)]string // the effects' sample names, renamed by the levels (C: f_26a4_00f0)
 	textMenus     []textMenu            // (C: g_20dc)
 	samples       map[int]*sound.Sample // the effects' converted samples (C: g_1e8c)

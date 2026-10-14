@@ -52,7 +52,7 @@ func (s *Screen) FadePalette(target []byte, speed int, idle func()) {
 	if target == nil {
 		return
 	}
-	step, perStep := s.fadeRate(target, speed)
+	step, perStep := s.FadeRate(target, speed)
 	fraction := 0
 	until := clock.Ticks()
 	for {
@@ -72,9 +72,9 @@ func (s *Screen) FadePalette(target []byte, speed int, idle func()) {
 	}
 }
 
-// fadeRate works out a fade's ticks per step (8.8) and how far each step moves a colour
+// FadeRate works out a fade's ticks per step (8.8) and how far each step moves a colour
 // component, from the largest difference to the target (C: fn_1ef2_012e).
-func (s *Screen) fadeRate(target []byte, speed int) (step, perStep int) {
+func (s *Screen) FadeRate(target []byte, speed int) (step, perStep int) {
 	largest := 0
 	for i, c := range s.Palette {
 		largest = max(largest, abs(int(target[i])-int(c)))

@@ -27,6 +27,11 @@ func (g *Game) openWSA(name string, flags int, palette []byte) *wsaPlayer {
 	if err != nil {
 		return nil
 	}
+	return newWSAPlayer(file, flags, palette)
+}
+
+// newWSAPlayer opens an animation from its file's contents.
+func newWSAPlayer(file []byte, flags int, palette []byte) *wsaPlayer {
 	a, err := data.DecodeWSA(file)
 	if err != nil {
 		return nil

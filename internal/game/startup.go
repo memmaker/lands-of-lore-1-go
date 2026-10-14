@@ -2,7 +2,6 @@ package game
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/memmaker/lands-of-lore-1-go/internal/data"
 	"github.com/memmaker/lands-of-lore-1-go/internal/gfx"
@@ -85,20 +84,29 @@ func (g *Game) start() error {
 		// The original started the launcher again, which shows the title anew.
 		return g.start()
 	case choiceNewGame:
-		// Character generation is the language folder's LANDS.EXE, which is not ported;
-		// it would start this program again with the chosen hero's number (-hero), which
-		// shows the title once more and goes on below.
+		// The launcher runs LANDS.EXE CHARGEN, which starts this program again with the
+		// chosen hero's number; that shows the title once more and goes on below.
+		hero, err := g.runLands(landsCharGen)
+		if err != nil {
+			return err
+		}
 		if err := g.loadGameData(); err != nil {
 			return err
 		}
-		if err := g.startNewGame(g.Hero); err != nil {
+		if err := g.startNewGame(hero); err != nil {
 			return err
 		}
 		return g.mainLoop()
 	case choiceIntro:
-		return fmt.Errorf("intro (LANDS.EXE INTRO): %w", errNotPorted)
+		if _, err := g.runLands(landsIntro); err != nil {
+			return err
+		}
+		return g.start()
 	case choiceHistory:
-		return fmt.Errorf("history (LANDS.EXE HISTORY): %w", errNotPorted)
+		if _, err := g.runLands(landsHistory); err != nil {
+			return err
+		}
+		return g.start()
 	}
 	return nil // C: fn_0845_0bf6, exit
 }

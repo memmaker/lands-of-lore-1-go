@@ -21,8 +21,10 @@ const (
 )
 
 // The page buffer sizes ovr_2db0_0020 sets up: a screen each, a bit more for the pages
-// the game also loads files into, and a 320x120 buffer.
-var pageSizes = [pageCount / 2]int{Width * Height, 64500, 65535, Width * 120}
+// the game also loads files into, and a 320x120 buffer. Pages 8/9 are LANDS.EXE's work
+// screen, which the intro and the character generation draw on (C: LANDS.EXE's
+// _PageArray); MAIN.EXE has none there.
+var pageSizes = [pageCount / 2]int{Width * Height, 64500, 65535, Width * 120, Width * Height}
 
 // Window is one entry of the window table (C: g_1f3b, 16 bytes each). X and W are in
 // 8-pixel columns.
