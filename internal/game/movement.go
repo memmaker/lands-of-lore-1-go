@@ -98,6 +98,9 @@ func (g *Game) clickTurnLeft(b *gui.Button) bool {
 	}
 	g.setIcon(iconTurnLeft, iconPress)
 	g.direction = (g.direction - 1) & (directionCount - 1)
+	if b != &scriptButton {
+		g.spendTurn(turnHalfTicks)
+	}
 	g.walkTransition = 1
 	g.runBlockScript(g.currentBlock, eventTurned)
 	g.fadeMessage(2, false)
@@ -119,6 +122,9 @@ func (g *Game) clickTurnRight(b *gui.Button) bool {
 	}
 	g.setIcon(iconTurnRight, iconPress)
 	g.direction = (g.direction + 1) & (directionCount - 1)
+	if b != &scriptButton {
+		g.spendTurn(turnHalfTicks)
+	}
 	g.walkTransition = 1
 	g.runBlockScript(g.currentBlock, eventTurned)
 	g.fadeMessage(2, false)
@@ -146,6 +152,7 @@ func (g *Game) moveParty(dir, kind, icon int) {
 		return
 	}
 	g.lastMoveDirection = dir
+	g.spendTurn(turnTicks)
 	g.currentBlock = next
 	g.walkTransition = 1
 	g.partyX, g.partyY = blockPosition(g.currentBlock, blockCentreSide, blockCentreSide)

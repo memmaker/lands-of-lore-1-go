@@ -23,10 +23,13 @@ func (g *Game) mainLoop() error {
 			g.runBlockScript(g.pendingBlockScript, eventScriptCall)
 			g.pendingBlockScript = 0
 		}
+		running := g.turnRunning()
 		g.runTimers()
 		g.updateArrowCursor()
-		g.handleInput()
-		g.stepAutoWalk()
+		if !running { // input waits for the turn to end
+			g.handleInput()
+			g.stepAutoWalk()
+		}
 		dice(1, 2) // the original rolled and dropped a die each round, which moves the generator on
 		g.idleWork()
 		if g.sceneUpdateRequired {
@@ -198,8 +201,16 @@ func (g *Game) handleInput() {
 		}
 	case keyDebugPrint:
 		// the original printed the level, block and direction to a debug console
-	case keyVolumeDown:
+	case keyVolumeDown, keyKeypadEnter: // the same key number as Return
+		// changed: Return (or Enter) also switches turn-based play on and off
 		g.stopSpeech(true)
+		if !g.screenFrozen {
+			g.toggleTurnBased()
+		}
+	case keyWaitZ:
+		if !g.screenFrozen {
+			g.spendTurn(turnTicks)
+		}
 	case keySpace:
 		// changed: Space uses the wall ahead (its buttons, levers, niches) as a click on
 		// its decoration would; the original only stopped the speech with it

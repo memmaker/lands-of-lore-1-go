@@ -184,6 +184,7 @@ type Game struct {
 	talkRestore               bool                         // set the face back at the end (C: g_4c00)
 	scriptErr                 error                        // the first error a block script raised
 	automap                   automapState
+	turns                     turnState     // turn-based play (turnbased.go)
 	notes                     []automapNote // the player's automap notes (automapnotes.go)
 	revealAutomap             bool          // the automap's debug key reveals the level; nothing sets it (C: g_20f2)
 

@@ -3,6 +3,7 @@ package game
 import (
 	"bytes"
 	"fmt"
+	"github.com/memmaker/lands-of-lore-1-go/internal/clock"
 	"github.com/memmaker/lands-of-lore-1-go/internal/emc"
 	"image"
 	"image/color"
@@ -301,6 +302,7 @@ func TestNewGame(t *testing.T) {
 		}
 		savePNG(t, host.ShowFrame(), "automap_closed.png")
 		checkAutoWalk(t, g)
+		checkTurnBased(t, g)
 	}
 	checkGameMenu(t, g, click)
 	checkSaveRoundTrip(t, g)
@@ -484,6 +486,45 @@ func checkAutoWalk(t *testing.T, g *Game) {
 	savePNG(t, host.ShowFrame(), "automap_walked.png")
 	if a.open || g.currentBlock != to {
 		t.Errorf("walk from %d to %d (%d steps): at %d, map open %v", from, to, far, g.currentBlock, a.open)
+	}
+}
+
+// checkTurnBased switches turn-based play on with Return: the play clock must stand
+// while the party waits, run one turn for a step (none for a bump) and half of one for a turn, and run
+// again once Return switches it off.
+func checkTurnBased(t *testing.T, g *Game) {
+	press := func(scan byte, extended bool) {
+		host.PushScan(host.ScanEvent{Scan: scan, Extended: extended})
+		host.PushScan(host.ScanEvent{Scan: scan, Extended: extended, Released: true})
+		steps(300)
+	}
+	press(scanReturn, false)
+	if !g.turns.on { // an odd number of the Returns for the <MORE> prompts reached the main loop
+		press(scanReturn, false)
+	}
+	start := clock.Get(playClock)
+	steps(300)
+	if !g.turns.on || clock.Get(playClock) != start {
+		t.Fatalf("turn-based %v: the play clock went from %d to %d while waiting", g.turns.on, start, clock.Get(playClock))
+	}
+	for _, k := range []struct {
+		scan  byte
+		ticks int
+	}{{scanHome, turnHalfTicks}, {scanUp, turnTicks}, {scanDown, turnTicks}} {
+		before, block := clock.Get(playClock), g.currentBlock
+		press(k.scan, true)
+		if k.scan != scanHome && g.currentBlock == block {
+			k.ticks = 0 // walking into a wall takes no time
+		}
+		if d := clock.Get(playClock) - before; d < k.ticks || d > k.ticks+2 {
+			t.Errorf("key %d took %d ticks of the play clock, want %d", k.scan, d, k.ticks)
+		}
+	}
+	press(scanReturn, false)
+	before := clock.Get(playClock)
+	steps(100)
+	if g.turns.on || clock.Get(playClock) == before {
+		t.Errorf("real time again %v: play clock %d -> %d", !g.turns.on, before, clock.Get(playClock))
 	}
 }
 

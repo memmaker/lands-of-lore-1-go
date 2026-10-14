@@ -109,6 +109,7 @@ func (g *Game) clickAttack(b *gui.Button) bool {
 	c.Flags |= charHitOnly
 	g.selectCharacter(ch)
 	g.addStatusEffect(ch, effectAttackRecovery, recovery, true)
+	g.spendTurn(turnTicks)
 	return true
 }
 
@@ -158,6 +159,7 @@ func (g *Game) clickMagicSubmenu(b *gui.Button) bool {
 		c.Flags &^= charSelected
 		if g.castSpell(ch, sp, level) {
 			g.addStatusEffect(ch, effectAttackRecovery, spellCastTicks, true)
+			g.spendTurn(turnTicks)
 			g.addExperience(ch, mageSkill, level*level)
 			g.spellTarget = noCharacter
 			return true
@@ -210,6 +212,7 @@ func (g *Game) clickPortraitRight(b *gui.Button) bool {
 		if c.Flags&charDead == 0 || flags&itemTypeDeadUse != 0 {
 			g.runItemScript(b.Arg, held, eventAttack, 0, 0)
 			g.runBlockScriptWith(g.currentBlock, eventAttack, b.Arg, held, 0, 0)
+			g.spendTurn(turnTicks)
 		} else {
 			g.printMessage(messageEffect, g.text(stringCannotUseDead), c.Name)
 		}
