@@ -229,6 +229,7 @@ func (g *game) Draw(screen *ebiten.Image) {
 	op.GeoM.Scale(g.scaleX, g.scaleY)
 	op.GeoM.Translate(g.offsetX, g.offsetY)
 	screen.DrawImage(g.image, op)
+	drawCursor(screen)
 }
 
 func (g *game) Layout(outsideWidth, outsideHeight int) (int, int) {
