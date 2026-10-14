@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/memmaker/lands-of-lore-1-go/internal/clock"
 	"github.com/memmaker/lands-of-lore-1-go/internal/sound"
@@ -250,10 +251,53 @@ func (g *Game) playSoundVolume(n, vol int, force bool) {
 	g.playAdlibEffect(n, vol)
 }
 
-// playDigitalEffect plays effect n's sample; false if it has none or no channel takes
-// it (C: fn_16cf_01c8, fn_067a_0649, fn_16cf_0022). The digital mixer is not ported
-// yet, so the AdLib plays every effect.
-func (g *Game) playDigitalEffect(n, priority, vol int) bool { return false }
+// playDigitalEffect plays effect n's sample through the mixer; false if no channel would
+// take it or it has no sample (C: fn_16cf_01c8, fn_067a_0649, fn_16cf_0022).
+func (g *Game) playDigitalEffect(n, priority, vol int) bool {
+	if !g.audio.CanPlayDigital(priority) {
+		return false
+	}
+	s := g.effectSample(n)
+	if s == nil {
+		return false
+	}
+	v := effectDriverVolume(g.effectsVolume)
+	if vol != fullVolume {
+		v = v * vol >> 8
+	}
+	if g.digitalEffectsOn || g.digitalSpeechOn {
+		g.audio.PlayDigital(s, priority, v)
+	}
+	return true
+}
+
+// effectSample is effect n's sample, loaded on first use from "<name>.VOC"; names that
+// start with X or EM have none (C: fn_067a_0649). fix: the original kept the samples in
+// a 10000+ byte cache that dropped the oldest; these stay loaded.
+func (g *Game) effectSample(n int) *sound.Sample {
+	if n < 0 || n >= maxSoundEffect || g.Config.Speech == 0 {
+		return nil
+	}
+	v := soundEffects[n].voc
+	if v == noEffect {
+		return nil
+	}
+	if s, ok := g.samples[n]; ok {
+		return s
+	}
+	var s *sound.Sample
+	name := g.vocNames[v]
+	if name != "" && name[0] != 'X' && !strings.HasPrefix(name, "EM") {
+		if b, err := g.Files.Read(name + ".VOC"); err == nil {
+			s = sound.ConvertVOC(b)
+		}
+	}
+	if g.samples == nil {
+		g.samples = map[int]*sound.Sample{}
+	}
+	g.samples[n] = s
+	return s
+}
 
 // playSoundEffect plays effect n through the effects driver at full volume
 // (C: fn_17d6_0006).
@@ -337,12 +381,12 @@ func (g *Game) loadSoundFile(name string, n int) {
 	}
 	if v := soundEffects[n].voc; v != noEffect {
 		g.vocNames[v] = name
+		delete(g.samples, n) // fix: the cache kept the old sample until it was dropped
 	}
 }
 
-// soundLoaded says whether effect n's sample is loaded (C: fn_067a_0649). Without the
-// digital mixer there are no samples.
-func (g *Game) soundLoaded(n int) bool { return false }
+// soundLoaded says whether effect n has a sample (C: fn_067a_0649).
+func (g *Game) soundLoaded(n int) bool { return g.effectSample(n) != nil }
 
 // nextSoundEffect is the effect after n that has a sample, skipping effect 47; it goes
 // back to 11 at the end of the table (C: fn_067a_08c2).

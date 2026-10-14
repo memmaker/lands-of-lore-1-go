@@ -109,6 +109,7 @@ type Game struct {
 	snd           soundState
 	audio         *sound.Player         // the sound card
 	vocNames      [len(vocNames)]string // the effects' sample names, renamed by the levels (C: f_26a4_00f0)
+	samples       map[int]*sound.Sample // the effects' converted samples (C: g_1e8c)
 
 	currentBlock        int                          // the party's block (C: g_7fd0)
 	direction           int                          // the way the party faces (C: g_7fe1's source g_7fdf)

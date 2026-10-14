@@ -52,6 +52,9 @@ type Player struct {
 	savedPriority, savedLevel byte // their old values (C: g_abd6, g_abd4)
 
 	tickDue, chipDue float64
+
+	digital    [digitalChannels]digitalChannel // C: g_chan
+	digitalDue float64
 }
 
 // Driver slots.
@@ -234,6 +237,7 @@ func (p *Player) render(out []float32) {
 		out[i] += float32(v) * chipGain
 		out[i+1] += float32(v) * chipGain
 	}
+	p.mixDigital(out)
 }
 
 type stream struct{ p *Player }
