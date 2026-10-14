@@ -145,6 +145,8 @@ type Game struct {
 	iconReleaseAt             int                // the pressed icon may come up from this tick (C: g_ab26)
 	talkingCharacter          int                // the character whose speech shows, or noTalk (C: g_4bf8)
 	exitProgram               bool               // a script quit the game (C: fn_0845_0bf6)
+	autoWalk                  []int              // changed: the directions left of a walk picked on the automap
+	autoWalkMonsters          int                // the monsters beside the party at the walk's last step
 	tooltip                   tooltipState       // changed: the port's spell tooltips
 	anyDecoration             bool               // changed: Space hits any decoration of the wall ahead
 	doorHandled               int                // a clicked door's script dealt with it (C: g_4be0)

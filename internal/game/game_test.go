@@ -7,6 +7,7 @@ import (
 	"image/color"
 	"image/png"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
@@ -285,6 +286,7 @@ func TestNewGame(t *testing.T) {
 			t.Errorf("automap: done %v, %v", g.automap.done, g.scriptErr)
 		}
 		savePNG(t, host.ShowFrame(), "automap_closed.png")
+		checkAutoWalk(t, g)
 	}
 	checkGameMenu(t, g, click)
 	checkSaveRoundTrip(t, g)
@@ -419,12 +421,9 @@ func checkAutomapNotes(t *testing.T, g *Game, click func(x, y int, name string))
 	if len(g.notes) != 1 || g.notes[0].label != "we" {
 		t.Fatalf("notes after editing: %+v", g.notes)
 	}
-	host.MouseX, host.MouseY = x, y
-	steps(5)
-	host.MouseRight = true
-	steps(10)
-	host.MouseRight = false
-	steps(30)
+	click(x, y, "automap_edit2.png") // an empty label removes the note
+	typeKeys(scanBackspace, scanBackspace, scanReturn)
+	steps(20)
 	if len(g.notes) != 0 {
 		t.Fatalf("notes after removing: %+v", g.notes)
 	}
@@ -433,5 +432,43 @@ func checkAutomapNotes(t *testing.T, g *Game, click func(x, y int, name string))
 	steps(20)
 	if len(g.notes) != 1 {
 		t.Fatalf("notes after the second: %+v", g.notes)
+	}
+}
+
+// checkAutoWalk opens the automap with M, right clicks the farthest block the party can
+// reach (without facing west, where the guard stops it to talk) and says yes: the map closes and the party walks there.
+func checkAutoWalk(t *testing.T, g *Game) {
+	from, to, far := g.currentBlock, -1, 0
+	for b := range g.lvl.blocks {
+		if p := g.findPath(from, b); len(p) > far && len(p) <= 4 && !slices.Contains(p, 3) { // facing west the guard talks
+			to, far = b, len(p)
+		}
+	}
+	if to < 0 {
+		t.Log("no block to walk to")
+		return
+	}
+	press := func(scan byte) {
+		host.PushScan(host.ScanEvent{Scan: scan})
+		host.PushScan(host.ScanEvent{Scan: scan, Released: true})
+		steps(5)
+	}
+	const scanM, scanY = 50, 21
+	press(scanM)
+	steps(100)
+	a := &g.automap
+	host.MouseX = a.left + (to%mapSize-g.automapLeft())*automapCellWidth + 3
+	host.MouseY = a.top + (to/mapSize-g.automapTop())*automapCellHeight + 3
+	steps(5)
+	host.MouseRight = true
+	steps(10)
+	host.MouseRight = false
+	steps(20)
+	savePNG(t, host.ShowFrame(), "automap_walk.png")
+	press(scanY)
+	steps(400)
+	savePNG(t, host.ShowFrame(), "automap_walked.png")
+	if a.open || g.currentBlock != to {
+		t.Errorf("walk from %d to %d (%d steps): at %d, map open %v", from, to, far, g.currentBlock, a.open)
 	}
 }

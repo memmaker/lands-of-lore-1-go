@@ -12,8 +12,8 @@ import (
 )
 
 // The player's notes on the automap, an addition of the port: a left click on a cell
-// marks it with a letter and asks for a label (or edits the label already there), a
-// right click removes the note. The cells show their letters, the legend the labels.
+// marks it with a letter and asks for a label (or edits the label already there); an
+// empty label removes the note. A right click offers to walk there (autowalk.go). The cells show their letters, the legend the labels.
 // The notes are kept in a file beside each saved game, which itself stays as the
 // original wrote it.
 
@@ -35,6 +35,9 @@ const (
 	notePromptX, notePromptY = 6, 178
 	notePromptW, notePromptH = 222, 14
 	notePromptText           = "Label: "
+	walkPromptText           = "Walk there? (Y/N)"
+	walkNoWayText            = "No known way there."
+	walkNoWayTicks           = 90
 )
 
 // The note colours, the nearest of the parchment's palette to these.
@@ -112,9 +115,18 @@ func (g *Game) automapNoteClick() bool {
 	a := &g.automap
 	switch {
 	case b&2 != 0:
-		if g.removeNote(a.level, block) {
-			a.redraw = true
+		if a.level == g.level && block != g.currentBlock && g.confirmWalk() {
+			if path := g.findPath(g.currentBlock, block); path != nil {
+				g.autoWalk, g.autoWalkMonsters = path, g.monstersNear(g.currentBlock)
+				a.done = true
+			} else {
+				g.drawNotePrompt(walkNoWayText)
+				for i := 0; i < walkNoWayTicks && !g.quit; i++ {
+					host.Yield()
+				}
+			}
 		}
+		a.redraw = true
 	case b&1 != 0:
 		n, _ := g.noteAt(a.level, block)
 		if n == nil && len(g.levelNotes(a.level)) >= maxNotesPerLevel {
@@ -155,15 +167,13 @@ func (g *Game) noteLabelInput(text string) (string, bool) {
 		input.ClearFlags(input.FlagNoRemap)
 		input.SetFlags(input.FlagKeypadButtons)
 	}()
-	back, fore := g.noteColour(notePromptRGB), g.noteColour(noteTextRGB)
+	fore := g.noteColour(noteTextRGB)
 	textX := notePromptX + 3 + s.TextWidth(notePromptText)
 	maxW := notePromptX + notePromptW - 4 - textX
 	buf := []byte(text)
 	draw := func(cursor bool) {
+		g.drawNotePrompt(notePromptText)
 		s.HideMouse()
-		s.FillRect(notePromptX, notePromptY, notePromptX+notePromptW-1, notePromptY+notePromptH-1, fore)
-		s.FillRect(notePromptX+1, notePromptY+1, notePromptX+notePromptW-2, notePromptY+notePromptH-2, back)
-		s.DrawText(notePromptText, notePromptX+3, notePromptY+4, fore, 0)
 		shown := string(buf)
 		if cursor {
 			shown += "_"
@@ -202,6 +212,53 @@ func (g *Game) noteLabelInput(text string) (string, bool) {
 		draw(cursor)
 	}
 	return "", false
+}
+
+// drawNotePrompt draws the prompt box over the bottom of the map with text in it.
+func (g *Game) drawNotePrompt(text string) {
+	a := &g.automap
+	s := g.Screen
+	font := s.SetFont(a.legendFont)
+	defer s.SetFont(font)
+	pg := s.SetPage(pageScreen)
+	defer s.SetPage(pg)
+	back, fore := g.noteColour(notePromptRGB), g.noteColour(noteTextRGB)
+	s.HideMouse()
+	s.FillRect(notePromptX, notePromptY, notePromptX+notePromptW-1, notePromptY+notePromptH-1, fore)
+	s.FillRect(notePromptX+1, notePromptY+1, notePromptX+notePromptW-2, notePromptY+notePromptH-2, back)
+	s.DrawText(text, notePromptX+3, notePromptY+4, fore, 0)
+	s.ShowMouse()
+}
+
+// confirmWalk asks "Walk there?": Y, Return or a left click say yes; N, Escape or a
+// right click no.
+func (g *Game) confirmWalk() bool {
+	g.drawNotePrompt(walkPromptText)
+	for !g.quit {
+		if b := input.Buttons(); b != 0 {
+			for input.Buttons() != 0 && !g.quit {
+				host.Yield()
+			}
+			g.flushInput()
+			return b&1 != 0
+		}
+		key := g.GUI.ProcessKeys(nil)
+		switch {
+		case key == keyReturn || key == keyKeypadEnter:
+			return true
+		case key == keyEscape:
+			return false
+		case key != 0:
+			switch input.ASCII(key) & lowByteMask {
+			case 'y', 'Y':
+				return true
+			case 'n', 'N':
+				return false
+			}
+		}
+		host.Yield()
+	}
+	return false
 }
 
 // drawAutomapNotes draws the letters of the shown level's notes on its cells and their

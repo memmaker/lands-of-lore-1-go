@@ -26,6 +26,7 @@ func (g *Game) mainLoop() error {
 		g.runTimers()
 		g.updateArrowCursor()
 		g.handleInput()
+		g.stepAutoWalk()
 		dice(1, 2) // the original rolled and dropped a die each round, which moves the generator on
 		g.idleWork()
 		if g.sceneUpdateRequired {
@@ -167,7 +168,8 @@ func (g *Game) handleInput() {
 			key = 0
 		}
 	}
-	if key != 0 { // a click or key may leave the main loop: no tooltip over what comes
+	if key != 0 && key&input.Released == 0 { // a click or key may leave the main loop: no tooltip over what comes
+		g.autoWalk = nil // and it stops a walk picked on the automap
 		g.tooltip = tooltipState{}
 		g.Screen.ClearOverlay()
 	}
