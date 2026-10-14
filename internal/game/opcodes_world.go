@@ -671,8 +671,6 @@ func (g *Game) opHeal(s *emc.State) int {
 	return 1
 }
 
-func (g *Game) healAnimation(who, kind int) { notPorted("ovr_2d18_002a (healing animation)") }
-
 // opCountLiveMonsters (C: fn_0fbe_1f05).
 func (g *Game) opCountLiveMonsters(s *emc.State) int {
 	n := 0

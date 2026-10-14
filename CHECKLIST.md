@@ -49,7 +49,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
     - [x] World opcodes 0/2/4/5/6/12/16/17/26/29/33/35/36/40-44/49-52/123/125-134/136/137
     - [x] Party/item opcodes 55/57-59/61/62/64/65/69/70/73/74/76/77
     - [x] Talk opcodes 83/87/88/91/92/94-97/100-106/108-119/121
-    - [ ] Left: 60/84/93/98/120/138-147/149-153/156-170/172-190
+    - [ ] Left: 60/93/98/149/164/170/173/174/176/177/182/186
   - [ ] TIM interpreter (s001, s002)
 - [ ] Levels, 3D view renderer (o2d2c, o2cda), movement, automap
   - [x] Party movement, walk/turn/strafe animations (s011, s038), doors, timers
@@ -57,7 +57,8 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
 - [ ] Items, inventory, characters, portraits, stats screen
 - [ ] Monsters, combat, magic
   - [x] Monster AI, combat rules (s004), status effects
-  - [ ] Spells, flying objects (fn_0b6b_*)
+  - [x] Spell casting, targets, learning (o2d8a, o2d86), heal (o2d18)
+  - [ ] Spell effects (spark, ice, lightning, fireball, mist, quake, wake, freeze, reveal, block), flying objects (fn_0b6b_*)
 - [ ] Dialogue/scenes, text window, speech
   - [x] Scenes, dialogue, message line, talking faces (talk.go)
 - [ ] Save/load

@@ -30,7 +30,15 @@ func (g *Game) freezeParty()                     { notPorted("ovr_2da0_002a (fre
 func (g *Game) moveFlyingObject(f *flyingObject) { notPorted("fn_0b6b_0472 (move a flying object)") }
 func (g *Game) shatterWall()                     { notPorted("ovr_2d1b_0052 (shatter a crystal wall)") }
 func (g *Game) showAutomap()                     { notPorted("ovr_2ce1_0020 (automap)") }
-func (g *Game) castSpell(ch, sp, level int) bool {
-	notPorted("ovr_2d8a_0039 (cast a spell)")
-	return false
-}
+
+// The spells' effects, overlay by overlay (CHECKLIST: Monsters, combat, magic).
+func (g *Game) sparkSpell(level, caster int)     { notPorted("ovr_2d83_0020 (spark spell)") }
+func (g *Game) iceSpell(caster, level int)       { notPorted("ovr_2d1b_0039 (ice spell)") }
+func (g *Game) lightningSpell(caster, level int) { notPorted("ovr_2d03_002a (lightning spell)") }
+func (g *Game) fireballSpell(level int)          { notPorted("ovr_2d15_002a (fireball spell)") }
+func (g *Game) mistSpell(caster, level int)      { notPorted("ovr_2d4d_002a (mist spell)") }
+func (g *Game) quakeSpell(level, caster int)     { notPorted("ovr_2d28_002a (quake spell)") }
+func (g *Game) wakeSpell()                       { notPorted("ovr_2d07_0025 (wake spell)") }
+func (g *Game) freezeSpell(n, caster int)        { notPorted("ovr_2d99_002a (freeze spell)") }
+func (g *Game) revealSpell(caster int)           { notPorted("ovr_2d9d_0020 (reveal spell)") }
+func (g *Game) blockSpell(caster, level int)     { notPorted("ovr_2d12_002a (block spell)") }
