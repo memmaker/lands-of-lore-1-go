@@ -20,7 +20,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] LANDS.CFG reading (o2e1e) and config checks (o2db0 main)
   - [x] Video setup: clear, FONT9P.FNT, black palette (o2df7, o2df1)
   - [x] cmd/lol run(): host frame, input, clock wired up
-  - [x] Title screen: title.cps fade-in, FONT6P, cursors, LANDS.ENG strings, version text (o2d50_0039; sound index and MT-32 sysex left to the sound port)
+  - [x] Title screen: title.cps fade-in, FONT6P, cursors, LANDS.ENG strings, version text (o2d50_0039, with the speech index and the MT-32's LOLSYSEX set-up)
   - [x] Main menu boxes and selection (o2cfa, o2d43, PLAIN mode)
   - [x] Game data load after the menu (o2d50_0048): shapes, colour tables, ONETIME.INF, ITEM.INF, busy cursor
   - [x] Exit
@@ -74,11 +74,12 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
 - [x] Save/load
   - [x] Byte-exact saves (o2d3c), level temp states with the original LCW packer (s119)
   - [x] Game menu (o2d56): load, save with name entry, delete, options, audio sliders, quit; game over menu, dead party check (o2cf4)
-- [x] Sound and music (AdLib .ADL, VOC)
+- [x] Sound and music (MT-32 .XMI, AdLib .ADL, VOC)
   - [x] ALFX.DRV ported from its disassembly (internal/sound: alfx.go, alfxops.go, all 75 opcodes), OPL2 emulator with rhythm mode, 72 Hz tick in the Ebiten stream
   - [x] Front ends: s003 music/effects (tracks, LORE*.ADL / LORESFX.ADL, positional volume, delayed queue), s030 play/stop/fade with program byte scaling, s032 AdLib effects, driver volumes and on/off (o2db9, s026), audio sliders
   - [x] Digital effects: VOC cache and the four-channel mixer (s029, fn_067a_0649)
   - [x] Speech: TLK index and playback (s023)
+  - [x] MT-32 by default (driver 6, MT32MPU.ADV): XMIDI driver (internal/sound/xmidi.go: 120 Hz sequences, FOR/NEXT loops, cc110 channel lock, cc111 protect, relative volume fades), munt through purego / goplay's mt32.js; LOLSYSEX at start-up, LORESFX.XMI effects slot, LANDS/FINALE MT32_Init with "Initializing sound card."; -music mt32 (old ROMs, the default) / cm32l / adlib, falling back to the AdLib without the ROMs
 - [x] In-game <MORE> prompt with the speech deadline (fn_13e8_09b7 at g_370d, ovr_2da3_002f); message fade-out (fn_0845_11b7)
 - [x] Ending (FINALE.EXE, game/finale.go; opcode 98 runs it, then the program ends)
   - [x] LOLFINAL.TIM on LANDS.EXE's AV engine drawing straight on the screen; FINALE's user functions (blend, scale, fades, frames, text)
@@ -89,5 +90,5 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] Title menu, first view, strafe, walk, turn, step back: identical but for the mouse cursor (the original draws it into video memory) and the guard's idle sway and animation, which follow the random roll per monster update
 - [ ] wasm build, goplay registration
   - [x] -import writes COVER.PNG (the title picture); the wasm build of cmd/lol compiles
-  - [x] goplay entry (games.js, deploy.sh, README) on goplay branch add-lol, not merged or deployed
-  - [ ] Browser test on the desk, deploy
+  - [x] goplay entry (games.js, deploy.sh, README), merged and deployed
+  - [ ] Browser test on the desk

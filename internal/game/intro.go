@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math/rand/v2"
+	"path"
 	"strings"
 
 	"github.com/memmaker/lands-of-lore-1-go/internal/clock"
@@ -235,12 +236,12 @@ func (g *Game) avOp(a *avScript, line, op, p int) int {
 	case avSmpStop:
 		g.stopLongSample()
 	case avScoreLoad:
-		g.loadScore(strings.TrimSuffix(a.str(arg(0)), scoreExtension))
+		g.loadScore(strings.TrimSuffix(a.str(arg(0)), path.Ext(a.str(arg(0)))))
 	case avScoreClose:
 	case avScorePlay:
 		g.playScore(arg(0))
 	case avScoreStop:
-		g.audio.Play(sound.Music, scoreStop, -1)
+		g.audio.Stop(sound.Music)
 	case avSndLoad, avSndClose, avSndStop:
 	case avSndPlay:
 		g.playLandsSound(arg(0), 255)

@@ -5,25 +5,27 @@ import (
 	"strings"
 
 	"github.com/memmaker/lands-of-lore-1-go/internal/clock"
+	"github.com/memmaker/lands-of-lore-1-go/internal/host"
 	"github.com/memmaker/lands-of-lore-1-go/internal/sound"
 )
 
 // The music and the effects (C: s003, with s030 and s032 the driver front ends). The
 // AdLib card plays both from one sound file: LORE<file><song>.ADL with the music on,
-// LORESFX.ADL with it off. The digital effects (VOC) and speech go through the Sound
+// LORESFX.ADL with it off. The MT-32 (MT32MPU.ADV) plays XMIDI files: LORESFX.XMI for
+// the effects and LORE<file><song>.XMI for the music, after LOLSYSEX.XMI has set it up. The digital effects (VOC) and speech go through the Sound
 // Blaster mixer when the digital driver is set up (C: g_3749).
 
 const (
 	firstMusicTrack = 250 // track numbers from here are music (C: n -= 250)
 	effectsFile     = "LORESFX"
-	soundFileExt    = ".ADL"
-	soundBufferSize = 26000 // C: g_4d62, 0x6590 bytes
+	adlibFileExt    = ".ADL"     // the AdLib driver's files (C: g_3747's extension)
+	midiFileExt     = ".XMI"     // the MT-32's
+	sysexFile       = "LOLSYSEX" // the MT-32's patches and set-up (C: g_10bc)
+	soundBufferSize = 26000      // C: g_4d62, 0x6590 bytes
 
 	noSoundFile    = -1
 	effectsLoaded  = -2 // LORESFX is loaded (C: g_1e90 == -2)
-	fadeTrack      = 1  // the track that fades the music out (C: fn_178d_01b0)
-	stopTrack      = 0
-	stopPause      = 5 // passes of the library's delay after the stop track (C: fn_2120_0007(5))
+	stopPause      = 5  // passes of the library's delay after the stop track (C: fn_2120_0007(5))
 	fadePause      = 3
 	fullVolume     = 255
 	silentVolume   = 0
@@ -72,11 +74,48 @@ func (g *Game) initSound() {
 // StartAudio opens the audio stream; tests and scripted runs leave it closed.
 func (g *Game) StartAudio() { g.audio.Start() }
 
+// soundFileExt is the extension of a slot's driver's files: .XMI on the MT-32, .ADL on the
+// AdLib (C: the driver table g_3747).
+func (g *Game) soundFileExt(slot int) string {
+	if g.audio.MIDI(slot) {
+		return midiFileExt
+	}
+	return adlibFileExt
+}
+
+// UseMT32 plays the music and the effects on an MT-32 instead of the AdLib, as with
+// SETUP's Roland choice (C: g_3747 == 6).
+func (g *Game) UseMT32(s sound.Synth) {
+	g.audio.UseMIDI(s, true, true)
+	g.Config.Music, g.Config.Effects = mt32Driver, mt32Driver
+}
+
+const mt32Driver = 6 // SETUP's driver number of the MT-32 (C: g_3747 == 6)
+
+// sendSysex plays LOLSYSEX's sequence 0, which sets up the MT-32's patches, and waits for
+// it (C: ovr_2d50_0039 with g_3747 6 or 7).
+func (g *Game) sendSysex() {
+	if !g.audio.MIDI(sound.Music) {
+		return
+	}
+	b, err := g.Files.Read(sysexFile + midiFileExt)
+	if err != nil {
+		return
+	}
+	g.audio.Load(sound.Music, b)
+	g.audio.Play(sound.Music, 0, fullVolume)
+	for g.audio.Playing() {
+		host.Yield() // fix: the original spun without yielding
+	}
+	g.audio.Load(sound.Music, nil)
+}
+
 // readSoundFile reads a sound file of the slot, empty when it is missing or too big for
 // what is left of the buffer (C: ovr_2db9_0039).
-func (g *Game) readSoundFile(name string, room int) []byte {
-	b, err := g.Files.Read(name + soundFileExt)
-	if err != nil || len(b)+len(name)+len(soundFileExt)+1 > room {
+func (g *Game) readSoundFile(name string, room, slot int) []byte {
+	ext := g.soundFileExt(slot)
+	b, err := g.Files.Read(name + ext)
+	if err != nil || len(b)+len(name)+len(ext)+1 > room {
 		return nil
 	}
 	return b
@@ -123,13 +162,22 @@ func (g *Game) unloadSoundFiles() {
 }
 
 // loadSoundFiles loads a file into the effects slot and, with music, the same file into
-// the music slot, which shares it (C: fn_17f8_0003, fn_17c5_0004).
+// the music slot, which shares it; the MT-32 keeps LORESFX in the effects slot and the
+// song in the rest of the buffer (C: fn_17f8_0003, fn_17c5_0004).
 func (g *Game) loadSoundFiles(name string, music bool) {
-	b := g.readSoundFile(name, soundBufferSize)
-	g.audio.Load(sound.Effects, b)
-	if music && soundBufferSize-len(b) > 1 {
-		g.audio.Load(sound.Music, b)
+	fx := name
+	if g.audio.MIDI(sound.Music) {
+		fx = effectsFile
 	}
+	b := g.readSoundFile(fx, soundBufferSize, sound.Effects)
+	g.audio.Load(sound.Effects, b)
+	if !music || soundBufferSize-len(b) <= 1 {
+		return
+	}
+	if fx != name {
+		b = g.readSoundFile(name, soundBufferSize-len(b), sound.Music)
+	}
+	g.audio.Load(sound.Music, b)
 }
 
 // playMusic starts music track n and returns the one before; -1 asks for the current
@@ -313,12 +361,10 @@ func (g *Game) playAdlibEffect(n, vol int) {
 	g.audio.Play(sound.Effects, n, vol)
 }
 
-// stopSoundEffects stops the effects: the AdLib plays its stop track (C: fn_17d6_0123).
+// stopSoundEffects stops the effects: the AdLib plays its stop track, the MT-32's
+// sequences are released (C: fn_17d6_0123).
 func (g *Game) stopSoundEffects() {
-	if !g.audio.Loaded(sound.Effects) {
-		return
-	}
-	if g.audio.Play(sound.Effects, stopTrack, silentVolume) {
+	if g.audio.Stop(sound.Effects) {
 		clock.Delay(stopPause)
 	}
 }
@@ -333,15 +379,17 @@ func (g *Game) playSong(n int) {
 	}
 }
 
-// stopSong stops the music with its stop track (C: fn_178d_015e).
+// stopSong stops the music: the AdLib's stop track, the MT-32's sequence released
+// (C: fn_178d_015e).
 func (g *Game) stopSong() {
-	if g.audio.Play(sound.Music, stopTrack, silentVolume) {
+	if g.audio.Stop(sound.Music) {
 		clock.Delay(stopPause)
 	}
 }
 
-// fadeSong fades the music out with its fade track (C: fn_178d_01b0).
-func (g *Game) fadeSong() { g.audio.Play(sound.Music, fadeTrack, silentVolume) }
+// fadeSong fades the music out: the AdLib's fade track, the MT-32's sequence to silence
+// (C: fn_178d_01b0).
+func (g *Game) fadeSong() { g.audio.Fade(sound.Music) }
 
 // songPlaying says whether the music plays (C: fn_178d_0038).
 func (g *Game) songPlaying() bool { return g.audio.Playing() }

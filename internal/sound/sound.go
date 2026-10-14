@@ -53,6 +53,14 @@ type Player struct {
 
 	tickDue, chipDue float64
 
+	// the MIDI driver, when a slot plays on the MT-32 (C: g_28fa.h, g_28b8 != -1)
+	midi       *midi
+	midiSlot   [2]bool
+	xmidi      [2]xmidiFile
+	song       *sequence                // C: g_28fa.voice
+	effects    [effectHandles]*sequence // C: g_28e2
+	nextEffect int                      // C: g_28e0
+
 	digital    [digitalChannels]digitalChannel // C: g_chan
 	digitalDue float64
 	offline    bool // rendered by a test, without the stream
@@ -96,6 +104,22 @@ func (p *Player) Start() {
 	p.mu.Unlock()
 }
 
+// UseMIDI plays the music, the effects or both on a MIDI synthesiser through the XMIDI
+// driver instead of the AdLib's (C: MT32MPU.ADV in the driver slots).
+func (p *Player) UseMIDI(s Synth, music, effects bool) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.midi = newMIDI(s)
+	p.midiSlot = [2]bool{music, effects}
+}
+
+// MIDI says whether a slot plays on the MIDI synthesiser.
+func (p *Player) MIDI(slot int) bool {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.midiSlot[slot]
+}
+
 // Load loads a sound file into a slot: its track table, and its data into the driver
 // (C: ovr_2db9_0039, driver function 4). Nil unloads the slot.
 func (p *Player) Load(slot int, file []byte) {
@@ -103,6 +127,12 @@ func (p *Player) Load(slot int, file []byte) {
 	defer p.mu.Unlock()
 	if file == nil {
 		p.tracks[slot] = nil
+		p.xmidi[slot] = nil
+		return
+	}
+	if p.midiSlot[slot] { // an XMIDI file, without the track table (C: d->h != -1)
+		p.tracks[slot] = file
+		p.xmidi[slot] = parseXMIDI(file)
 		return
 	}
 	if len(file) < headerSize {
@@ -125,6 +155,10 @@ func (p *Player) Loaded(slot int) bool {
 // ALFX.DRV). It returns true when it queued program 0, the stop, which the game follows
 // with a pause.
 func (p *Player) Play(slot, n, vol int) bool {
+	if p.MIDI(slot) {
+		p.playMIDI(slot, n, vol)
+		return false
+	}
 	p.waitStarted()
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -160,6 +194,72 @@ func (p *Player) Play(slot, n, vol int) bool {
 	return prog == 0
 }
 
+// playMIDI starts sequence n of a slot's file: the music replaces its sequence, the
+// effects take their four handles in turn (C: fn_178d_00a4, fn_17d6_0019).
+func (p *Player) playMIDI(slot, n, vol int) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	pct := (vol & maxVolume) * relativeScale >> 8
+	if slot == Music {
+		p.midi.release(p.song)
+		p.song = p.midi.register(p.xmidi[slot], n)
+		if p.song != nil {
+			p.song.start()
+			p.song.setVolume(pct, 0)
+		}
+		return
+	}
+	h := &p.effects[p.nextEffect]
+	p.midi.release(*h)
+	if *h = p.midi.register(p.xmidi[slot], n); *h != nil {
+		(*h).start()
+		(*h).setVolume(pct, 0)
+	}
+	p.nextEffect = (p.nextEffect + 1) % effectHandles
+}
+
+// Stop stops a slot: the AdLib's stop program, or the MIDI sequences released; true when
+// the game should pause after it (C: fn_178d_015e, fn_17d6_0123).
+func (p *Player) Stop(slot int) bool {
+	if !p.MIDI(slot) {
+		return p.Loaded(slot) && p.Play(slot, 0, 0)
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if slot == Music {
+		p.midi.release(p.song)
+		p.song = nil
+		return false
+	}
+	for i, h := range p.effects {
+		p.midi.release(h)
+		p.effects[i] = nil
+	}
+	return false
+}
+
+// Fade fades a slot out: the AdLib's fade program, or the sequences to silence over two
+// seconds (C: fn_178d_01b0, fn_17d6_01b0).
+func (p *Player) Fade(slot int) {
+	if !p.MIDI(slot) {
+		p.Play(slot, 1, 0)
+		return
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if slot == Music {
+		if p.song != nil {
+			p.song.setVolume(0, fadeMillis)
+		}
+		return
+	}
+	for _, h := range p.effects {
+		if h != nil {
+			h.setVolume(0, fadeMillis)
+		}
+	}
+}
+
 // waitStarted waits for the driver to start what was queued (C: the loop on function 16
 // in fn_178d_01ef); without the stream there is no tick to wait for.
 func (p *Player) waitStarted() {
@@ -179,6 +279,9 @@ func (p *Player) waitStarted() {
 func (p *Player) Playing() bool {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	if p.midiSlot[Music] { // without the stream nothing would end it
+		return (p.running || p.offline) && p.song != nil && p.song.status == seqPlaying
+	}
 	return p.drv.channelProgram(0) != 0
 }
 
@@ -186,6 +289,9 @@ func (p *Player) Playing() bool {
 func (p *Player) Marker() int {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	if p.midiSlot[Music] {
+		return 0 // the XMIDI driver has none (C: g_28fa.h != -1)
+	}
 	return int(p.drv.marker)
 }
 
@@ -210,6 +316,13 @@ func (p *Player) Block(effects, on bool) {
 func (p *Player) SetMusicVolume(v int) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	if p.midiSlot[Music] {
+		// sic: only the song playing takes it; the next starts at its play's volume
+		if p.song != nil {
+			p.song.setVolume(max(0, min(v, maxVolume))*relativeScale>>8, 0)
+		}
+		return
+	}
 	p.drv.setMusicVolume(byte(max(0, min(v, maxVolume))))
 }
 
@@ -237,6 +350,9 @@ func (p *Player) render(out []float32) {
 		}
 		out[i] += float32(v) * chipGain
 		out[i+1] += float32(v) * chipGain
+	}
+	if p.midi != nil {
+		p.midi.render(out)
 	}
 	p.mixDigital(out)
 }

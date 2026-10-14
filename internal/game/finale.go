@@ -93,7 +93,7 @@ func (g *Game) runFinale(hero, difficulty int) error {
 	if l.introFont, err = l.loadFont(introFontFile); err != nil {
 		return err
 	}
-	// C: _MT32_Init plays LOREINTR only on a Roland card
+	g.mt32Init(false)
 	input.Flush()
 	l.bumpRate = 0
 	s.SetPalette(l.black[:])
@@ -120,7 +120,7 @@ func (g *Game) runFinale(hero, difficulty int) error {
 		}
 		l.av = nil
 		l.anims = [landsAnimations]landsAnim{}
-		g.audio.Play(sound.Music, scoreFade, 0)
+		g.audio.Fade(sound.Music)
 		g.stopLongSample()
 		s.FadePalette(l.black[:], landsFadeOut, nil)
 		if err := g.finaleCredits(); err != nil {
@@ -286,7 +286,7 @@ func (g *Game) finaleUser(a *avScript, p int) int {
 			l.samples[arg(0)] = g.loadQuickSample(finaleVoices[l.hero])
 		}
 	case 11: // C: _Custom_Fade_Score
-		g.audio.Play(sound.Music, scoreFade, 0)
+		g.audio.Fade(sound.Music)
 	case 12: // C: _Custom_Stupid_Display_Frame
 		an := &l.anims[arg(0)]
 		if arg(1) == -1 {
@@ -476,7 +476,7 @@ func (g *Game) finaleCredits() error {
 		host.Yield()
 	}
 	s.FadePalette(l.black[:], landsFadeOut, nil)
-	g.audio.Play(sound.Music, scoreFade, 0)
+	g.audio.Fade(sound.Music)
 	s.ClearPage(pageScreen)
 	return nil
 }

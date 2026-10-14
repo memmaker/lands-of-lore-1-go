@@ -2,6 +2,9 @@
 // the original data files, ported to Go.
 //
 //	lol [-data DIR]            play with the game files in DIR (default $GOPLAY_DATA, else ./game)
+//	lol -music mt32|cm32l|adlib  the music card: the MT-32 the game was written for (the
+//	                           default; ROMs from -roms, $GOPLAY_MT32 or ./roms), a CM-32L
+//	                           or new MT-32, or the AdLib
 //	lol -import SRC -data DIR  copy the game files out of SRC (folder, zip, ISO/BIN/CUE, GOG
 //	                           installer, loose files) into DIR and exit
 package main
@@ -17,6 +20,7 @@ import (
 	"github.com/memmaker/lands-of-lore-1-go/internal/game"
 	"github.com/memmaker/lands-of-lore-1-go/internal/gameimport"
 	"github.com/memmaker/lands-of-lore-1-go/internal/host"
+	"github.com/memmaker/lands-of-lore-1-go/internal/sound"
 )
 
 // markerFiles prove a folder holds Lands of Lore.
@@ -47,6 +51,8 @@ func main() {
 	source := flag.String("import", "", "import the game files from this folder/zip/ISO/installer into -data and exit")
 	scale := flag.Int("scale", 3, "window scale")
 	hero := flag.Int("hero", -1, "start a new game with hero 0-3, as MAIN.EXE's argument (Ak'shel, Michael, Kieran, Conrad)")
+	music := flag.String("music", musicMT32, "music card: mt32 (old MT-32, as the game was written for), cm32l (CM-32L or new MT-32) or adlib")
+	roms := flag.String("roms", os.Getenv("GOPLAY_MT32"), "the MT-32 ROM directory (default: roms/ in the working directory or next to the binary)")
 	flag.Parse()
 
 	if *source != "" {
@@ -61,7 +67,7 @@ func main() {
 		os.Exit(1)
 	}
 	var gameErr error
-	err := host.Run("Lands of Lore", *scale, func() { gameErr = run(*dir, *hero) })
+	err := host.Run("Lands of Lore", *scale, func() { gameErr = run(*dir, *hero, *music, romDir(*roms)) })
 	if err == nil {
 		err = gameErr
 	}
@@ -107,11 +113,36 @@ func importGame(source, dir string) error {
 	return writeCover(dir)
 }
 
+// The -music choices.
+const (
+	musicMT32  = "mt32"
+	musicCM32L = "cm32l"
+	musicAdLib = "adlib"
+)
+
 // run is the game.
-func run(dir string, hero int) error {
+func run(dir string, hero int, music, roms string) error {
 	g, err := game.New(dir)
 	if err != nil {
 		return err
+	}
+	switch music {
+	case musicMT32, musicCM32L:
+		// The game's patches (LOLSYSEX) were made on the first MT-32; the CM-32L's and the
+		// later MT-32's changed sound engine can distort some, so each is asked for by name.
+		gen := sound.MT32Old
+		if music == musicCM32L {
+			gen = sound.MT32New
+		}
+		mt, err := sound.OpenMT32(roms, gen)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%v; playing the AdLib music instead\n", err)
+			break
+		}
+		g.UseMT32(mt)
+	case musicAdLib:
+	default:
+		return fmt.Errorf("unknown -music %q (mt32, cm32l or adlib)", music)
 	}
 	if hero >= 0 {
 		g.Hero = hero
@@ -119,4 +150,22 @@ func run(dir string, hero int) error {
 	}
 	g.StartAudio()
 	return g.Run()
+}
+
+// romDir is -roms, else the first roms/ directory in the working directory or next to the
+// binary ("" when there is none).
+func romDir(flagDir string) string {
+	if flagDir != "" {
+		return flagDir
+	}
+	dirs := []string{"roms"}
+	if exe, err := os.Executable(); err == nil {
+		dirs = append(dirs, filepath.Join(filepath.Dir(exe), "roms"))
+	}
+	for _, d := range dirs {
+		if fi, err := os.Stat(d); err == nil && fi.IsDir() {
+			return d
+		}
+	}
+	return ""
 }

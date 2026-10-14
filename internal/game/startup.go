@@ -137,7 +137,8 @@ func (g *Game) showTitle() error {
 		return err
 	}
 	g.Text.SetFont(g.SystemFont)
-	g.loadSpeechIndex(0) // C: ovr_2da3_0020(0); the MT-32 set-up (LOLSYSEX) is not ported
+	g.loadSpeechIndex(0) // C: ovr_2da3_0020(0)
+	g.sendSysex()
 	if err := g.loadLanguageStrings(); err != nil {
 		return err
 	}
