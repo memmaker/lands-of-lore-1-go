@@ -130,7 +130,7 @@ func (g *Game) opCharacterJoinsOrLeaves(s *emc.State) int {
 				g.layOutPortraits()
 				if g.updateFlags == 0 {
 					g.buildButtons()
-					g.drawPortraits()
+					g.drawGameScreen() // (C: ovr_2d2c_0043; drawPortraits alone left the old layout on screen)
 				}
 				if g.selectedCharacter == i {
 					g.selectedCharacter = 0
@@ -145,7 +145,7 @@ func (g *Game) opCharacterJoinsOrLeaves(s *emc.State) int {
 	}
 	if g.updateFlags == 0 {
 		g.buildButtons()
-		g.drawPortraits()
+		g.drawGameScreen() // (C: ovr_2d2c_0043; drawPortraits alone left the old layout on screen)
 	}
 	return 1
 }

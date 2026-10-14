@@ -3,6 +3,7 @@ package game
 import (
 	"bytes"
 	"fmt"
+	"github.com/memmaker/lands-of-lore-1-go/internal/emc"
 	"image"
 	"image/color"
 	"image/png"
@@ -250,6 +251,7 @@ func TestNewGame(t *testing.T) {
 	g.setFlag(flagHasMagic, hadMagic)
 	g.drawGameScreen()
 	g.buildButtons()
+	checkJoin(t, g)
 	// The character screen: a click on the first portrait opens it, its exit closes it.
 	click := func(x, y int, name string) {
 		host.MouseX, host.MouseY = x, y
@@ -470,5 +472,32 @@ func checkAutoWalk(t *testing.T, g *Game) {
 	savePNG(t, host.ShowFrame(), "automap_walked.png")
 	if a.open || g.currentBlock != to {
 		t.Errorf("walk from %d to %d (%d steps): at %d, map open %v", from, to, far, g.currentBlock, a.open)
+	}
+}
+
+// checkJoin lets Baccata join and leave: each time the portrait row must look as a fresh
+// draw of the game screen has it, not keep the old layout's portraits.
+func checkJoin(t *testing.T, g *Game) {
+	const baccata, rowTop, rowBottom, portraitBoxW = 3, 143, 177, 66
+	for _, id := range []int{baccata, -baccata} {
+		st := &emc.State{}
+		st.Stack[0] = id
+		g.opCharacterJoinsOrLeaves(st)
+		steps(5)
+		got := slices.Clone(host.ShowFrame().Pixels[rowTop*320 : rowBottom*320])
+		savePNG(t, host.ShowFrame(), fmt.Sprintf("join%d.png", id))
+		g.drawGameScreen()
+		steps(5)
+		want := host.ShowFrame().Pixels[rowTop*320 : rowBottom*320]
+		for i := range got { // the faces themselves blink and greet; the rest must match
+			x, inPortrait := i%320, false
+			for c := range g.partyCount() {
+				inPortrait = inPortrait || x >= g.portraitX[c] && x < g.portraitX[c]+portraitBoxW
+			}
+			if !inPortrait && got[i] != want[i] {
+				t.Errorf("character %d: the portrait row differs from a fresh draw at %d,%d", id, x, rowTop+i/320)
+				break
+			}
+		}
 	}
 }
