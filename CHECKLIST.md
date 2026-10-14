@@ -33,7 +33,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
           _Raw_Palette_Fade, _Big_Copy_View, _Scale_Bit_Blit
     - [x] Character generation (_Char_Gen, _Process_Char, _Animate_King_1-3, _Animate_Character,
           _Party_Wait_Processing, confirm); -hero N skips it like MAIN.EXE N
-    - [ ] History (_Patrick_Stewart)
+    - [x] History (_Patrick_Stewart, _Open_Anim, _Animate, _Restore_BG, _Dracle_Status)
 - [x] New game to the first dungeon view
   - [x] New game state (ovr_2d2c_0070), credits (o2d0e), item creation
   - [x] Party joining and leaving (o2d74), opcode 75

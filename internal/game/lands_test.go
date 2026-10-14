@@ -94,3 +94,18 @@ func TestCharGen(t *testing.T) {
 		t.Fatalf("done %v hero %d", *done, *hero)
 	}
 }
+
+func TestHistory(t *testing.T) {
+	_, done, _, runErr := startLands(t, landsHistory)
+	for i := 0; i < 20000 && !*done && steps(1); i++ {
+		if i%100 == 0 {
+			savePNG(t, host.ShowFrame(), fmt.Sprintf("history%05d.png", i))
+		}
+	}
+	if *runErr != nil {
+		t.Fatal(*runErr)
+	}
+	if !*done {
+		t.Fatal("history still running")
+	}
+}
