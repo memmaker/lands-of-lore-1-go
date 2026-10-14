@@ -154,6 +154,15 @@ func TestNewGame(t *testing.T) {
 	}
 	click(g.portraitX[0]+30, 160, "character.png")
 	click(viewLeft+160+20, 103, "character_exit.png")
+	if g.party[0].MaxHP > 0 {
+		g.party[0].HP--
+		click(43, 189, "rest.png")
+		steps(300)
+		if g.party[0].HP != g.party[0].MaxHP {
+			t.Errorf("rested to %d of %d hit points", g.party[0].HP, g.party[0].MaxHP)
+		}
+		savePNG(t, host.ShowFrame(), "rested.png")
+	}
 	checkGameMenu(t, g, click)
 	checkSaveRoundTrip(t, g)
 }

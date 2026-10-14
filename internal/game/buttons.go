@@ -307,10 +307,3 @@ func (g *Game) buildSpellTargetButtons() {
 	g.addPortraitButtons(buttonSpellTarget, 0)
 	g.addButtons(spellTargetButtons)
 }
-
-// Button callbacks not ported yet.
-
-func (g *Game) clickRestParty(*gui.Button) bool {
-	notPorted("ovr_2d7a_0020 (button)")
-	return false
-}

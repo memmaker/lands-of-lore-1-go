@@ -56,6 +56,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] Level change (op 60)
   - [ ] Automap
 - [ ] Items, inventory, characters, portraits, stats screen
+  - [x] Resting (o2d7a): healing, mana, poison, interruption
 - [ ] Monsters, combat, magic
   - [x] Monster AI, combat rules (s004), status effects
   - [x] Spell casting, targets, learning (o2d8a, o2d86), heal (o2d18)
