@@ -4,6 +4,7 @@ import (
 	"github.com/memmaker/lands-of-lore-1-go/internal/clock"
 	"github.com/memmaker/lands-of-lore-1-go/internal/emc"
 	"github.com/memmaker/lands-of-lore-1-go/internal/gfx"
+	"github.com/memmaker/lands-of-lore-1-go/internal/host"
 	"github.com/memmaker/lands-of-lore-1-go/internal/input"
 	"github.com/memmaker/lands-of-lore-1-go/internal/random"
 )
@@ -609,9 +610,12 @@ func (g *Game) opCharacterSays(s *emc.State) int {
 	return boolInt(g.characterText(s.Arg(0), s.Arg(1), true, g.text(s.Arg(2)), s.Arg(2), scriptArgs(s), 3))
 }
 
-// opIdle runs the game's idle work once (C: fn_0fbe_1cea).
+// opIdle runs the game's idle work once (C: fn_0fbe_1cea) and lets the host run: the
+// scripts' waiting loops (an answer, the end of the speech) call it, and the original's
+// timer interrupt went on meanwhile.
 func (g *Game) opIdle(s *emc.State) int {
 	g.idleWork()
+	host.Yield()
 	return 1
 }
 
