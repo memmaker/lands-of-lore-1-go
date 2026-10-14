@@ -416,7 +416,9 @@ func (g *Game) timSubOp(t *timScript, op, p int) int {
 	case 9: // (C: fn_057f_0a47)
 		g.idleWork()
 	case 10: // (C: fn_057f_0a54)
-		notPorted("fn_057f_0a54 (TIM: clear the text box)")
+		if g.controlMode == 0 || g.textEnabled {
+			g.clearDialogueText()
+		}
 	case 11: // (C: fn_057f_0ac1)
 		g.queueTrack(arg(0))
 	case 12: // (C: fn_057f_0ad5)

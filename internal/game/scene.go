@@ -196,7 +196,12 @@ func (g *Game) setSceneRegion(x, y, w, h, with int) {
 func (g *Game) hideLamp(draw bool) {
 	g.setFlag(flagLampLit, false)
 	if g.flag(flagHasLamp) && draw {
-		notPorted("ovr_2d5f_0133 (draw the unlit lamp)")
+		const unlitLampShape = 43
+		s := g.Screen
+		s.HideMouseIn(lampIconX, lampIconY, lampIconRight, lampIconBottom)
+		s.DrawShape(pageScreen, shapeAt(g.gameShapes, unlitLampShape), lampIconX, lampIconY, 0, 0, gfx.ShapeOptions{})
+		s.ShowMouseIn()
+		g.lampLevel = lampOut
 	}
 }
 
@@ -430,16 +435,8 @@ func (g *Game) opResetSceneRegion(*emc.State) int { g.resetSceneButtons(); retur
 // controls are in a mode without the text area (C: fn_0fbe_0aa2). The dialogue window,
 // unlike the others, is set in pixels.
 func (g *Game) opClearDialogue(*emc.State) int {
-	if g.controlMode != 0 && !g.textEnabled {
-		return 1
+	if g.controlMode == 0 || g.textEnabled {
+		g.clearDialogueText()
 	}
-	t := g.Text
-	t.SelectWindow(textWindowMain)
-	g.Screen.HideMouse()
-	g.Screen.FillRect(t.X, t.Y, t.X+t.W-2, t.Y+t.H-2, t.Background)
-	t.SelectAndClear(textWindowLabel)
-	g.Screen.ShowMouse()
-	w := &g.Screen.Windows[textWindowLabel]
-	w.Column, w.Row = 0, 0
 	return 1
 }

@@ -113,6 +113,10 @@ const (
 	animDirect        = 1 << 4  // drawn straight onto the page
 	animRemapped      = 1 << 12 // drawn through the level's TLC tables
 	animOnBuildPage   = 1 << 14
+	animPoolPage3     = 1 << 5 // may be kept in page 3's spare memory
+	animPoolPage7     = 1 << 6
+	animPoolSpare     = 1 << 7                   // in the spare page's: restoring that page closes it
+	animationPools    = 8                        // indexed by the pool's page
 	animDrawFlagsMask = (1<<16 - 1) &^ (15 << 8) // the flags without bits 8-11 (C: 0xf0ff)
 	fadeTicks         = 10
 )
@@ -128,7 +132,8 @@ type sceneAnimation struct {
 	frame        int
 	loops        int
 	flags        int
-	lastSequence int // the last sequence that ended (C: c14)
+	lastSequence int  // the last sequence that ended (C: c14)
+	inSparePage  bool // kept in the spare page's pool (C: flags 0x80)
 	sequences    [animSequences][8]int
 }
 
@@ -139,6 +144,9 @@ func (g *Game) openSceneAnimation(n int, name string, x, y, delay, flags int) bo
 	a.x, a.y, a.delay, a.flags = x, y, delay, flags
 	a.playing = false
 	a.lastSequence = noSequence
+	// The original tried the pools in page 3, page 7 and the spare page in turn, as
+	// far as each had room; the port only needs to know who lands in the spare page.
+	a.inSparePage = flags&animPoolSpare != 0 && flags&(animPoolPage3|animPoolPage7) == 0
 	open := 0
 	if flags&animDirect != 0 {
 		open |= wsaDirect

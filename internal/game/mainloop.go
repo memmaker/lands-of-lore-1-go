@@ -167,7 +167,7 @@ const (
 func (g *Game) handleInput() {
 	k := g.GUI.ProcessKeys(g.buttons)
 	if k != 0 && g.spellTarget != noCharacter && k&keyReleased == 0 {
-		g.cancelSpellTarget()
+		g.buildButtons()
 		g.party[g.spellTarget].Flags &^= charSelected
 		g.drawPortrait(g.spellTarget)
 		g.putKeyBack(k)
@@ -246,8 +246,6 @@ func (g *Game) checkPartyDead(flags int) bool {
 }
 
 // Not ported yet.
-
-func (g *Game) cancelSpellTarget() { notPorted("ovr_2ceb_0020 (cancel a spell's target)") }
 
 // putKeyBack queues key k again (C: fn_2169_0945).
 func (g *Game) putKeyBack(k int) { input.Put(k) }
