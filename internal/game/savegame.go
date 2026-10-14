@@ -503,9 +503,14 @@ func (g *Game) restoreLevelState(level int) {
 	}
 	for i := range g.monsters {
 		m := &g.monsters[i]
+		// changed: the original kept every monster's type pointer in the file; the port
+		// relinks each, also a removed monster's (off the map, it still thinks; the
+		// nil type crashed it)
+		if m.TypeIndex >= 0 && m.TypeIndex < len(g.lvl.monsterTypes) {
+			m.Type = &g.lvl.monsterTypes[m.TypeIndex]
+		}
 		if m.Block != 0 {
 			m.Block = 0
-			m.Type = &g.lvl.monsterTypes[m.TypeIndex]
 			g.moveMonster(m, m.X, m.Y)
 		}
 	}

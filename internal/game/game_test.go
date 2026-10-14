@@ -252,6 +252,7 @@ func TestNewGame(t *testing.T) {
 	g.drawGameScreen()
 	g.buildButtons()
 	checkJoin(t, g)
+	checkRemovedMonsterRestore(t, g)
 	// The character screen: a click on the first portrait opens it, its exit closes it.
 	click := func(x, y int, name string) {
 		host.MouseX, host.MouseY = x, y
@@ -500,4 +501,21 @@ func checkJoin(t *testing.T, g *Game) {
 			}
 		}
 	}
+}
+
+// checkRemovedMonsterRestore saves and restores the level with a removed monster in a
+// free slot: the monster keeps thinking off the map, so it needs its type back.
+func checkRemovedMonsterRestore(t *testing.T, g *Game) {
+	i := len(g.monsters) - 1
+	saved := g.monsters[i]
+	g.monsters[i] = Monster{ID: i, Mode: monsterModeRemove}
+	if err := g.saveLevelState(); err != nil {
+		t.Fatal(err)
+	}
+	g.restoreLevelState(g.level)
+	if g.monsters[i].Type == nil {
+		t.Errorf("removed monster restored without a type")
+	}
+	g.moveMonsters(i & 1)
+	g.monsters[i] = saved
 }
