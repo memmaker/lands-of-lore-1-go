@@ -360,7 +360,11 @@ func (g *Game) timCheckAnswer() int {
 // script's stop command it gives that the previous command's length (C: fn_057f_07aa).
 func (g *Game) timSkipTo(op int) {
 	t := g.tim
-	f := &t.funcs[g.timDialogueFunction]
+	n := g.timDialogueFunction
+	if n < 0 || n >= len(t.funcs) {
+		n = g.timFunction // fix: without a dialogue the original took the slot before the table
+	}
+	f := &t.funcs[n]
 	prev := t.word(f.ip)
 	for t.word(f.ip+timCmdOp)&lowByteMask != op {
 		if t.word(f.ip+timCmdOp)&lowByteMask == timOpStop {
