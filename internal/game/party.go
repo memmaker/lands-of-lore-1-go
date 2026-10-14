@@ -111,7 +111,7 @@ func (g *Game) loadFaces(c, id int) error {
 func (g *Game) setTemporaryFace(c, face, sound int, redraw bool) {
 	g.party[c].FaceDefault = face
 	if face != 0 && sound != 0 {
-		g.playCharacterSound(c, sound)
+		g.addStatusEffect(c, effectTemporaryFace, sound, true) // the sound is the time the face shows
 	}
 	if redraw {
 		g.drawPortrait(c)

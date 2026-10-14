@@ -14,19 +14,12 @@ func (e notPortedError) Error() string { return fmt.Sprintf("not ported yet: %s"
 
 func notPorted(name string) { panic(notPortedError{name}) }
 
-func (g *Game) playCharacterSound(c, sound int) { notPorted("fn_0bbc_0744 (character sound)") }
-
 // Combat and character effects the monsters call (CHECKLIST: Combat).
 func (g *Game) takeCharacterItem(ch, slots, flags int) int {
 	notPorted("ovr_2d46_0048 (take a character's item)")
 	return 0
 }
-func (g *Game) launchObject(kind, item, x, y, power, dir, a, owner, flags int) bool {
-	notPorted("fn_0b6b_032f (launch a flying object)")
-	return false
-}
-func (g *Game) freezeParty()                     { notPorted("ovr_2da0_002a (freeze the party)") }
-func (g *Game) moveFlyingObject(f *flyingObject) { notPorted("fn_0b6b_0472 (move a flying object)") }
-func (g *Game) showAutomap()                     { notPorted("ovr_2ce1_0020 (automap)") }
+func (g *Game) freezeParty() { notPorted("ovr_2da0_002a (freeze the party)") }
+func (g *Game) showAutomap() { notPorted("ovr_2ce1_0020 (automap)") }
 
 // The spells' effects, overlay by overlay (CHECKLIST: Monsters, combat, magic).
