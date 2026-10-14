@@ -217,12 +217,12 @@ func (g *Game) drawAutomapNotes(row int) {
 		letter := string(rune('A' + i))
 		x := (n.block%mapSize-x0)*automapCellWidth + a.left
 		y := (n.block/mapSize-y0)*automapCellHeight + a.top
-		s.DrawText(letter, x+(automapCellWidth-s.TextWidth(letter))/2, y, mark, 0)
+		s.DrawText(letter, x+letterInset(s, letter), y, mark, 0)
 		ly := row*automapLegendRow + automapLegendY
 		if ly+automapLegendRow > noteLegendBottom {
 			continue
 		}
-		s.DrawText(letter, automapSymbolX+1, ly, mark, 0)
+		s.DrawText(letter, automapSymbolShade+letterInset(s, letter), ly, mark, 0)
 		label := n.label
 		for label != "" && s.TextWidth(label) > noteLegendWidth {
 			label = label[:len(label)-1]
@@ -232,6 +232,12 @@ func (g *Game) drawAutomapNotes(row int) {
 	}
 	s.SetFont(font)
 	s.SetPage(pg)
+}
+
+// letterInset centres a letter's ink on a cell: the font's widths count a column of
+// spacing after each glyph.
+func letterInset(s *gfx.Screen, letter string) int {
+	return (automapCellWidth - (s.TextWidth(letter) - 1) + 1) / 2
 }
 
 // noteFile is the notes file of a saved game.
