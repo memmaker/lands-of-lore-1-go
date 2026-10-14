@@ -41,6 +41,23 @@ func savePNG(t *testing.T, f *host.Frame, name string) {
 	}
 	defer out.Close()
 	png.Encode(out, img)
+	if f.PointerShown { // the cursor, 8 times enlarged, as the host shows it
+		const k = 8
+		c := image.NewRGBA(image.Rect(0, 0, f.PointerWidth*k, f.PointerHeight*k))
+		for i, v := range f.Pointer {
+			if v == 0 {
+				continue
+			}
+			p := f.Palette[int(v)*3:]
+			for j := range k * k {
+				c.Set(i%f.PointerWidth*k+j%k, i/f.PointerWidth*k+j/k, color.RGBA{p[0] << 2, p[1] << 2, p[2] << 2, 255})
+			}
+		}
+		if cf, err := os.Create(dir + "/" + strings.TrimSuffix(name, ".png") + ".cursor.png"); err == nil {
+			png.Encode(cf, c)
+			cf.Close()
+		}
+	}
 	// the palette indices too, to compare with the original's video memory
 	os.WriteFile(dir+"/"+strings.TrimSuffix(name, ".png")+".raw", f.Pixels[:320*200], 0o644)
 }

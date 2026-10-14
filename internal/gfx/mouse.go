@@ -161,8 +161,8 @@ func (s *Screen) SetMouseShape(hotX, hotY int, shape []byte) []byte {
 }
 
 // shapePixels unpacks a shape into a picture, 0 transparent, the way the original drew
-// the cursor: DrawShape with no flags, so no colour mapping and the pixel data read
-// straight after the colour count byte (cursor shapes carry no colour table).
+// the cursor: DrawShape with no flags, which still maps the pixels through the shape's
+// own colour table when it carries one (as LoL's cursors do).
 func shapePixels(shape []byte) (pixels []byte, w, h int) {
 	if len(shape) < shapeHeaderSize {
 		return nil, 0, 0
@@ -170,8 +170,15 @@ func shapePixels(shape []byte) (pixels []byte, w, h int) {
 	w, h = ShapeWidth(shape), ShapeHeight(shape)
 	flags := int(binary.LittleEndian.Uint16(shape))
 	pos := shapeHeaderSize
+	count := defaultShapeColours
 	if flags&shapeColourCount != 0 {
+		count = int(shape[pos])
 		pos++
+	}
+	var colours []byte
+	if flags&shapeHasColours != 0 {
+		colours = shape[min(pos, len(shape)):min(pos+count, len(shape))]
+		pos += count
 	}
 	src := shape[min(pos, len(shape)):]
 	if flags&shapeRaw == 0 {
@@ -183,6 +190,11 @@ func shapePixels(shape []byte) (pixels []byte, w, h int) {
 	in := 0
 	for y := range h {
 		in = decodeShapeRow(src, in, pixels[y*w:(y+1)*w])
+	}
+	for i, c := range pixels {
+		if c != 0 && int(c) < len(colours) {
+			pixels[i] = colours[c]
+		}
 	}
 	return pixels, w, h
 }
