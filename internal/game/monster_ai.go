@@ -310,21 +310,21 @@ func (g *Game) monsterHitEffect(m *Monster, ch, damage int) {
 	case hitHeals:
 		m.HitPoints = min(m.HitPoints+damage, m.Type.hitPoints)
 	case hitStealsItem:
-		if it := g.takeCharacterItem(ch, stealAnySlot, 0); it != 0 {
+		if it := g.takeCharacterItem(ch, stealAnySlot); it != 0 {
 			g.giveMonsterItem(m, it)
 			if g.characterSays(stringStolen, c.ID, true) {
 				g.printMessage(messageWarning, g.text(stringStolen))
 			}
 		}
 	case hitBreaksItem:
-		if it := g.takeCharacterItem(ch, breakSlot, 0); it != 0 {
+		if it := g.takeCharacterItem(ch, breakSlot); it != 0 {
 			g.freeItem(it)
 			if g.characterSays(stringBroken, c.ID, true) {
 				g.printMessage(messageWarning, g.text(stringBroken))
 			}
 		}
 	case hitKnocksItem:
-		it := g.takeCharacterItem(ch, knockHandSlots, 0)
+		it := g.takeCharacterItem(ch, knockHandSlots)
 		if it == 0 {
 			break
 		}
@@ -394,7 +394,7 @@ func (g *Game) monsterDefence(m *Monster, ch, kind, ranged, damage int) {
 			if it == 0 || g.itemTypes[g.items[it].Type].Flags&hitKindMask != kind {
 				continue
 			}
-			g.takeCharacterItem(ch, stealAnySlot, 0)
+			g.takeCharacterItem(ch, stealAnySlot)
 			if m.Type.defenseSkill[1] == defenceTakesWeapon {
 				g.giveMonsterItem(m, it)
 				if g.characterSays(stringHurtsBack, c.ID, true) {
@@ -693,7 +693,7 @@ func (g *Game) castMonsterSpell(m *Monster) bool {
 		}
 		switch s {
 		case spellFreezes:
-			g.freezeParty()
+			g.viperSpell()
 		case spellCallsHelp:
 			for i := range g.monsters {
 				if blockDistance(g.monsters[i].Block, m.Block) <= wakeAllRange {
@@ -706,7 +706,7 @@ func (g *Game) castMonsterSpell(m *Monster) bool {
 			g.shakeScreen(10, 2, 2, 1)
 			for i := range g.party {
 				if g.party[i].Flags&charPresent != 0 {
-					if it := g.takeCharacterItem(i, quakeKnockSlots, 0); it != 0 {
+					if it := g.takeCharacterItem(i, quakeKnockSlots); it != 0 {
 						g.dropItem(it, g.partyX, g.partyY, 0, true)
 					}
 					g.damageFighter(i, quakeDamage, damageFromNowhere, 0, 2)
