@@ -512,6 +512,10 @@ func (g *Game) clickSlider(b *gui.Button) bool {
 		}
 	case sliderSpeech:
 		g.speechVolume = v
+		g.digitalSpeechOn = v != 0 && g.speechSample != nil
+		if g.digitalSpeechOn {
+			g.audio.PlayDigital(g.speechSample, speechPriority, effectDriverVolume(v))
+		}
 	}
 	return true
 }

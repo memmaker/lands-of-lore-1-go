@@ -191,12 +191,9 @@ func (g *Game) handleInput() {
 	case keyDebugPrint:
 		// the original printed the level, block and direction to a debug console
 	case keyVolumeDown, keyVolumeUp:
-		g.speechKey(1)
+		g.stopSpeech(true)
 	}
 }
-
-// speechKey (C: fn_154c_000f): speech is silent until the sound milestone.
-func (g *Game) speechKey(int) {}
 
 // idleWork animates, burns the lamp, swings the compass and keeps the speech going
 // (C: fn_0845_093a).
@@ -215,9 +212,6 @@ func (g *Game) idleWork() {
 	g.updateSpeech()
 	g.updateSpeechFace()
 }
-
-// updateSpeech (C: fn_154c_0136): speech is silent until the sound milestone.
-func (g *Game) updateSpeech() int { return 0 }
 
 // updateAnimations runs the level's looping WSA animations (C: fn_130a_028a).
 func (g *Game) updateAnimations() {

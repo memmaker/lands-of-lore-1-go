@@ -211,7 +211,7 @@ func (p *Player) digitalSlot(priority int) int {
 	return -1
 }
 
-// PlayDigital plays a sample on the first idle channel, else the first playing one of no
+// PlayDigital plays a sample, once the stream runs, on the first idle channel, else the first playing one of no
 // higher priority, at a driver volume; false if none takes it or the volume is 0
 // (C: fn_16cf_0022, fn_16cf_0ae2).
 func (p *Player) PlayDigital(s *Sample, priority, vol int) bool {
@@ -220,6 +220,9 @@ func (p *Player) PlayDigital(s *Sample, priority, vol int) bool {
 	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	if !p.running && !p.offline {
+		return false // nothing would play it out, as without the card
+	}
 	i := p.digitalSlot(min(priority, maxVolume))
 	if i < 0 {
 		return false
@@ -299,4 +302,16 @@ func (p *Player) mixDigital(out []float32) {
 		out[i] += v
 		out[i+1] += v
 	}
+}
+
+// DigitalActive says whether any channel plays (C: fn_16cf_022f).
+func (p *Player) DigitalActive() bool {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	for _, c := range p.digital {
+		if c.active {
+			return true
+		}
+	}
+	return false
 }

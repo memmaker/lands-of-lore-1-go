@@ -22,6 +22,7 @@ func TestDigitalMix(t *testing.T) {
 		t.Errorf("quirk lost: %d", scaleSample(0, 50))
 	}
 	p := New()
+	p.offline = true
 	if !p.PlayDigital(s, 10, maxVolume) {
 		t.Fatal("not played")
 	}

@@ -604,7 +604,7 @@ func (g *Game) opGetMonsterField(s *emc.State) int {
 // opCharacterSays has a character say a string: character, style, string id
 // (C: fn_0fbe_1cf7).
 func (g *Game) opCharacterSays(s *emc.State) int {
-	g.speechKey(1)
+	g.stopSpeech(true)
 	g.endTalk()
 	return boolInt(g.characterText(s.Arg(0), s.Arg(1), true, g.text(s.Arg(2)), s.Arg(2), scriptArgs(s), 3))
 }
@@ -705,7 +705,7 @@ func (g *Game) runFinale(mode, difficulty int) { notPorted("FINALE.EXE (the endi
 
 // opStopTalk (C: fn_0fbe_1f39).
 func (g *Game) opStopTalk(s *emc.State) int {
-	g.speechKey(1)
+	g.stopSpeech(true)
 	g.endTalk()
 	return 1
 }
@@ -1282,7 +1282,7 @@ const (
 func (g *Game) opSpeak(s *emc.State) int {
 	switch s.Arg(0) {
 	case speechStop:
-		g.speechKey(1)
+		g.stopSpeech(true)
 		return 1
 	case speechState:
 		return g.updateSpeech()

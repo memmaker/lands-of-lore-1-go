@@ -208,8 +208,6 @@ func (g *Game) flushInput() { input.Flush() }
 
 // Not ported yet.
 
-func (g *Game) loadSpeechIndex(level int) {} // sound: the speech index (C: ovr_2da3_0020)
-
 const noTalk = -1
 
 // opChangeLevel leaves for another level: thrown items land where they fly, the level

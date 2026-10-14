@@ -55,6 +55,7 @@ type Player struct {
 
 	digital    [digitalChannels]digitalChannel // C: g_chan
 	digitalDue float64
+	offline    bool // rendered by a test, without the stream
 }
 
 // Driver slots.

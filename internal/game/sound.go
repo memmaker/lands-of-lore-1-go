@@ -65,6 +65,7 @@ type delayedSound struct{ sound, block int }
 func (g *Game) initSound() {
 	g.snd = soundState{file: noSoundFile, song: noSoundFile, lastEffect: noEffect}
 	g.musicTrack = -1
+	g.lastSpeech = notSpeaking
 	g.audio = sound.New()
 }
 
@@ -414,11 +415,3 @@ const (
 	endOfEffects      = 199
 	firstTestEffect   = 11
 )
-
-// stopSpeech stops the speech playing; with hold it stays stopped for the queued one
-// (C: fn_154c_000f). Speech is not ported yet.
-func (g *Game) stopSpeech(hold bool) {}
-
-// playSpeechSample plays the speech of a string, as the audio menu does to let the
-// volume be heard (C: fn_154c_029f).
-func (g *Game) playSpeechSample(id int) {}

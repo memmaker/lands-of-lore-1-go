@@ -105,7 +105,7 @@ func (g *Game) wallClickScript(b, side int) bool {
 	if !g.decorationHit(g.wallDecoration(b, side)) {
 		return false
 	}
-	g.speechKey(1)
+	g.stopSpeech(true)
 	g.runBlockScript(b, eventWallClick)
 	return true
 }

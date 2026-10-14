@@ -208,3 +208,7 @@ func (f *Files) Names() []string {
 	}
 	return names
 }
+
+// Open opens a loose file to read parts of it, as the speech files are read
+// (C: fn_1809_0000).
+func (f *Files) Open(name string) (*os.File, error) { return os.Open(f.path(name)) }

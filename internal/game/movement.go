@@ -188,7 +188,7 @@ func (g *Game) bumpWall(forward bool) {
 	if forward {
 		g.animateBump(walkFrameTicks)
 	}
-	g.speechKey(1)
+	g.stopSpeech(true)
 	g.printMessage(messageSilent|2, g.text(stringCannotGo))
 	g.playSound(soundBump, 0)
 }

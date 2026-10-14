@@ -344,7 +344,7 @@ func (g *Game) timCheckAnswer() int {
 	t := g.tim
 	r := g.dialogueAnswer()
 	if r != 0 && t.choices != 0 {
-		g.speechKey(0)
+		g.stopSpeech(false)
 		t.funcs[t.stop].loopIP = 0
 		g.timDialogueFunction = t.stop
 		t.stop = noTimStop

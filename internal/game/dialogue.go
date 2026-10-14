@@ -144,9 +144,6 @@ func (g *Game) opSay(s *emc.State) int {
 	return 1
 }
 
-// playSpeech (C: fn_154c_01d3): speech is silent until the sound milestone.
-func (g *Game) playSpeech(id, character int, wait bool) bool { return false }
-
 // Dialogue choices: up to three buttons along the bottom of the dialogue window
 // (whose X and W are in pixels), or none when a single choice is spoken.
 const (
@@ -249,7 +246,7 @@ func (g *Game) dialogueAnswer() int {
 			k := input.Get() & keyCodeMask
 			g.GUI.MarkChanged()
 			if k == keyChoose || k == keyChooseSpace {
-				g.speechKey(1)
+				g.stopSpeech(true)
 				g.talkWaitUntil = 0
 			}
 		}
@@ -277,7 +274,7 @@ func (g *Game) dialogueAnswer() int {
 				}
 			}
 		case keyChoose, keyChooseSpace:
-			g.speechKey(1)
+			g.stopSpeech(true)
 			g.talkWaitUntil = 0
 			r = g.choiceSelected
 		case input.Released | input.KeyMouseLeft, input.Released | input.KeyMouseRight:
