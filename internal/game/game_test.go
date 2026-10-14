@@ -71,6 +71,7 @@ const (
 	scanDown     = 80
 	scanRight    = 77
 	scanHome     = 71
+	scanShiftL   = 42
 )
 
 func steps(n int) bool {
@@ -154,17 +155,41 @@ func TestNewGame(t *testing.T) {
 		t.Fatalf("no game started (ended with %v)", runErr)
 	}
 	savePNG(t, host.ShowFrame(), "game.png")
-	// Walk: the arrow keys turn and step.
+	// Walk: Shift and the arrow keys strafe (the original's plain Left and Right, as in the
+	// DOSBox dumps), Home turns, Up and Down step.
+	for _, k := range []struct {
+		scan  byte
+		shift bool
+		name  string
+	}{{scanLeft, true, "strafe.png"}, {scanUp, false, "bump.png"}, {scanRight, true, "strafe2.png"}, {scanHome, false, "turn.png"}, {scanUp, false, "walk.png"}, {scanDown, false, "back.png"}} {
+		block, dir := g.currentBlock, g.direction
+		if k.shift {
+			host.PushScan(host.ScanEvent{Scan: scanShiftL})
+		}
+		host.PushScan(host.ScanEvent{Scan: k.scan, Extended: true})
+		host.PushScan(host.ScanEvent{Scan: k.scan, Extended: true, Released: true})
+		if k.shift {
+			host.PushScan(host.ScanEvent{Scan: scanShiftL, Released: true})
+		}
+		steps(100)
+		t.Logf("%s: block %d dir %d -> block %d dir %d; %v", k.name, block, dir, g.currentBlock, g.direction, runErr)
+		if turned := g.direction != dir; turned != (k.scan == scanHome) {
+			t.Errorf("%s: direction %d -> %d", k.name, dir, g.direction)
+		}
+		savePNG(t, host.ShowFrame(), k.name)
+	}
+	// Plain Left and Right turn (Right first: facing left, the guard starts talking).
 	for _, k := range []struct {
 		scan byte
-		name string
-	}{{scanLeft, "strafe.png"}, {scanUp, "bump.png"}, {scanRight, "strafe2.png"}, {scanHome, "turn.png"}, {scanUp, "walk.png"}, {scanDown, "back.png"}} {
+		turn int
+	}{{scanRight, 1}, {scanLeft, -1}} {
 		block, dir := g.currentBlock, g.direction
 		host.PushScan(host.ScanEvent{Scan: k.scan, Extended: true})
 		host.PushScan(host.ScanEvent{Scan: k.scan, Extended: true, Released: true})
 		steps(100)
-		t.Logf("%s: block %d dir %d -> block %d dir %d; %v", k.name, block, dir, g.currentBlock, g.direction, runErr)
-		savePNG(t, host.ShowFrame(), k.name)
+		if g.currentBlock != block || g.direction != (dir+k.turn)&(directionCount-1) {
+			t.Errorf("scan %d: block %d dir %d -> block %d dir %d", k.scan, block, dir, g.currentBlock, g.direction)
+		}
 	}
 	// The character screen: a click on the first portrait opens it, its exit closes it.
 	click := func(x, y int, name string) {

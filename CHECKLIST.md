@@ -58,7 +58,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
     - [x] 98, 170, 174, 177, 182 (label, bezel heal, game end wipe, dark light, gas)
   - [x] TIM interpreter (s001, s002), every opcode and sub-opcode (sound ones silent)
 - [x] Levels, 3D view renderer (o2d2c, o2cda), movement, automap
-  - [x] Party movement, walk/turn/strafe animations (s011, s038), doors, timers
+  - [x] Party movement, walk/turn/strafe animations (s011, s038), doors, timers; changed: Left/Right turn, Shift+Left/Right strafe
   - [x] Level change (op 60)
   - [x] Automap (o2ce1): map, legend, level paging, party arrow
 - [x] Items, inventory, characters, portraits, stats screen

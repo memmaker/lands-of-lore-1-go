@@ -1,6 +1,9 @@
 package game
 
-import "github.com/memmaker/lands-of-lore-1-go/internal/gui"
+import (
+	"github.com/memmaker/lands-of-lore-1-go/internal/gui"
+	"github.com/memmaker/lands-of-lore-1-go/internal/input"
+)
 
 // buttonDef is a button template (C: struct BtnDef, f_2568_0000; ScummVM: ButtonDef).
 type buttonDef struct {
@@ -12,6 +15,16 @@ type buttonDef struct {
 	window     int
 }
 
+// The keys of the turn and strafe buttons.
+const (
+	keyHome       = 91
+	keyLeft       = 92
+	keyPageUp     = 101
+	keyRight      = 102
+	keyShiftLeft  = keyLeft | input.Shift
+	keyShiftRight = keyRight | input.Shift
+)
+
 // buttonDefCount is the number of templates.
 const buttonDefCount = 95
 
@@ -21,13 +34,16 @@ const eventsBoth = gui.EventLeftPress | gui.EventRightPress
 // buttonDefs are the game's button templates. The list builders move some of them to the
 // portraits or the inventory slots before use, so each game keeps its own copy.
 var buttonDefs = [buttonDefCount]buttonDef{
-	{eventsBoth, 96, 352, (*Game).clickMoveForward, 33, 131, 22, 19, 0, 0},               // 0
-	{eventsBoth, 97, 353, (*Game).clickMoveBack, 33, 150, 22, 18, 0, 0},                  // 1
-	{eventsBoth, 98, 354, (*Game).clickMoveBack, 33, 150, 22, 18, 0, 0},                  // 2
-	{eventsBoth, 92, 348, (*Game).clickStrafeLeft, 11, 150, 22, 18, 0, 0},                // 3
-	{eventsBoth, 102, 358, (*Game).clickStrafeRight, 53, 150, 22, 18, 0, 0},              // 4
-	{eventsBoth, 91, 347, (*Game).clickTurnLeft, 11, 131, 22, 19, 0, 0},                  // 5
-	{eventsBoth, 101, 357, (*Game).clickTurnRight, 53, 131, 22, 19, 0, 0},                // 6
+	{eventsBoth, 96, 352, (*Game).clickMoveForward, 33, 131, 22, 19, 0, 0}, // 0
+	{eventsBoth, 97, 353, (*Game).clickMoveBack, 33, 150, 22, 18, 0, 0},    // 1
+	{eventsBoth, 98, 354, (*Game).clickMoveBack, 33, 150, 22, 18, 0, 0},    // 2
+	// changed: Left and Right turn (the original strafed with them and turned with Home and
+	// Page Up, also shifted: 92/348, 102/358 and 91/347, 101/357); Shift+Left and
+	// Shift+Right strafe
+	{eventsBoth, keyShiftLeft, 0, (*Game).clickStrafeLeft, 11, 150, 22, 18, 0, 0},        // 3
+	{eventsBoth, keyShiftRight, 0, (*Game).clickStrafeRight, 53, 150, 22, 18, 0, 0},      // 4
+	{eventsBoth, keyLeft, keyHome, (*Game).clickTurnLeft, 11, 131, 22, 19, 0, 0},         // 5
+	{eventsBoth, keyRight, keyPageUp, (*Game).clickTurnRight, 53, 131, 22, 19, 0, 0},     // 6
 	{gui.EventLeftPress, 112, 0, (*Game).clickAttack, 80, 143, 22, 17, 0, 0},             // 7
 	{gui.EventLeftPress, 113, 0, (*Game).clickAttack, 80, 143, 22, 17, 1, 0},             // 8
 	{gui.EventLeftPress, 114, 0, (*Game).clickAttack, 80, 143, 22, 17, 2, 0},             // 9
