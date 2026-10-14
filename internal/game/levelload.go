@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 
+	"github.com/memmaker/lands-of-lore-1-go/internal/clock"
 	"github.com/memmaker/lands-of-lore-1-go/internal/emc"
 	"github.com/memmaker/lands-of-lore-1-go/internal/input"
 )
@@ -207,7 +208,35 @@ func (g *Game) flushInput() { input.Flush() }
 
 // Not ported yet.
 
-func (g *Game) loadSpeechIndex(level int)   {} // sound: the speech index (C: ovr_2da3_0020)
-func (g *Game) restoreLevelState(level int) { notPorted("ovr_2d3c_0025 (restore a visited level)") }
+func (g *Game) loadSpeechIndex(level int) {} // sound: the speech index (C: ovr_2da3_0020)
 
 const noTalk = -1
+
+// opChangeLevel leaves for another level: thrown items land where they fly, the level
+// is kept as it is left, and the party arrives on block arg 1 facing arg 2. The script
+// ends (C: ovr_2d2c_00ca).
+func (g *Game) opChangeLevel(s *emc.State) int {
+	g.fadeOutView(levelFadeTicks)
+	g.Screen.FillRect(viewLeft, 0, viewLeft+viewWidth, viewHeight, 0) // sic: one wider and taller
+	clock.Disable(playClockSlot)
+	for i := range g.flying {
+		f := &g.flying[i]
+		if f.Active && f.Type == flyingDrops {
+			g.endFlying(f, f.X, f.Y, flyingHitWall)
+		}
+	}
+	g.finishDoors()
+	if err := g.saveLevelState(); err != nil {
+		s.Err = err
+		return 1
+	}
+	g.currentBlock = s.Arg(1)
+	g.direction = s.Arg(2)
+	g.partyX, g.partyY = blockPosition(g.currentBlock, blockCentreUnits, blockCentreUnits)
+	if err := g.loadLevel(s.Arg(0)); err != nil {
+		s.Err = err
+	}
+	clock.Enable(playClockSlot)
+	s.IP = -1
+	return 1
+}

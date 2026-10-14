@@ -1,6 +1,7 @@
 package game
 
 import (
+	"bytes"
 	"image"
 	"image/color"
 	"image/png"
@@ -153,4 +154,62 @@ func TestNewGame(t *testing.T) {
 	}
 	click(g.portraitX[0]+30, 160, "character.png")
 	click(viewLeft+160+20, 103, "character_exit.png")
+	checkSaveRoundTrip(t, g)
+}
+
+// checkSaveRoundTrip saves the running game, reads the save's records back into a
+// fresh game and saves again: both must be the same bytes. The level kept on saving
+// must restore to the same walls.
+func checkSaveRoundTrip(t *testing.T, g *Game) {
+	if g.level == 0 {
+		t.Log("no game running: save not checked")
+		return
+	}
+	store := MemoryStore{}
+	g.Saves = store
+	blocks := g.lvl.blocks
+	if err := g.saveGame("_SAVE000.DAT", "test"); err != nil {
+		t.Fatal(err)
+	}
+	b, _ := store.Read("_SAVE000.DAT")
+	want := saveDescriptionSize + saveMagicSize + saveVersionSize + partyRecordSize + globalsSize +
+		itemTableSize + savedLevels*(levelLengthSize+levelRecordSize)
+	if len(b) != want {
+		t.Fatalf("save is %d bytes, want %d", len(b), want)
+	}
+	var h Game
+	r := reader{b: b, at: saveDescriptionSize + saveMagicSize + saveVersionSize}
+	for i := range h.party {
+		h.party[i] = readCharacter(&r)
+	}
+	h.readGlobals(&r)
+	for i := range h.items {
+		h.items[i] = readItem(&r)
+	}
+	var w record
+	w.b = append(w.b, b[:saveDescriptionSize+saveMagicSize+saveVersionSize]...)
+	for i := range h.party {
+		writeCharacter(&w, &h.party[i])
+	}
+	h.writeGlobals(&w)
+	for i := range h.items {
+		writeItem(&w, &h.items[i])
+	}
+	if n := len(w.b); !bytes.Equal(w.b, b[:n]) {
+		for i := range w.b {
+			if w.b[i] != b[i] {
+				t.Fatalf("records differ at byte %d", i)
+			}
+		}
+	}
+	if h.level != g.level || h.currentBlock != g.currentBlock || h.party[0].Name != g.party[0].Name {
+		t.Fatalf("read back level %d block %d %q", h.level, h.currentBlock, h.party[0].Name)
+	}
+	g.restoreLevelState(g.level)
+	for i := range blocks {
+		if blocks[i].Walls != g.lvl.blocks[i].Walls || blocks[i].Flags != g.lvl.blocks[i].Flags {
+			t.Fatalf("block %d: %v %x, restored %v %x", i, blocks[i].Walls, blocks[i].Flags, g.lvl.blocks[i].Walls, g.lvl.blocks[i].Flags)
+		}
+	}
+	t.Logf("save: %d bytes, level file %d bytes", len(b), len(g.levelFiles[g.level]))
 }

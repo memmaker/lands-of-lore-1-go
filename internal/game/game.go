@@ -25,6 +25,7 @@ type Game struct {
 	Screen  *gfx.Screen
 	Text    *text.Printer
 	Config  config.Config
+	Saves   SaveStore   // where saved games go (C: the game folder)
 	Palette gfx.Palette // the working palette (C: g_adea)
 
 	SystemFont *gfx.Font // FONT9P.FNT (C: g_ae4f, then g_7fb8)
@@ -105,6 +106,7 @@ type Game struct {
 	currentBlock        int                          // the party's block (C: g_7fd0)
 	direction           int                          // the way the party faces (C: g_7fe1's source g_7fdf)
 	lastMoveDirection   int                          // (C: g_7fd8)
+	levelFiles          map[int][]byte               // the level temp files by level (C: _LEVEL%d.TMP)
 	visitedLevels       int                          // bit n-1: level n entered before (C: g_81f9)
 	loadingLevelInit    bool                         // a level's .INI runs (C: g_206d)
 	pendingBlockScript  int                          // a block whose script runs from the main loop (C: g_20d7)
@@ -216,7 +218,7 @@ func New(dir string) (*Game, error) {
 	if err != nil {
 		return nil, err
 	}
-	g := &Game{Files: files, Screen: gfx.NewScreen(), menu: menuState{mouseHovers: true}}
+	g := &Game{Files: files, Saves: dirStore{dir}, Screen: gfx.NewScreen(), menu: menuState{mouseHovers: true}}
 	raw, err := files.Read(config.FileName)
 	if err != nil {
 		return nil, errSetup

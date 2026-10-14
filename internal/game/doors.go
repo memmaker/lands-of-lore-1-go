@@ -144,3 +144,22 @@ func (g *Game) startDoor(block, delta int) {
 	}
 	g.enableTimer(timerDoors, true)
 }
+
+// finishDoors moves each moving door to its end at once (C: ovr_2d2c_0025).
+func (g *Game) finishDoors() {
+	for i := range g.doors {
+		d := &g.doors[i]
+		if d.block == 0 {
+			continue
+		}
+		b := &g.lvl.blocks[d.block]
+		for {
+			b.Walls[d.side] = int(uint8(b.Walls[d.side] + d.delta))
+			b.Walls[d.side^2] = int(uint8(b.Walls[d.side^2] + d.delta))
+			if g.lvl.wallFlags[b.Walls[d.side]]&(wallDoorOpen|wallDoorClosed) != 0 {
+				break
+			}
+		}
+		d.block = 0
+	}
+}

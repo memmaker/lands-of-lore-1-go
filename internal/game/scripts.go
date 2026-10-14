@@ -61,6 +61,7 @@ const (
 	opcodeWait                   = 6
 	opcodeTakeHeldItem           = 12
 	opcodeToggleWall             = 52
+	opcodeopChangeLevel          = 60
 	opcodeSpellTooCostly         = 84
 	opcodeLearnSpell             = 120
 	opcodeSaveSparePage          = 138
@@ -241,6 +242,7 @@ func (g *Game) opcodes() []emc.Opcode {
 	ops[opcodeWait] = g.opWait
 	ops[opcodeTakeHeldItem] = g.opTakeHeldItem
 	ops[opcodeToggleWall] = g.opToggleWall
+	ops[opcodeopChangeLevel] = g.opChangeLevel
 	ops[opcodeSpellTooCostly] = g.opSpellTooCostly
 	ops[opcodeLearnSpell] = g.opLearnSpell
 	ops[opcodeSaveSparePage] = g.opSaveSparePage
