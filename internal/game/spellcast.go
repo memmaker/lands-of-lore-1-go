@@ -193,14 +193,14 @@ func (g *Game) spellBookAnimation(ch, sp, slot int) {
 	x0, y0 := line[0]+32, line[1]+5
 	writing := fmt.Sprintf(spellWritingFmt, sp, spellBookLangs[min(g.language, len(spellBookLangs)-1)])
 	g.playSound(95, 0)
-	fly := g.openWSA(spellBookFlyFile, wsaDirect, nil)
+	fly := g.openWSA(spellBookFlyFile, wsaNoBuffer, nil)
 	if fly == nil {
 		g.scriptErr = fmt.Errorf("SpellBook: Unable to load getspell anim")
 		return
 	}
-	g.playWSARange(fly, 0, 25, 5, g.portraitX[ch], spellBookCastY, nil, true)
+	g.playWSARange(fly, 0, 25, 5, g.portraitX[ch], spellBookCastY, nil, nil, true)
 	g.playSound(128, 0)
-	g.playWSARange(fly, 26, 52, 5, g.portraitX[ch], spellBookCastY, nil, true)
+	g.playWSARange(fly, 26, 52, 5, g.portraitX[ch], spellBookCastY, nil, nil, true)
 	x, y := toX, toY
 	for i := spellBookFlySteps; i >= 0; i-- {
 		clock.Set(clock.Countdown, 1)
@@ -213,27 +213,27 @@ func (g *Game) spellBookAnimation(ch, sp, slot int) {
 			host.Yield()
 		}
 	}
-	flash := g.openWSA(spellBookFlashFile, wsaDirect, nil)
+	flash := g.openWSA(spellBookFlashFile, wsaNoBuffer, nil)
 	if flash == nil {
 		g.scriptErr = fmt.Errorf("SpellBook: Unable to load spellexp anim")
 		return
 	}
 	g.playSound(168, 0)
-	g.playWSARange(flash, 0, 8, 3, x0-44, y0-38, nil, true)
-	pen := g.openWSA(spellBookPenFile, wsaDirect, nil)
+	g.playWSARange(flash, 0, 8, 3, x0-44, y0-38, nil, nil, true)
+	pen := g.openWSA(spellBookPenFile, wsaNoBuffer, nil)
 	if pen == nil {
 		g.scriptErr = fmt.Errorf("SpellBook: Unable to load writing anim")
 		return
 	}
-	g.playWSARange(pen, 0, 6, 5, line[0], line[1], nil, false)
-	w := g.openWSA(writing, wsaDirect, nil)
+	g.playWSARange(pen, 0, 6, 5, line[0], line[1], nil, nil, false)
+	w := g.openWSA(writing, wsaNoBuffer, nil)
 	if w == nil {
 		g.scriptErr = fmt.Errorf("SpellBook: Unable to load spellbook anim")
 		return
 	}
 	sw := spellWriting[sp]
 	g.playSound(sw.sound, 0)
-	g.playWSARange(w, sw.first, sw.last, sw.delay, line[0], line[1], nil, false)
+	g.playWSARange(w, sw.first, sw.last, sw.delay, line[0], line[1], nil, nil, false)
 	g.drawScene(pageBuild)
 	g.copyViewFrame()
 }

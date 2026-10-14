@@ -17,9 +17,10 @@ type paletteFade struct {
 
 // playWSARange plays frames start to end (backwards if end is smaller) of an animation
 // over the screen at (x, y), each frame delay ticks, drawn over the screen kept in
-// pageBackup2; with fade the palette moves meanwhile, and with restore the screen is
-// put back after. Without w only the fade runs, until it is done (C: fn_0845_0d5e).
-func (g *Game) playWSARange(w *wsaPlayer, start, end, delay, x, y int, fade *paletteFade, restore bool) {
+// pageBackup2; each frame draw is called first, with fade the palette moves meanwhile,
+// and with restore the screen is put back after. Without w only the fade runs, until
+// it is done (C: fn_0845_0d5e).
+func (g *Game) playWSARange(w *wsaPlayer, start, end, delay, x, y int, draw func(), fade *paletteFade, restore bool) {
 	s := g.Screen
 	var width, height int
 	if w != nil {
@@ -41,9 +42,16 @@ func (g *Game) playWSARange(w *wsaPlayer, start, end, delay, x, y int, fade *pal
 	t0 := clock.Ticks()
 	for done := false; !done; {
 		clock.Set(clock.Countdown, delay)
-		if w != nil {
+		if w != nil || draw != nil {
 			copy(s.Page(pageBuild), g.pageBackup2[:])
+		}
+		if draw != nil {
+			draw()
+		}
+		if w != nil {
 			g.drawWSA(w, frame%w.frames(), x, y, pageBuild, wsaOverScreen, g.lvl.tlcTable, g.lvl.tlcLevels)
+		}
+		if w != nil || draw != nil {
 			s.HideMouseIn(px, py, px+pw, py+ph)
 			s.CopyRect(px, py, px, py, pw, ph, pageBuild, pageScreen)
 			s.ShowMouseIn()
@@ -69,7 +77,7 @@ func (g *Game) playWSARange(w *wsaPlayer, start, end, delay, x, y int, fade *pal
 			}
 		}
 	}
-	if restore && w != nil {
+	if restore && (w != nil || draw != nil) {
 		copy(s.Page(pageBuild), g.pageBackup2[:])
 		s.HideMouseIn(px, py, px+pw, py+ph)
 		s.CopyRect(px, py, px, py, px+pw, py+ph, pageBuild, pageScreen) // sic: the corner's coordinates are added to the size

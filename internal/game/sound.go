@@ -36,3 +36,7 @@ func (g *Game) playSoundAt(sound, block int) {}
 
 // playSoundEffect plays a digital effect through the sound driver (C: fn_17d6_0006).
 func (g *Game) playSoundEffect(n int) {}
+
+// playDelayedSounds plays the effects held back while delaySounds was set; the
+// count is never reset (sic), so earlier ones play again (C: fn_067a_02c7).
+func (g *Game) playDelayedSounds() {}

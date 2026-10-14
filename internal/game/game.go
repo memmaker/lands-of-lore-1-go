@@ -145,6 +145,8 @@ type Game struct {
 	healGlows           [][]byte                     // (C: g_0aba)
 	healTint            []byte                       // (C: f_25fd_0050)
 	spell               spellCast                    // (C: g_4d78)
+	swarmBlink          bool                         // the swarm shows the frozen view this frame (C: g_14ca)
+	delaySounds         bool                         // effect sounds are queued for playDelayedSounds (C: g_2144)
 	sceneBoxOpen        bool                         // (C: struct Scene c46)
 	controlsHidden      bool                         // (C: struct Scene c47)
 	sceneArea           [4]int                       // x, y, w, h (C: struct Scene x, y, w, h)
