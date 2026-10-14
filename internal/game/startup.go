@@ -173,7 +173,7 @@ func (g *Game) runMainMenu() int {
 	for i, id := range choices {
 		items[i] = g.text(id)
 	}
-	textMenus[mainMenu].n = len(choices)
+	g.textMenus[mainMenu].n = len(choices)
 	s.Windows[menuWindow].H = len(choices)*menuLineHeight + menuWindowExtra
 	g.Text.SelectWindow(menuWindow)
 	win := g.textWindow()

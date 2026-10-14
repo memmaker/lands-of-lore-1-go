@@ -92,8 +92,14 @@ var in = state{flags: initialFlags}
 func Init(s *gfx.Screen) {
 	in = state{flags: initialFlags, screen: s}
 	in.lastX, in.lastY = s.Mouse()
-	host.AddTimer(Poll)
+	if !polling {
+		host.AddTimer(Poll)
+		polling = true
+	}
 }
+
+// polling says Poll is a host timer already; a test may start several games.
+var polling bool
 
 // SetNoMouse makes the game run without the mouse (C: g_2f43).
 func SetNoMouse(off bool) { in.noMouse = off }

@@ -17,8 +17,9 @@ type textMenu struct {
 	unused   int
 }
 
-// The menus (C: g_20dc); the main menu's entry count is set when it opens.
-var textMenus = []textMenu{{x: 1, y: 4, w: 12, n: 3, normal: 61, bright: 159}}
+// The menus as the program starts (C: g_20dc); each game works on its own copy, whose
+// main menu's entry count is set when it opens and whose selection it keeps.
+var startTextMenus = []textMenu{{x: 1, y: 4, w: 12, n: 3, normal: 61, bright: 159}}
 
 // The menu helpers' state (C: g_4b4e, g_4b50, g_0f88).
 type menuState struct {
@@ -81,7 +82,7 @@ func (g *Game) menuOrigin(m *textMenu) (x, y int) {
 // drawMenu draws a menu's entries centred in the text window, step pixels apart beyond
 // the font height (C: ovr_2d43_0020).
 func (g *Game) drawMenu(menu int, items []string, mask uint32, shift, step int) {
-	m := &textMenus[menu]
+	m := &g.textMenus[menu]
 	x0, y0 := g.menuOrigin(m)
 	selected := menuEntry(m.selected, mask, shift)
 	g.Screen.HideMouse()
@@ -117,7 +118,7 @@ func inRect(x, y, x1, y1, x2, y2 int) bool { return x >= x1 && x <= x2 && y >= y
 // entry chosen, -1 for none yet (C: ovr_2d43_0025).
 func (g *Game) pollMenu(menu int, items []string, mask uint32, shift int) int {
 	s := g.Screen
-	m := &textMenus[menu]
+	m := &g.textMenus[menu]
 	last := m.n - 1
 	current := m.selected % (last + 1)
 	old := current

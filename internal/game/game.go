@@ -110,6 +110,7 @@ type Game struct {
 	snd           soundState
 	audio         *sound.Player         // the sound card
 	vocNames      [len(vocNames)]string // the effects' sample names, renamed by the levels (C: f_26a4_00f0)
+	textMenus     []textMenu            // (C: g_20dc)
 	samples       map[int]*sound.Sample // the effects' converted samples (C: g_1e8c)
 
 	currentBlock              int                // the party's block (C: g_7fd0)
@@ -235,7 +236,8 @@ func New(dir string) (*Game, error) {
 	if err != nil {
 		return nil, err
 	}
-	g := &Game{Files: files, Saves: dirStore{dir}, Screen: gfx.NewScreen(), menu: menuState{mouseHovers: true}, Hero: defaultHero}
+	g := &Game{Files: files, Saves: dirStore{dir}, Screen: gfx.NewScreen(), menu: menuState{mouseHovers: true}, Hero: defaultHero,
+		textMenus: append([]textMenu(nil), startTextMenus...)}
 	raw, err := files.Read(config.FileName)
 	if err != nil {
 		return nil, errSetup

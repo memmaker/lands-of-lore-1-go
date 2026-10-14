@@ -262,8 +262,8 @@ func (s *Screen) DrawShape(page int, shape []byte, x, y, window, flags int, opt 
 				continue
 			}
 			base := sy*Width + win.Left()
-			col, accX := 0, 0
-			for _, c := range row {
+			first, col, accX := scaledRowStart(row, clippedStart(screenColumn(0), screenColumn(outW-1), flags, win.W*ColumnWidth), scaleX)
+			for _, c := range row[first:] {
 				accX += scaleX
 				n := accX >> 8
 				accX &= 0xff
@@ -277,6 +277,41 @@ func (s *Screen) DrawShape(page int, shape []byte, x, y, window, flags int, opt 
 			}
 		}
 	}
+}
+
+// clippedStart is how many output columns the window cuts off where the shape's rows
+// start: the left side, or the right side when it is drawn flipped (C: [bp-3ch], swapped
+// with [bp-3eh] for ShapeFlipX).
+func clippedStart(first, last, flags, width int) int {
+	if flags&ShapeFlipX != 0 {
+		return max(0, first-(width-1))
+	}
+	return max(0, -first)
+}
+
+// scaledRowStart is where a row's drawing starts when skip output columns are clipped:
+// the source pixel, its output column and the scaling accumulator. The original skips
+// skip*256/scale source pixels and starts the accumulator at minus the remainder, not
+// where accumulating from the edge would be; a transparent run across the cut starts
+// at its end's exact position instead (C: fn_1fd6_000a at 0392, fn_2019_0008).
+func scaledRowStart(row []byte, skip, scale int) (src, col, acc int) {
+	if skip == 0 {
+		return 0, 0, 0
+	}
+	src = skip << 8 / scale
+	rem := skip<<8 - src*scale
+	if src >= len(row) {
+		return len(row), skip, 0
+	}
+	if src > 0 && row[src-1] == 0 && row[src] == 0 {
+		end := src
+		for end < len(row) && row[end] == 0 {
+			end++
+		}
+		pos := end * scale
+		return end, pos >> 8, pos & 0xff
+	}
+	return src, skip, -rem
 }
 
 // decodeShapeRow unpacks the row starting at src[in] into row (0 = transparent) and

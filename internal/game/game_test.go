@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"image/png"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/memmaker/lands-of-lore-1-go/internal/host"
@@ -40,6 +41,8 @@ func savePNG(t *testing.T, f *host.Frame, name string) {
 	}
 	defer out.Close()
 	png.Encode(out, img)
+	// the palette indices too, to compare with the original's video memory
+	os.WriteFile(dir+"/"+strings.TrimSuffix(name, ".png")+".raw", f.Pixels[:320*200], 0o644)
 }
 
 const (
@@ -129,6 +132,9 @@ func TestNewGame(t *testing.T) {
 		}
 	}
 	t.Logf("party: %q, items %v; ended with %v", g.party[0].Name, g.party[0].Items, runErr)
+	if g.party[0].MaxHP == 0 {
+		t.Fatalf("no game started (ended with %v)", runErr)
+	}
 	savePNG(t, host.ShowFrame(), "game.png")
 	// Walk: the arrow keys turn and step.
 	for _, k := range []struct {
