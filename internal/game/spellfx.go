@@ -49,9 +49,9 @@ const (
 	fogKind       = 6
 )
 
-// wakeSpell plays the fog over the view and has it hit the monsters right ahead
+// fogSpell plays the fog over the view and has it hit the monsters right ahead
 // (C: ovr_2d07_0025).
-func (g *Game) wakeSpell() {
+func (g *Game) fogSpell() {
 	s := g.Screen
 	old := s.SetPage(pageBuild)
 	s.HideMouse()
@@ -169,10 +169,10 @@ const (
 	levelGuardianAgain = 24 // its scene drawing needs the animation loaded again
 )
 
-// blockSpell (C: ovr_2d12_002a); it says whether a monster was there. The original
+// guardianSpell (C: ovr_2d12_002a); it says whether a monster was there. The original
 // also looked for the first monster or wall in three blocks ahead (fn_0845_0c7e)
 // and never used it.
-func (g *Game) blockSpell(caster int) bool {
+func (g *Game) guardianSpell(caster int) bool {
 	s := g.Screen
 	old := s.SetPage(pageBuild)
 	s.HideMouse()
@@ -375,8 +375,8 @@ const (
 	swarmPoseMode   = 8       // the pose the monsters are drawn in
 )
 
-// freezeSpell (C: ovr_2d99_002a).
-func (g *Game) freezeSpell(might, caster int) {
+// swarmSpell (C: ovr_2d99_002a).
+func (g *Game) swarmSpell(might, caster int) {
 	s := g.Screen
 	old := s.SetPage(pageBuild)
 	s.HideMouse()
@@ -433,4 +433,163 @@ func (g *Game) freezeSpell(might, caster int) {
 	g.copyViewFrame()
 	s.ShowMouse()
 	g.playDelayedSounds()
+}
+
+// Hand of Fate: a hand pushes the monsters ahead a block back, or from level 2
+// crushes them (C: o2d15).
+const (
+	handFile         = "hand.wsa"
+	handOpenSound    = 173
+	handActSound     = 151
+	handCloseSound   = 18
+	handOpenEnd      = 10
+	handTicks        = 3
+	handPushLevels   = 2 // levels below this push
+	handPushSteps    = 8 // steps of a monster's position in a block
+	handKind         = 1 << 7
+	eventMonsterPush = 1 << 11
+	levelHandRedraw  = 29 // the view is put back from the screen kept before
+)
+
+// handParts are each level's frames of the hand at work (C: g_0a54).
+var handParts = [...][2]int{{17, 26}, {11, 16}, {27, 35}, {27, 35}}
+
+// handMight is each crushing level's might (C: g_0a62).
+var handMight = [...]int{35, 0, 75, 125, 175}
+
+// handOfFateSpell (C: ovr_2d15_002a).
+func (g *Game) handOfFateSpell(level int) {
+	s := g.Screen
+	old := s.SetPage(pageBuild)
+	s.HideMouse()
+	copy(g.pageBackup2[:], s.Page(pageScreen))
+	s.ShowMouse()
+	w := g.openWSA(handFile, wsaNoBuffer, nil)
+	if w == nil {
+		g.scriptErr = errors.New("Hand: Unable to load HAND.WSA")
+		return
+	}
+	g.playSound(handOpenSound, 0)
+	g.playWSARange(w, 0, handOpenEnd, handTicks, spellViewX, 0, nil, nil, false)
+	g.playSound(handActSound, 0)
+	g.playWSARange(w, handParts[level][0], handParts[level][1], handTicks, spellViewX, 0, nil, nil, false)
+	g.playSound(handCloseSound, 0)
+	g.playWSARange(w, handOpenEnd, 0, handTicks, spellViewX, 0, nil, nil, false)
+	s.SetPage(old)
+	copy(s.Page(pageBuild), g.pageBackup2[:])
+	g.drawScene(pageBuild)
+	ahead := g.blockInDirection(g.currentBlock, g.direction)
+	if level < handPushLevels {
+		behind := g.blockInDirection(ahead, g.direction)
+		if !g.wallsBlock(behind, 0, wallStopsMonsters) && g.lvl.blocks[behind].Objects&monsterFlag == 0 {
+			g.noteBlockChanged(ahead)
+			for o := g.lvl.blocks[ahead].Objects; o&monsterFlag != 0; {
+				m := &g.monsters[o&monsterIndex]
+				next := *g.objectNext(o)
+				x, y := m.X, m.Y
+				for range handPushSteps {
+					x, y = nextStep(x, y, g.direction*2)
+				}
+				g.moveMonster(m, x, y)
+				g.runBlockScriptWith(behind, eventMonsterPush, -1, o, 0, 0)
+				o = next
+			}
+		}
+	} else {
+		g.noteBlockChanged(ahead)
+		for o := g.lvl.blocks[ahead].Objects; o&monsterFlag != 0; {
+			next := *g.objectNext(o)
+			g.damageMonster(o, noTarget, handMight[level], handKind, true)
+			o = next
+		}
+	}
+	if g.level == levelHandRedraw {
+		copy(s.Page(pageBuild), g.pageBackup2[:])
+	}
+	s.HideMouse()
+	s.CopyPage(pageBuild, pageScreen)
+	s.ShowMouse()
+	g.drawScene(pageBuild)
+	g.copyViewFrame()
+}
+
+// Lightning: bolts strike over the view while the screen flashes and shakes, then
+// the monsters ahead are hit (C: o2d28).
+const (
+	lightningFile       = "litning%d.wsa"
+	lightningStrikes    = 4
+	lightningTicks      = 3
+	lightningX          = 93
+	lightningKind       = 5
+	lightningShakeEvery = 2 // with this period the view shakes and the sound plays once
+	lightningBright     = 120
+	lightningScale      = 64
+	lightningFirstLit   = 2   // colours 0 and 1 stay
+	lightningLitColours = 128 // the level's colours
+	lightningMaxLevel   = 63  // the brightest a VGA colour gets
+	lightningShakeTicks = 1
+	lightningShakeX     = 2
+	lightningShakeY     = 3
+)
+
+// lightningParts are each level's last frame, flash period and sound (C: g_0c70).
+var lightningParts = [...]struct{ end, period, sound int }{
+	{6, 5, 171}, {6, 4, 171}, {8, 4, 170}, {6, 3, 170}, {6, 2, 169},
+}
+
+// lightningMight is each level's might (C: g_0c8a).
+var lightningMight = [...]int{18, 35, 50, 72}
+
+// lightningSpell (C: ovr_2d28_002a).
+func (g *Game) lightningSpell(level, caster int) {
+	s := g.Screen
+	s.HideMouse()
+	s.CopyPage(pageScreen, pageBuild)
+	g.drawScene(pageBuild)
+	old := s.SetPage(pageBuild)
+	copy(g.pageBackup2[:], s.Page(pageBuild))
+	p := lightningParts[level]
+	played := false
+	w := g.openWSA(fmt.Sprintf(lightningFile, level+1), wsaNoBuffer, nil)
+	if w == nil {
+		g.scriptErr = errors.New("Litning: Unable to load litning.wsa")
+		return
+	}
+	// flash lights the screen every period frames, shakes the view and plays the
+	// thunder (C: ovr_2d28_002f).
+	flash := func() {
+		if p.period == lightningShakeEvery {
+			g.shakeScreen(lightningShakeTicks, lightningShakeX, lightningShakeY, 0)
+		}
+		if g.lightningFlashes%p.period == 0 {
+			pal := g.darkPalette
+			for i := lightningFirstLit * 3; i < lightningLitColours*3; i++ {
+				pal[i] = byte(min(int(int8(pal[i]))*lightningBright/lightningScale, lightningMaxLevel))
+			}
+			s.SetPalette(pal[:])
+		} else {
+			s.SetPalette(g.darkPalette[:])
+		}
+		if p.period == lightningShakeEvery {
+			if !played {
+				g.playSound(p.sound, 0)
+				played = true
+			}
+		} else if g.lightningFlashes&7 == 0 {
+			g.playSound(p.sound, 0)
+		}
+		g.lightningFlashes++
+	}
+	for range lightningStrikes {
+		g.playWSARange(w, 0, p.end, lightningTicks, lightningX, 0, flash, nil, false)
+	}
+	s.SetPalette(g.darkPalette[:])
+	s.SetPage(old)
+	copy(s.Page(pageBuild), g.pageBackup2[:])
+	copy(s.Page(pageScreen), g.pageBackup2[:])
+	g.copyViewFrame()
+	g.damageBlockMonsters(g.blockInDirection(g.currentBlock, g.direction), caster, lightningMight[level], lightningKind)
+	g.sceneUpdateRequired = true
+	g.drawScene(pageScreen)
+	s.ShowMouse()
 }

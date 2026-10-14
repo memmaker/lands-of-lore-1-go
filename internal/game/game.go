@@ -147,6 +147,7 @@ type Game struct {
 	spell               spellCast                    // (C: g_4d78)
 	swarmBlink          bool                         // the swarm shows the frozen view this frame (C: g_14ca)
 	delaySounds         bool                         // effect sounds are queued for playDelayedSounds (C: g_2144)
+	lightningFlashes    int                          // the lightning callback count, kept from cast to cast (C: g_0c92)
 	sceneBoxOpen        bool                         // (C: struct Scene c46)
 	controlsHidden      bool                         // (C: struct Scene c47)
 	sceneArea           [4]int                       // x, y, w, h (C: struct Scene x, y, w, h)
