@@ -29,3 +29,9 @@ func (g *Game) launchObject(kind, item, x, y, power, dir, a, owner, flags int) b
 func (g *Game) freezeParty()                     { notPorted("ovr_2da0_002a (freeze the party)") }
 func (g *Game) playSoundEffect(n int)            { notPorted("fn_17d6_0006 (sound effect)") }
 func (g *Game) moveFlyingObject(f *flyingObject) { notPorted("fn_0b6b_0472 (move a flying object)") }
+func (g *Game) shatterWall()                     { notPorted("ovr_2d1b_0052 (shatter a crystal wall)") }
+func (g *Game) showAutomap()                     { notPorted("ovr_2ce1_0020 (automap)") }
+func (g *Game) castSpell(ch, sp, level int) bool {
+	notPorted("ovr_2d8a_0039 (cast a spell)")
+	return false
+}

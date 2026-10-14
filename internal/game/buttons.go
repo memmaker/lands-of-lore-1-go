@@ -310,38 +310,8 @@ func (g *Game) buildSpellTargetButtons() {
 
 // Button callbacks not ported yet.
 
-func (g *Game) clickAttack(*gui.Button) bool {
-	notPorted("fn_0ca0_0012 (button)")
-	return false
-}
-
-func (g *Game) clickMagic(*gui.Button) bool {
-	notPorted("fn_0ca0_0662 (button)")
-	return false
-}
-
-func (g *Game) clickMagicSubmenu(*gui.Button) bool {
-	notPorted("fn_0ca0_06cb (button)")
-	return false
-}
-
-func (g *Game) clickScreen(*gui.Button) bool {
-	notPorted("fn_0ca0_079a (button)")
-	return false
-}
-
 func (g *Game) clickPortraitLeft(*gui.Button) bool {
 	notPorted("ovr_2d22_0039 (button)")
-	return false
-}
-
-func (g *Game) clickLiveMagicBarsLeft(*gui.Button) bool {
-	notPorted("fn_0ca0_030a (button)")
-	return false
-}
-
-func (g *Game) clickPortraitRight(*gui.Button) bool {
-	notPorted("fn_0ca0_04dc (button)")
 	return false
 }
 
@@ -352,16 +322,6 @@ func (g *Game) clickCharacterInventorySlot(*gui.Button) bool {
 
 func (g *Game) clickExitCharacterInventory(*gui.Button) bool {
 	notPorted("ovr_2d22_0034 (button)")
-	return false
-}
-
-func (g *Game) clickSceneDropItem(*gui.Button) bool {
-	notPorted("fn_0ca0_08af (button)")
-	return false
-}
-
-func (g *Game) clickScenePickUpItem(*gui.Button) bool {
-	notPorted("fn_0ca0_07e9 (button)")
 	return false
 }
 
@@ -385,11 +345,6 @@ func (g *Game) clickDialogueArea(*gui.Button) bool {
 	return false
 }
 
-func (g *Game) clickSpellListEntry(*gui.Button) bool {
-	notPorted("fn_0ca0_0630 (button)")
-	return false
-}
-
 func (g *Game) clickSpellTargetCharacter(*gui.Button) bool {
 	notPorted("ovr_2d8a_0034 (button)")
 	return false
@@ -400,11 +355,6 @@ func (g *Game) clickSpellTargetScene(*gui.Button) bool {
 	return false
 }
 
-func (g *Game) clickSceneThrow(*gui.Button) bool {
-	notPorted("fn_0ca0_01cf (button)")
-	return false
-}
-
 func (g *Game) clickOptions(*gui.Button) bool {
 	notPorted("ovr_2d56_0020 (button)")
 	return false
@@ -412,26 +362,6 @@ func (g *Game) clickOptions(*gui.Button) bool {
 
 func (g *Game) clickRestParty(*gui.Button) bool {
 	notPorted("ovr_2d7a_0020 (button)")
-	return false
-}
-
-func (g *Game) clickMoneyBox(*gui.Button) bool {
-	notPorted("fn_0ca0_0281 (button)")
-	return false
-}
-
-func (g *Game) clickCompass(*gui.Button) bool {
-	notPorted("fn_0ca0_02b2 (button)")
-	return false
-}
-
-func (g *Game) clickAutomap(*gui.Button) bool {
-	notPorted("fn_0ca0_039a (button)")
-	return false
-}
-
-func (g *Game) clickLamp(*gui.Button) bool {
-	notPorted("fn_0ca0_03cf (button)")
 	return false
 }
 
