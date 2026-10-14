@@ -38,7 +38,4 @@ func (g *Game) lightningSpell(caster, level int) { notPorted("ovr_2d03_002a (lig
 func (g *Game) fireballSpell(level int)          { notPorted("ovr_2d15_002a (fireball spell)") }
 func (g *Game) mistSpell(caster, level int)      { notPorted("ovr_2d4d_002a (mist spell)") }
 func (g *Game) quakeSpell(level, caster int)     { notPorted("ovr_2d28_002a (quake spell)") }
-func (g *Game) wakeSpell()                       { notPorted("ovr_2d07_0025 (wake spell)") }
 func (g *Game) freezeSpell(n, caster int)        { notPorted("ovr_2d99_002a (freeze spell)") }
-func (g *Game) revealSpell(caster int)           { notPorted("ovr_2d9d_0020 (reveal spell)") }
-func (g *Game) blockSpell(caster, level int)     { notPorted("ovr_2d12_002a (block spell)") }

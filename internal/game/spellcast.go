@@ -36,8 +36,8 @@ var (
 		6:  func(g *Game) bool { g.quakeSpell(g.spell.level, g.spell.caster); return true },     // (C: ovr_2d8a_0061)
 		8:  func(g *Game) bool { g.wakeSpell(); return true },                                   // (C: ovr_2d8a_005c)
 		9:  func(g *Game) bool { g.freezeSpell(10, g.spell.caster); return true },               // (C: ovr_2d8a_0066)
-		12: func(g *Game) bool { g.revealSpell(g.spell.caster); return true },                   // (C: ovr_2d8a_006b)
-		16: func(g *Game) bool { g.blockSpell(g.spell.caster, g.spell.level); return true },     // (C: ovr_2d8a_0075)
+		12: func(g *Game) bool { return g.revealSpell() },                                       // (C: ovr_2d8a_006b)
+		16: func(g *Game) bool { return g.blockSpell(g.spell.caster) },                          // (C: ovr_2d8a_0075)
 	}
 	spellTargetHandlers = map[int]func(g *Game) bool{
 		1: func(g *Game) bool { g.healAnimation(g.spell.target, g.spell.level); return true }, // (C: ovr_2d8a_0070)
