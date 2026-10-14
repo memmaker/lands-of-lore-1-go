@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/memmaker/lands-of-lore-1-go/internal/clock"
+	"github.com/memmaker/lands-of-lore-1-go/internal/gfx"
 	"github.com/memmaker/lands-of-lore-1-go/internal/host"
 	"github.com/memmaker/lands-of-lore-1-go/internal/random"
 )
@@ -344,7 +345,6 @@ func (g *Game) sparkSpell(level, caster int) {
 // firstStopAhead walks up to n blocks ahead of the party and gives how many it
 // passed and the block with a monster or before a wall, or -1 (C: fn_0845_0c7e).
 func (g *Game) firstStopAhead(n int) (steps, stop int) {
-	const wallStops = 1<<3 - 1
 	cur, dir := g.currentBlock, g.direction
 	next := g.blockInDirection(cur, dir)
 	stop = -1
@@ -352,7 +352,7 @@ func (g *Game) firstStopAhead(n int) (steps, stop int) {
 		if g.lvl.blocks[cur].Objects&monsterFlag != 0 {
 			return steps, cur
 		}
-		if g.lvl.wallFlags[g.lvl.blocks[next].Walls[dir^2]]&wallStops != 0 {
+		if g.lvl.wallFlags[g.lvl.blocks[next].Walls[dir^2]]&wallBlocksAll != 0 {
 			return steps, next
 		}
 		cur, next = next, g.blockInDirection(next, dir)
@@ -438,17 +438,16 @@ func (g *Game) swarmSpell(might, caster int) {
 // Hand of Fate: a hand pushes the monsters ahead a block back, or from level 2
 // crushes them (C: o2d15).
 const (
-	handFile         = "hand.wsa"
-	handOpenSound    = 173
-	handActSound     = 151
-	handCloseSound   = 18
-	handOpenEnd      = 10
-	handTicks        = 3
-	handPushLevels   = 2 // levels below this push
-	handPushSteps    = 8 // steps of a monster's position in a block
-	handKind         = 1 << 7
-	eventMonsterPush = 1 << 11
-	levelHandRedraw  = 29 // the view is put back from the screen kept before
+	handFile        = "hand.wsa"
+	handOpenSound   = 173
+	handActSound    = 151
+	handCloseSound  = 18
+	handOpenEnd     = 10
+	handTicks       = 3
+	handPushLevels  = 2 // levels below this push
+	handPushSteps   = 8 // steps of a monster's position in a block
+	handKind        = 1 << 7
+	levelHandRedraw = 29 // the view is put back from the screen kept before
 )
 
 // handParts are each level's frames of the hand at work (C: g_0a54).
@@ -491,7 +490,7 @@ func (g *Game) handOfFateSpell(level int) {
 					x, y = nextStep(x, y, g.direction*2)
 				}
 				g.moveMonster(m, x, y)
-				g.runBlockScriptWith(behind, eventMonsterPush, -1, o, 0, 0)
+				g.runBlockScriptWith(behind, eventMonsterEnters, -1, o, 0, 0)
 				o = next
 			}
 		}
@@ -592,4 +591,193 @@ func (g *Game) lightningSpell(level, caster int) {
 	g.sceneUpdateRequired = true
 	g.drawScene(pageScreen)
 	s.ShowMouse()
+}
+
+// Fireball: up to three balls fly from the party to the first monster or wall within
+// three blocks; the first bursts there (C: o2d03).
+const (
+	fireballFile       = "fireball.shp"
+	fireballShapes     = 8
+	fireballSound      = 69
+	fireballItemType   = 9 // the item the flight is announced with to the block scripts
+	fireballReach      = 3
+	fireballKind       = 4
+	fireballMaxBalls   = 3
+	fireballMaxPower   = 3
+	fireballSizeStep   = 16 // each block of power shrinks the balls by this
+	fireballStartX     = 200
+	fireballStartY     = 60
+	fireballStartPos   = 1000
+	fireballLenStep    = 50
+	fireballLenWrap    = 255
+	fireballStartLen   = 200
+	fireballStartSpeed = 10
+	fireballSpeedUp    = 2
+	fireballTopSpeed   = 40
+	fireballBurstLen   = 6
+	fireballFlying     = 2
+	fireballBursting   = 1
+	fireballGrowth     = 8 // the balls grow a pixel each this far nearer
+	pageFireball       = 4 // the other page the frames alternate with
+	eventFlyingItem    = 1 << 9
+	eventSpellHit      = 1 << 5
+	spellHitFireball   = 3
+)
+
+// fireballMight is each level's might; fireballBurstSounds the burst's sound by power
+// (C: g_08c6, g_08be).
+var (
+	fireballMight       = [...]int{20, 40, 80, 100}
+	fireballBurstSounds = [...]int{98, 167, 167, 168}
+	// The burst's frames: the shape drawn through the blending tables, then the one
+	// over it, -1 for none (C: g_08b4, g_08ae).
+	fireballBurstGlow = [fireballBurstLen]int{5, 6, 7, 7, 6, 5}
+	fireballBurstCore = [fireballBurstLen]int{-1, 1, 2, 3, 4, -1}
+)
+
+// fireball is one ball in flight (C: struct Bolt).
+type fireball struct {
+	on                    bool
+	x, y, len, pos, speed int
+	state, frame          int
+}
+
+// fireballSpell (C: ovr_2d03_002a).
+func (g *Game) fireballSpell(caster, level int) {
+	balls, power := 0, 1
+	switch level {
+	case 0:
+		balls = 4
+	case 1:
+		balls = 5
+	case 2:
+		balls = 6
+	case 3:
+		balls, power = 5, 0
+	}
+	b := g.currentBlock
+	item := g.newItem(fireballItemType, 0, 0)
+	i := 0
+	for ; i < fireballReach; i++ {
+		g.runBlockScriptWith(b, eventFlyingItem, -1, item, 0, 0)
+		o := g.lvl.blocks[b].Objects
+		if o&monsterFlag != 0 || g.lvl.wallFlags[g.lvl.blocks[b].Walls[g.direction^2]]&wallBlocksAll != 0 {
+			for o&monsterFlag != 0 {
+				m := &g.monsters[o&monsterIndex]
+				o = m.Next
+				g.delaySounds = true
+				g.damageMonster(m.ID|monsterFlag, caster, fireballMight[level], fireballKind, true)
+				g.delaySounds = false
+			}
+			break
+		}
+		b = g.blockInDirection(b, g.direction)
+	}
+	g.freeItem(item)
+	power = min(power+i, fireballMaxPower)
+	shrink := -(power * fireballSizeStep)
+	shapes, err := g.loadShapesUpTo(fireballFile, fireballShapes)
+	if err != nil {
+		g.scriptErr = errors.New("Process_Fireball_FX: Can't load fireball FX")
+		return
+	}
+	g.playSound(fireballSound, 0)
+	s := g.Screen
+	front, back := pageBuild, pageFireball
+	old := s.SetPage(front)
+	s.HideMouse()
+	copy(g.pageBackup2[:], s.Page(pageScreen))
+	s.ShowMouse()
+	flying := max(balls-fireballMaxBalls, 1)
+	var fb [fireballMaxBalls]fireball
+	for i := range flying {
+		fb[i] = fireball{on: true, x: fireballStartX, y: fireballStartY, len: i*fireballLenStep%fireballLenWrap + fireballStartLen,
+			pos: fireballStartPos, speed: fireballStartSpeed, state: fireballFlying}
+	}
+	copy(s.Page(front), g.pageBackup2[:])
+	for flying != 0 {
+		s.SetPage(front)
+		t := clock.Ticks()
+		for i := 0; i < balls && i < fireballMaxBalls; i++ {
+			f := &fb[i]
+			if !f.on {
+				continue
+			}
+			g.drawFireball(shapes, f, shrink)
+			if f.state != fireballBursting {
+				f.speed = min(f.speed+fireballSpeedUp, fireballTopSpeed)
+				if f.pos < f.speed {
+					if i >= 1 {
+						f.on = false
+						flying--
+					} else {
+						f.pos, f.speed, f.state, f.frame = 0, 0, fireballBursting, 0
+					}
+					g.playSound(fireballBurstSounds[power], 0)
+				} else {
+					f.pos -= f.speed
+				}
+			} else if f.frame++; f.frame >= fireballBurstLen {
+				f.on = false
+				flying--
+			}
+		}
+		for clock.Ticks()-t < 1 {
+			host.Yield()
+		}
+		s.HideMouse()
+		copyChanged(s.Page(front), s.Page(back), s.Page(pageScreen))
+		front, back = back, front
+		copy(s.Page(front), g.pageBackup2[:])
+		s.ShowMouse()
+	}
+	s.HideMouse()
+	copy(s.Page(pageScreen), g.pageBackup2[:])
+	s.ShowMouse()
+	s.SetPage(old)
+	g.copyViewFrame()
+	g.playDelayedSounds()
+	g.runBlockScriptWith(b, eventSpellHit, caster, spellHitFireball, 0, 0)
+}
+
+// drawFireball draws a ball, growing as it nears, or its burst (C: ovr_2d03_002f).
+func (g *Game) drawFireball(shapes [][]byte, f *fireball, shrink int) {
+	draw := func(n int, blend bool) {
+		shp := shapeAt(shapes, n)
+		sw, sh := gfx.ShapeWidth(shp), gfx.ShapeHeight(shp)
+		w := f.pos/fireballGrowth + sw + shrink
+		h := sh + shrink + f.pos/fireballGrowth
+		x := f.x + f.pos*sine(f.len)>>16 - w/2
+		y := f.y + f.pos*cosine(f.len)>>16 - h/2
+		opt := gfx.ShapeOptions{ScaleX: w << 8 / sw, ScaleY: h << 8 / sh}
+		flags := gfx.ShapeScaled
+		if blend {
+			flags |= gfx.ShapeLevels
+			opt.Levels, opt.LevelTables = g.lvl.tlcTable, g.lvl.tlcLevels
+		}
+		g.Screen.DrawShape(g.Screen.Current, shp, x, y, 0, flags, opt)
+	}
+	if f.state != fireballBursting {
+		draw(0, true)
+		return
+	}
+	if f.frame < fireballBurstLen {
+		if n := fireballBurstGlow[f.frame]; n != -1 {
+			draw(n, true)
+		}
+		if n := fireballBurstCore[f.frame]; n != -1 {
+			draw(n, false)
+		}
+	}
+}
+
+// copyChanged copies to dst the 4-byte groups of src that differ from old
+// (C: fn_19c9_0c8e).
+func copyChanged(src, old, dst []byte) {
+	const group = 4
+	for i := 0; i+group <= gfx.Width*gfx.Height; i += group {
+		if [group]byte(src[i:i+group]) != [group]byte(old[i:i+group]) {
+			copy(dst[i:i+group], src[i:i+group])
+		}
+	}
 }

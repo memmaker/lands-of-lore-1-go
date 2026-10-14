@@ -32,5 +32,4 @@ func (g *Game) shatterWall()                     { notPorted("ovr_2d1b_0052 (sha
 func (g *Game) showAutomap()                     { notPorted("ovr_2ce1_0020 (automap)") }
 
 // The spells' effects, overlay by overlay (CHECKLIST: Monsters, combat, magic).
-func (g *Game) iceSpell(caster, level int)      { notPorted("ovr_2d1b_0039 (spell)") }
-func (g *Game) fireballSpell(caster, level int) { notPorted("ovr_2d03_002a (spell)") }
+func (g *Game) iceSpell(caster, level int) { notPorted("ovr_2d1b_0039 (spell)") }
