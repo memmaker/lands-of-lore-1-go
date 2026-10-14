@@ -1,5 +1,5 @@
 // Package sound is Lands of Lore's sound: the AdLib card played by ALFX.DRV on an OPL2
-// emulator, for the music and the effects, and the digital channels of the Sound
+// emulator (github.com/memmaker/opl2), for the music and the effects, and the digital channels of the Sound
 // Blaster for the sampled effects and speech, mixed into one Ebiten audio stream.
 //
 // The driver runs on its own 72 Hz clock in the audio stream, as the timer interrupt
@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2/audio"
+	"github.com/memmaker/opl2"
 )
 
 const (
@@ -39,7 +40,8 @@ const (
 // Player is the sound card. The zero value is not usable; use New.
 type Player struct {
 	mu      sync.Mutex
-	chip    *opl2
+	chip    *opl2.Chip
+	out     *opl2.Resampler // the chip at the output rate
 	drv     *alfx
 	running bool // the audio stream is playing and ticking the driver
 
@@ -51,7 +53,7 @@ type Player struct {
 	saved                     int  // the program whose bytes were scaled (C: g_2a9a)
 	savedPriority, savedLevel byte // their old values (C: g_abd6, g_abd4)
 
-	tickDue, chipDue float64
+	tickDue float64
 
 	// the MIDI driver, when a slot plays on the MT-32 (C: g_28fa.h, g_28b8 != -1)
 	midi       *midi
@@ -75,7 +77,8 @@ const (
 // New makes the card with the driver initialised (C: ovr_2db6_0025 with mode 72:
 // driver function 2).
 func New() *Player {
-	p := &Player{chip: newOPL2(), saved: noSaved}
+	p := &Player{chip: opl2.New(), saved: noSaved}
+	p.out = opl2.NewResampler(p.chip, outputRate)
 	p.drv = newALFX(p.chip)
 	p.drv.init()
 	return p
@@ -370,11 +373,7 @@ func (p *Player) render(out []float32) {
 			p.tickDue += samplesPerTick
 		}
 		p.tickDue--
-		p.chipDue += float64(oplRate) / outputRate
-		v := 0
-		for ; p.chipDue >= 1; p.chipDue-- {
-			v = p.chip.sample()
-		}
+		v := p.out.Next()
 		out[i] += float32(v) * chipGain
 		out[i+1] += float32(v) * chipGain
 	}

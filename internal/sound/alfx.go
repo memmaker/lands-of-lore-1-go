@@ -186,7 +186,7 @@ type alfx struct {
 	beatLength, beatLeft, beatCounter, beatCount, beatSeen byte // C: 0x399..0x39d
 }
 
-type opl interface{ write(reg int, val byte) }
+type opl interface{ Write(reg int, val byte) }
 
 func newALFX(chip opl) *alfx {
 	d := &alfx{chip: chip, musicVolume: fastest, effectVolume: fastest, tempo: 1,
@@ -195,7 +195,7 @@ func newALFX(chip opl) *alfx {
 	return d
 }
 
-func (d *alfx) write(reg int, val byte) { d.chip.write(reg&fastest, val) }
+func (d *alfx) write(reg int, val byte) { d.chip.Write(reg&fastest, val) }
 
 // byteAt reads the sound data; past its end reads 0 (fix: the driver read on).
 func (d *alfx) byteAt(i int) byte {
