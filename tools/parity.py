@@ -48,10 +48,22 @@ for n in os.listdir(src):
 exe = os.path.expanduser('~/Projects/lands-of-lore-1-re/decomp/orig/MAIN.EXE')
 subprocess.run(['cp', exe, game + '/MAIN.EXE'], check=True)
 ARGS = os.environ.get('LOLARGS', '3')  # PLAIN shows the menu; a number starts that hero's new game
+# LANDS CHARGEN, LANDS INTRO, LANDS HISTORY run the language folder's LANDS.EXE instead and dump
+# the screen every LOLEVERY seconds (default 2) for LOLFOR seconds (default 30)
+LANDS = ARGS.upper().startswith('LANDS')
+run = 'main.exe %s' % ARGS
+if LANDS:
+    eng = os.path.join(game, 'ENG')
+    os.remove(eng)
+    os.mkdir(eng)
+    for n in os.listdir(os.path.join(src, 'ENG')):
+        os.symlink(os.path.join(src, 'ENG', n), os.path.join(eng, n))
+    subprocess.run(['cp', os.path.expanduser('~/Projects/lands-of-lore-1-re/decomp/lands/LANDS.EXE'), eng], check=True)
+    run = 'cd ENG\n' + ARGS.lower().replace('lands', 'lands.exe c:\\\\', 1)  # argv[1] is the game's folder
 conf = os.path.join(game, 'parity.conf')
 open(conf, 'w').write('[sdl]\noutput=surface\nautolock=false\n[dosbox]\nmachine=svga_s3\nmemsize=16\nqmpserver=true\n'
                       '[cpu]\ncore=normal\ncycles=fixed 30000\n[sblaster]\nsbtype=sb16\n'
-                      '[autoexec]\nmount c "%s"\nc:\nmain.exe %s\n' % (game, ARGS))
+                      '[autoexec]\nmount c "%s"\nc:\n%s\n' % (game, run))
 p = subprocess.Popen([os.path.expanduser('~/tools/dosbox-x-remotedebug/src/dosbox-x'), '-conf', conf],
                      env=dict(os.environ, DOSBOX_NO_HOST_INPUT='1'), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 try:
@@ -62,6 +74,15 @@ try:
             time.sleep(0.2)
     else:
         sys.exit('no QMP connection to DOSBox-X')
+    if LANDS:
+        every = float(os.environ.get('LOLEVERY', '2'))
+        for i in range(int(float(os.environ.get('LOLFOR', '30')) / every)):
+            time.sleep(every)
+            q.screen('l%03d' % i)
+        f = os.path.join(out, 'text.bin')
+        q.cmd('memdump', {'address': 0xb8000, 'size': 4000, 'file': f}); time.sleep(0.5)
+        print(open(f, 'rb').read()[::2].decode('latin1'))
+        sys.exit(0)
     time.sleep(12)
     if ARGS.upper() == 'PLAIN':
         q.screen('menu')
