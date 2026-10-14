@@ -93,15 +93,22 @@ func (g *Game) processAV(a *avScript) {
 				run = false
 				continue
 			case avStopLine:
-				g.Screen.CopyChangedView(landsWorkPage, landsShadowPage)
+				g.showWork()
 				goto nextLine
 			case avLoopDone:
 				l.loop = 0
 			}
 			g.setNextEvent(a, l)
-			g.Screen.CopyChangedView(landsWorkPage, landsShadowPage)
+			g.showWork()
 		}
 	nextLine:
+	}
+}
+
+// showWork shows the work page; FINALE.EXE draws on the screen itself.
+func (g *Game) showWork() {
+	if !g.lands.finale {
+		g.Screen.CopyChangedView(landsWorkPage, landsShadowPage)
 	}
 }
 
@@ -171,6 +178,10 @@ func (g *Game) avOp(a *avScript, line, op, p int) int {
 		}
 		return avStopLine
 	case avAnimOpen:
+		if l.finale {
+			g.finaleOpenAnimation(arg(0), a.str(arg(1)), arg(2), arg(3), animDelay, arg(4), arg(5))
+			break
+		}
 		g.landsOpenAnimation(arg(0), a.str(arg(1)), arg(2), arg(3), animDelay, arg(4), arg(5))
 	case avAnimClose:
 		n := arg(0)
@@ -189,13 +200,24 @@ func (g *Game) avOp(a *avScript, line, op, p int) int {
 	case avFrame:
 		an := &l.anims[arg(0)]
 		page := landsWorkPage
+		if l.finale {
+			page = pageScreen // C: FINALE.EXE _Display_Frame
+		}
 		if an.flags&avPageFlag != 0 {
 			page = landsPicPage
 		}
 		g.drawWSA(an.wsa, arg(1), an.x, an.y, page, an.flags&animDrawFlagsMask, nil, nil)
 	case avText:
+		if l.finale {
+			g.finalePrint(arg(0), arg(1), finaleTextColour)
+			break
+		}
 		g.introPrint(g.introText(arg(0)), arg(1))
 	case avSmpLoad:
+		if l.finale {
+			l.samples[arg(1)] = g.finaleSample(a.str(arg(0)), arg(1))
+			break
+		}
 		l.samples[arg(1)] = g.loadQuickSample(a.str(arg(0)))
 	case avSmpClose:
 		l.samples[arg(0)] = nil
@@ -203,6 +225,10 @@ func (g *Game) avOp(a *avScript, line, op, p int) int {
 		vol := arg(1) * 255 / percent
 		if s := l.samples[arg(0)]; s == nil {
 			g.playLandsSound(arg(0), vol)
+		} else if l.finale {
+			if g.Config.DigitalSound { // C: FINALE.EXE Default_Sample_Play
+				g.playLongSample(s, voicePriority, vol)
+			}
 		} else {
 			g.playLongSample(s, 0, vol)
 		}
@@ -237,6 +263,9 @@ func (g *Game) avOp(a *avScript, line, op, p int) int {
 		}
 	case avTimeStop:
 	case avUser:
+		if l.finale {
+			return g.finaleUser(a, p)
+		}
 		return g.avUser(a, p)
 	case avStartTL:
 		t := &a.lines[arg(0)]

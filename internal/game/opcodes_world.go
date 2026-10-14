@@ -687,21 +687,19 @@ func (g *Game) opCountLiveMonsters(s *emc.State) int {
 	return n
 }
 
-// Finale modes by the first character's id (C: fn_0fbe_3282).
-var finaleModes = map[int]int{-9: 1, -1: 2, -5: 3}
-
-// opFinale ends the game and runs the finale for the hero who led the party
-// (C: fn_0fbe_3282, which ran FINALE.EXE with the mode, the difficulty and the
-// player's name).
+// opFinale ends the game with the ending for the hero who led the party; FINALE.EXE
+// returned to DOS (C: fn_0fbe_3282, which ran FINALE.EXE with the hero, the difficulty
+// and the player's name).
 func (g *Game) opFinale(s *emc.State) int {
 	for g.updateSpeech() != 0 {
 		g.waitTicks(1)
 	}
-	g.runFinale(finaleModes[g.party[0].ID], g.difficulty())
+	if err := g.runFinale(finaleHeroModes[g.party[0].ID], g.difficulty()); err != nil {
+		g.scriptErr = err
+	}
+	g.quitGame()
 	return 0
 }
-
-func (g *Game) runFinale(mode, difficulty int) { notPorted("FINALE.EXE (the ending)") }
 
 // opStopTalk (C: fn_0fbe_1f39).
 func (g *Game) opStopTalk(s *emc.State) int {

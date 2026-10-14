@@ -50,7 +50,8 @@ subprocess.run(['cp', exe, game + '/MAIN.EXE'], check=True)
 ARGS = os.environ.get('LOLARGS', '3')  # PLAIN shows the menu; a number starts that hero's new game
 # LANDS CHARGEN, LANDS INTRO, LANDS HISTORY run the language folder's LANDS.EXE instead and dump
 # the screen every LOLEVERY seconds (default 2) for LOLFOR seconds (default 30)
-LANDS = ARGS.upper().startswith('LANDS')
+# FINALE <hero> HOMIE <difficulty> <name> runs FINALE.EXE the same way
+LANDS = ARGS.upper().startswith(('LANDS', 'FINALE'))
 run = 'main.exe %s' % ARGS
 if LANDS:
     eng = os.path.join(game, 'ENG')
@@ -59,7 +60,11 @@ if LANDS:
     for n in os.listdir(os.path.join(src, 'ENG')):
         os.symlink(os.path.join(src, 'ENG', n), os.path.join(eng, n))
     subprocess.run(['cp', os.path.expanduser('~/Projects/lands-of-lore-1-re/decomp/lands/LANDS.EXE'), eng], check=True)
-    run = 'cd ENG\n' + ARGS.lower().replace('lands', 'lands.exe c:\\\\', 1)  # argv[1] is the game's folder
+    if ARGS.upper().startswith('FINALE'):
+        subprocess.run(['cp', os.path.expanduser('~/Projects/lands-of-lore-1-re/decomp/lands/FINALE.EXE'), eng], check=True)
+        run = 'cd ENG\nfinale.exe' + ARGS[len('finale'):]
+    else:
+        run = 'cd ENG\n' + ARGS.lower().replace('lands', 'lands.exe c:\\\\', 1)  # argv[1] is the game's folder
 conf = os.path.join(game, 'parity.conf')
 open(conf, 'w').write('[sdl]\noutput=surface\nautolock=false\n[dosbox]\nmachine=svga_s3\nmemsize=16\nqmpserver=true\n'
                       '[cpu]\ncore=normal\ncycles=fixed 30000\n[sblaster]\nsbtype=sb16\n'

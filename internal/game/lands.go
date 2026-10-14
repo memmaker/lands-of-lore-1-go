@@ -94,6 +94,9 @@ type lands struct {
 	samples [avSamples]*sound.Sample // (C: g_dbc)
 	av      *avScript
 	avEnd   bool // (C: _AVEnd)
+
+	finale bool // FINALE.EXE's engine, which draws straight on the screen
+	hero   int  // FINALE.EXE's hero (C: g_d4)
 }
 
 // landsAnim is one of LANDS.EXE's animations (C: struct _Anim, 0x8c bytes).

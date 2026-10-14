@@ -80,8 +80,10 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
   - [x] Digital effects: VOC cache and the four-channel mixer (s029, fn_067a_0649)
   - [x] Speech: TLK index and playback (s023)
 - [x] In-game <MORE> prompt with the speech deadline (fn_13e8_09b7 at g_370d, ovr_2da3_002f); message fade-out (fn_0845_11b7)
-- [ ] Ending
-  - [ ] BLOCKED: FINALE.EXE is not decompiled (opcode 98 calls runFinale, which fails loudly)
+- [x] Ending (FINALE.EXE, game/finale.go; opcode 98 runs it, then the program ends)
+  - [x] LOLFINAL.TIM on LANDS.EXE's AV engine drawing straight on the screen; FINALE's user functions (blend, scale, fades, frames, text)
+  - [x] Credits: CREDITS.TXT scrolling over the room, monsters through the doors (Write_Credits)
+  - [x] Hero picture, Ferocious line, replay until Escape; TestFinale
 - Note: ENG/FRE/GER.LM (o2dad) hold only the WW library's error messages (heap corrupt and the like); the port has no use for them.
 - [x] Parity checks against DOSBox-X (tools/parity.py: MAIN.EXE in the remote-debug DOSBox-X, host input off, keys over QMP, mode-13h dumps vs. TestNewGame's LOLSHOT .raw)
   - [x] Title menu, first view, strafe, walk, turn, step back: identical but for the mouse cursor (the original draws it into video memory) and the guard's idle sway and animation, which follow the random roll per monster update
