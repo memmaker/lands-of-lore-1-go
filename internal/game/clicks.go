@@ -83,7 +83,7 @@ func (g *Game) clickAttack(b *gui.Button) bool {
 		return true
 	}
 	if front := g.blockInDirection(g.currentBlock, g.direction); g.lvl.blocks[front].Flags&blockShatters != 0 {
-		g.shatterWall()
+		g.shatterWall(nil, nil)
 		return true
 	}
 	target := g.monsterInFront(ch)

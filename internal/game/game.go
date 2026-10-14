@@ -98,6 +98,7 @@ type Game struct {
 	lampLevel     int         // (C: g_81de)
 	lampFlickerAt int         // (C: g_237e)
 	darkPalette   gfx.Palette // the palette at the current brightness (C: g_540e)
+	swampPalette  gfx.Palette // level 11 frozen or not: the palette swapped with Palette (C: g_4bcc)
 	paletteState  int         // (C: g_20d5)
 	musicTrack    int         // (C: g_1e94)
 

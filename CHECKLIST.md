@@ -58,7 +58,8 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
 - [ ] Monsters, combat, magic
   - [x] Monster AI, combat rules (s004), status effects
   - [x] Spell casting, targets, learning (o2d8a, o2d86), heal (o2d18)
-  - [ ] Spell effects (spark, ice, lightning, fireball, mist, quake, wake, freeze, reveal, block), flying objects (fn_0b6b_*)
+  - [x] Spell effects (o2d83, o2d1b, o2d03, o2d15, o2d4d, o2d28, o2d07, o2d99, o2d9d, o2d12), level 11 swamp ice, crystal wall shatter
+  - [ ] Flying objects (fn_0b6b_*)
 - [ ] Dialogue/scenes, text window, speech
   - [x] Scenes, dialogue, message line, talking faces (talk.go)
 - [ ] Save/load

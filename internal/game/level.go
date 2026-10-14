@@ -456,15 +456,6 @@ const (
 	swapPaletteFile  = "SWAMPICE.COL"
 )
 
-// swapLevelPalette loads level 11's other palette and swaps it in if its flag is set
-// (C: ovr_2d1b_002a).
-func (g *Game) swapLevelPalette() {
-	if g.level != swapPaletteLevel {
-		return
-	}
-	notPorted("ovr_2d1b_002a (level 11 palette swap)")
-}
-
 // Brightness: 8 levels; the lamp, if the party has one, lifts dark levels
 // (C: fn_0845_02c6).
 const (
@@ -478,7 +469,11 @@ const (
 // darkenPalette makes the game palette darker by the brightness setting into the fade
 // target (C: fn_0845_02c6 into g_540e).
 func (g *Game) darkenPalette(src []byte, brightness, lamp int) {
-	dst := g.darkPalette[:]
+	g.darkenPaletteInto(g.darkPalette[:], src, brightness, lamp)
+}
+
+// darkenPaletteInto is darkenPalette into any palette; dst may be src.
+func (g *Game) darkenPaletteInto(dst, src []byte, brightness, lamp int) {
 	copy(dst, src)
 	copy(dst[uiColoursStart:uiColoursStart+uiColoursSize], g.Screen.Palette[uiColoursStart:])
 	s := (brightnessLevels - brightness) << brightnessShift

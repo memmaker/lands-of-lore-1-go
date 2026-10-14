@@ -21,15 +21,12 @@ func (g *Game) takeCharacterItem(ch, slots, flags int) int {
 	notPorted("ovr_2d46_0048 (take a character's item)")
 	return 0
 }
-func (g *Game) swapLevelPaletteBack() { notPorted("ovr_2d1b_0043 (swap the level palette back)") }
 func (g *Game) launchObject(kind, item, x, y, power, dir, a, owner, flags int) bool {
 	notPorted("fn_0b6b_032f (launch a flying object)")
 	return false
 }
 func (g *Game) freezeParty()                     { notPorted("ovr_2da0_002a (freeze the party)") }
 func (g *Game) moveFlyingObject(f *flyingObject) { notPorted("fn_0b6b_0472 (move a flying object)") }
-func (g *Game) shatterWall()                     { notPorted("ovr_2d1b_0052 (shatter a crystal wall)") }
 func (g *Game) showAutomap()                     { notPorted("ovr_2ce1_0020 (automap)") }
 
 // The spells' effects, overlay by overlay (CHECKLIST: Monsters, combat, magic).
-func (g *Game) iceSpell(caster, level int) { notPorted("ovr_2d1b_0039 (spell)") }
