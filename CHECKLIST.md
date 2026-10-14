@@ -54,7 +54,7 @@ Rules in ~/notes/c-to-go.md, conventions in PORTING.md.
 - [ ] Levels, 3D view renderer (o2d2c, o2cda), movement, automap
   - [x] Party movement, walk/turn/strafe animations (s011, s038), doors, timers
   - [x] Level change (op 60)
-  - [ ] Automap
+  - [x] Automap (o2ce1): map, legend, level paging, party arrow
 - [ ] Items, inventory, characters, portraits, stats screen
   - [x] Resting (o2d7a): healing, mana, poison, interruption
 - [ ] Monsters, combat, magic

@@ -14,7 +14,4 @@ func (e notPortedError) Error() string { return fmt.Sprintf("not ported yet: %s"
 
 func notPorted(name string) { panic(notPortedError{name}) }
 
-// Combat and character effects the monsters call (CHECKLIST: Combat).
-func (g *Game) showAutomap() { notPorted("ovr_2ce1_0020 (automap)") }
-
 // The spells' effects, overlay by overlay (CHECKLIST: Monsters, combat, magic).

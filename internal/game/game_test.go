@@ -162,6 +162,17 @@ func TestNewGame(t *testing.T) {
 			t.Errorf("rested to %d of %d hit points", g.party[0].HP, g.party[0].MaxHP)
 		}
 		savePNG(t, host.ShowFrame(), "rested.png")
+		g.setFlag(flagHasAutomap, true)
+		g.revealAround(g.currentBlock)
+		click(300, 40, "automap.png")
+		steps(200)
+		savePNG(t, host.ShowFrame(), "automap_arrow.png")
+		click(295, 185, "automap_exit.png")
+		steps(100)
+		if g.scriptErr != nil || g.automap.done != true {
+			t.Errorf("automap: done %v, %v", g.automap.done, g.scriptErr)
+		}
+		savePNG(t, host.ShowFrame(), "automap_closed.png")
 	}
 	checkGameMenu(t, g, click)
 	checkSaveRoundTrip(t, g)

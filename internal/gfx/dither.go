@@ -49,3 +49,41 @@ func (s *Screen) CopyRectRemapped(fromX, fromY, toX, toY, w, h, from, to int, ta
 		}
 	}
 }
+
+// CopyRectRemappedIn copies a w x h rectangle from (fromX, fromY) on page from to
+// (toX, toY) inside window n of page to, each pixel through table; pixels the table
+// turns to 0 are left out. The rectangle is clipped to the window, and a cut at its
+// top or left moves the source on only to the right (sic: not down) (C: fn_19c9_0ff6).
+func (s *Screen) CopyRectRemappedIn(from, fromX, fromY, to, toX, toY, w, h, n int, table []byte) {
+	if w == 0 || h == 0 || toX+w <= 0 || toY+h <= 0 {
+		return
+	}
+	win := s.Windows[n]
+	skipX := 0
+	if toX < 0 {
+		skipX, w, toX = -toX, toX+w, 0
+	}
+	room := win.W*ColumnWidth - toX
+	if room <= 0 {
+		return
+	}
+	w = min(w, room)
+	if toY < 0 {
+		h, toY = toY+h, 0
+	}
+	room = win.H - toY
+	if room <= 0 {
+		return
+	}
+	h = min(h, room)
+	src, dst := s.Page(from), s.Page(to)
+	for row := range h {
+		si := (fromY+row)*Width + fromX + skipX
+		di := (toY+win.Y+row)*Width + toX + win.Left()
+		for i := range w {
+			if p := table[src[si+i]]; p != 0 {
+				dst[di+i] = p
+			}
+		}
+	}
+}

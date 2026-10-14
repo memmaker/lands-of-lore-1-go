@@ -162,6 +162,8 @@ type Game struct {
 	talkSteps           int                          // mouth moves left (C: g_4bfc)
 	talkRestore         bool                         // set the face back at the end (C: g_4c00)
 	scriptErr           error                        // the first error a block script raised
+	automap             automapState
+	revealAutomap       bool // the automap's debug key reveals the level; nothing sets it (C: g_20f2)
 
 	partyX, partyY int                // the party's position (C: g_7fd2, g_7fd4)
 	levelVars      [levelVarCount]int // (C: g_8114)
